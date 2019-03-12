@@ -1,16 +1,14 @@
 //
-// Created by CHEN on 2019/1/15.
+// Created by CHEN on 2019/2/20.
 //
 
-#ifndef FFMPEGPLAYER_ANDROIDLOG_H
-#define FFMPEGPLAYER_ANDROIDLOG_H
+#ifndef CYPLAYER_ANDROIDLOG_H
+#define CYPLAYER_ANDROIDLOG_H
+
+#endif //CYPLAYER_ANDROIDLOG_H
 
 #include <android/log.h>
-
-#define LOG_SHOW false;
-
-#define  LOGD(FORMAT,...) __android_log_print(ANDROID_LOG_DEBUG,"ffmpeg",FORMAT,##__VA_ARGS__);
-#define  LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR,"ffmpeg",FORMAT,##__VA_ARGS__);
-#define  LOGI(FORMAT,...) __android_log_print(ANDROID_LOG_INFO,"ffmpeg",FORMAT,##__VA_ARGS__);
-
-#endif //FFMPEGPLAYER_ANDROIDLOG_H
+#define LOG_DEBUG true
+#define  LOGD(FORMAT,...) __android_log_print(ANDROID_LOG_DEBUG,"cyvideo",FORMAT,##__VA_ARGS__);
+#define  LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR,"cyvideo",FORMAT,##__VA_ARGS__);
+#define  LOGI(FORMAT,...) __android_log_print(ANDROID_LOG_INFO,"cyvideo",FORMAT,##__VA_ARGS__);

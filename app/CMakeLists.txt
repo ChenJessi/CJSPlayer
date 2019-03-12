@@ -1,48 +1,18 @@
-# For more information about using CMake with Android Studio, read the
-# documentation: https://d.android.com/studio/projects/add-native-code.html
-
-# Sets the minimum version of CMake required to build the native library.
-
 cmake_minimum_required(VERSION 3.4.1)
-
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
-
-
-#增加头文件搜索目录
-set(FFMPEG_HOME ${CMAKE_SOURCE_DIR})
 
 include_directories(src/main/cpp/include)
 
 add_library( # Sets the name of the library.
         native-lib
-
-        # Sets the library as a shared library.
         SHARED
 
-        # Provides a relative path to your source file(s).
         src/main/cpp/native-lib.cpp
-
-        src/main/cpp/CXAudio.cpp)
-
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
-
-find_library( # Sets the name of the path variable.
-        log-lib
-
-        # Specifies the name of the NDK library that
-        # you want CMake to locate.
-        log)
-
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
+        src/main/cpp/CyCallJava.cpp
+        src/main/cpp/CyAudio.cpp
+        src/main/cpp/CyFFmpeg.cpp
+        src/main/cpp/CyQueue.cpp
+        src/main/cpp/CyPlaystatus.cpp
+        )
 
 # Import ffmpeg part
 add_library(avcodec
@@ -50,68 +20,67 @@ add_library(avcodec
         IMPORTED)
 set_target_properties(avcodec
         PROPERTIES IMPORTED_LOCATION
-        ${FFMPEG_HOME}/libs/${ANDROID_ABI}/libavcodec.so)
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libavcodec.so)
 
 add_library(avdevice
         SHARED
         IMPORTED)
 set_target_properties(avdevice
         PROPERTIES IMPORTED_LOCATION
-        ${FFMPEG_HOME}/libs/${ANDROID_ABI}/libavdevice.so)
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libavdevice.so)
 
 add_library(avfilter
         SHARED
         IMPORTED)
 set_target_properties(avfilter
         PROPERTIES IMPORTED_LOCATION
-        ${FFMPEG_HOME}/libs/${ANDROID_ABI}/libavfilter.so)
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libavfilter.so)
 
 add_library(avformat
         SHARED
         IMPORTED)
 set_target_properties(avformat
         PROPERTIES IMPORTED_LOCATION
-        ${FFMPEG_HOME}/libs/${ANDROID_ABI}/libavformat.so)
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libavformat.so)
 
 add_library(avutil
         SHARED
         IMPORTED)
 set_target_properties(avutil
         PROPERTIES IMPORTED_LOCATION
-        ${FFMPEG_HOME}/libs/${ANDROID_ABI}/libavutil.so)
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libavutil.so)
+
+add_library( postproc SHARED IMPORTED)
+set_target_properties( postproc
+        PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libpostproc.so)
 
 add_library(swresample
         SHARED
         IMPORTED)
 set_target_properties(swresample
         PROPERTIES IMPORTED_LOCATION
-        ${FFMPEG_HOME}/libs/${ANDROID_ABI}/libswresample.so)
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libswresample.so)
 
 add_library(swscale
         SHARED
         IMPORTED)
 set_target_properties(swscale
         PROPERTIES IMPORTED_LOCATION
-        ${FFMPEG_HOME}/libs/${ANDROID_ABI}/libswscale.so)
-
-
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
+        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libswscale.so)
 
 target_link_libraries( # Specifies the target library.
         native-lib
-
-        OpenSLES
-
         avcodec
         avdevice
         avfilter
         avformat
         avutil
+        postproc
         swresample
         swscale
 
-        # Links the target library to the log library
-        # included in the NDK.
-        ${log-lib})
+        OpenSLES
+        android
+
+        log)
