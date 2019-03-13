@@ -152,6 +152,8 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
                cyAudio->last_time = cyAudio->clock;
                cyAudio->callJava->onCallTimeInfo(CHILD_THREAD, cyAudio->clock, cyAudio->duration);
            }
+           cyAudio->callJava->onCallValumeDB(CHILD_THREAD,
+             cyAudio->getPCMDB(reinterpret_cast<char *>(cyAudio->sampleBuffer), buffersize * 4));
             (* cyAudio->pcmBufferQueue)->Enqueue(cyAudio->pcmBufferQueue, (char *)cyAudio->sampleBuffer, buffersize * 2 * 2);
         }
     }
@@ -422,4 +424,21 @@ void CyAudio::setSpeed(float speed) {
         soundTouch->setTempo(speed);
         pthread_mutex_unlock(&sound_mutex);
     }
+}
+
+int CyAudio::getPCMDB(char *pcmdata, size_t pcmsize) {
+    int db = 0;
+    short int pervalue = 0;
+    double sum = 0;
+    for(int i = 0; i < pcmsize; i+= 2)
+    {
+        memcpy(&pervalue, pcmdata+i, 2);
+        sum += abs(pervalue);
+    }
+    sum = sum / (pcmsize / 2);
+    if(sum > 0)
+    {
+        db = (int)20.0 *log10(sum);
+    }
+    return db;
 }

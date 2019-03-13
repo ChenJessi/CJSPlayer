@@ -16,6 +16,7 @@ import com.chen.cyplayer.listener.CyOnCompleteListener;
 import com.chen.cyplayer.listener.CyOnLoadListener;
 import com.chen.cyplayer.listener.CyOnParparedListener;
 import com.chen.cyplayer.listener.CyOnTimeInfoListener;
+import com.chen.cyplayer.listener.CyOnValumeDBListener;
 import com.chen.cyplayer.log.MyLog;
 import com.chen.cyplayer.player.CyPlayer;
 import com.chen.cyplayer.util.CyTimeUtil;
@@ -116,6 +117,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+            }
+        });
+
+        cyPlayer.setCyOnValumeDBListener(new CyOnValumeDBListener() {
+            @Override
+            public void onDbValue(int db) {
+                MyLog.d("dbvalue : " + db);
             }
         });
     }

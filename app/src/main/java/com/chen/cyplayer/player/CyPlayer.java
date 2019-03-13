@@ -13,6 +13,7 @@ import com.chen.cyplayer.listener.CyOnLoadListener;
 import com.chen.cyplayer.listener.CyOnParparedListener;
 import com.chen.cyplayer.listener.CyOnPauseResumeListener;
 import com.chen.cyplayer.listener.CyOnTimeInfoListener;
+import com.chen.cyplayer.listener.CyOnValumeDBListener;
 import com.chen.cyplayer.log.MyLog;
 
 /**
@@ -51,6 +52,7 @@ public class CyPlayer {
     private CyOnTimeInfoListener cyOnTimeInfoListener;
     private CyOnErrorListener cyOnErrorListener;
     private CyOnCompleteListener cyOnCompleteListener;
+    private CyOnValumeDBListener cyOnValumeDBListener;
 
     private CyPlayer() {}
 
@@ -94,6 +96,10 @@ public class CyPlayer {
 
     public void setCyOnCompleteListener(CyOnCompleteListener cyOnCompleteListener) {
         this.cyOnCompleteListener = cyOnCompleteListener;
+    }
+
+    public void setCyOnValumeDBListener(CyOnValumeDBListener cyOnValumeDBListener) {
+        this.cyOnValumeDBListener = cyOnValumeDBListener;
     }
 
     public void parpared(){
@@ -240,6 +246,12 @@ public class CyPlayer {
         if (playNext){
             playNext = false;
             parpared();
+        }
+    }
+
+    public void onCallValumeDB(int db){
+        if (cyOnValumeDBListener != null){
+            cyOnValumeDBListener.onDbValue(db);
         }
     }
 

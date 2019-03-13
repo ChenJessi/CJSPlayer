@@ -21,6 +21,7 @@ public:
     jmethodID jmid_timeInfo;
     jmethodID jmid_error;
     jmethodID jmid_complete;
+    jmethodID jmid_valumeDB;
 
 public:
     CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
@@ -31,6 +32,7 @@ public:
     void onCallTimeInfo(int type,int currentTime, int totalTime);
     void onCallError(int type,int code, char *msg);
     void onCallComplete(int type);
+    void onCallValumeDB(int type, int db);
 };
 
 

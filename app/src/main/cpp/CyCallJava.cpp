@@ -24,6 +24,7 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     jmid_timeInfo = env->GetMethodID(jlz,"onCallTimeInfo","(II)V");
     jmid_error = env->GetMethodID(jlz,"onCallError","(ILjava/lang/String;)V");
     jmid_complete = env->GetMethodID(jlz,"onCallComplete","()V");
+    jmid_valumeDB = env->GetMethodID(jlz,"onCallValumeDB","(I)V");
 }
 
 void CyCallJava::onCallParpared(int type) {
@@ -111,6 +112,22 @@ void CyCallJava::onCallComplete(int type) {
             return;
         }
         jniEnv->CallVoidMethod(jobj,jmid_complete);
+        javaVM->DetachCurrentThread();
+    };
+}
+
+void CyCallJava::onCallValumeDB(int type, int db) {
+    if (type == MAIN_THREAD){
+        jniEnv->CallVoidMethod(jobj,jmid_valumeDB);
+    } else if (type == CHILD_THREAD){
+        JNIEnv *jniEnv;
+        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+            if (LOG_DEBUG) {
+                LOGE("call onCallTimeInfo worng!");
+            }
+            return;
+        }
+        jniEnv->CallVoidMethod(jobj,jmid_valumeDB, db);
         javaVM->DetachCurrentThread();
     };
 }

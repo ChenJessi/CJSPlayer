@@ -263,7 +263,6 @@ void CyFFmpeg::setMute(int mute) {
     if (audio != NULL){
         audio->setMute(mute);
     }
-
 }
 
 void CyFFmpeg::setPitch(float pitch) {
