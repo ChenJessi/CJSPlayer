@@ -3,7 +3,9 @@ package com.chen.cyplayer.player;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.chen.cyplayer.enums.MuteEnum;
 import com.chen.cyplayer.bean.CyTimeInfoBean;
 import com.chen.cyplayer.listener.CyOnCompleteListener;
 import com.chen.cyplayer.listener.CyOnErrorListener;
@@ -33,19 +35,22 @@ public class CyPlayer {
 
     private  final int MSG_TIMEINFO = 1000;
 
-
     private String source;//数据源
+
+    private CyTimeInfoBean timeInfoBean = null;
+    private boolean playNext = false;
+    private int duration = -1;
+    private int volumePercent = 50;
+    private  MuteEnum muteEnum = MuteEnum.MUTE_CENTER;
+    private float pitch = 1.0f;
+    private float speed = 1.0f;
+
     private CyOnParparedListener cyOnParparedListener;
     private CyOnLoadListener cyOnLoadListener;
     private CyOnPauseResumeListener cyOnPauseResumeListener;
     private CyOnTimeInfoListener cyOnTimeInfoListener;
     private CyOnErrorListener cyOnErrorListener;
     private CyOnCompleteListener cyOnCompleteListener;
-    private CyTimeInfoBean timeInfoBean = null;
-    private boolean playNext = false;
-    private int duration = -1;
-    private int volumePercent = 100;
-
 
     private CyPlayer() {}
 
@@ -113,6 +118,9 @@ public class CyPlayer {
             @Override
             public void run() {
                 setVolume(volumePercent);
+                setMute(muteEnum);
+                setPitch(pitch);
+                setSpeed(speed);
                 n_start();
             }
         }).start();
@@ -165,9 +173,25 @@ public class CyPlayer {
         }
     }
 
+    public void setMute(MuteEnum mute){
+        muteEnum = mute;
+        n_mute(mute.getValue());
+    }
+
     public int getVolumePercent(){
         return volumePercent;
     }
+
+    public void setPitch(float pitch){
+        this.pitch = pitch;
+        n_pitch(pitch);
+    }
+
+    public void setSpeed(float speed){
+        this.speed = speed;
+        n_speed(speed);
+    }
+
     /**
      * c++回调java的方法
      */
@@ -193,6 +217,7 @@ public class CyPlayer {
 
             Message message = new Message();
             message.what = MSG_TIMEINFO;
+            message.obj = timeInfoBean;
             handler.sendMessage(message);
         }
     }
@@ -225,7 +250,11 @@ public class CyPlayer {
             super.handleMessage(msg);
             switch (msg.what){
                 case MSG_TIMEINFO:
-                    cyOnTimeInfoListener.timeInfo(timeInfoBean);
+                    CyTimeInfoBean cyTimeInfoBean = (CyTimeInfoBean) msg.obj;
+                    if (cyTimeInfoBean == null){
+                        MyLog.d("info error : "+ cyTimeInfoBean);
+                    }
+                    cyOnTimeInfoListener.timeInfo(cyTimeInfoBean);
                     break;
             }
         }
@@ -239,5 +268,8 @@ public class CyPlayer {
     private native void n_stop();
     private native void n_seek(int secds);
     private native void n_volume(int percent);
+    private native void n_mute(int mute);
+    private native void n_pitch(float pitch);
+    private native void n_speed(float speed);
 
 }

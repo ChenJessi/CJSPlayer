@@ -134,10 +134,7 @@ void CyFFmpeg::decodeFFmpegThread() {
  */
 void CyFFmpeg::start() {
     if (audio == NULL) {
-        if (LOG_DEBUG) {
-            LOGE("audio is null!");
-            return;
-        }
+        return;
     }
     audio->play();
 
@@ -198,9 +195,7 @@ void CyFFmpeg::release() {
     if (LOG_DEBUG){
         LOGE("start release ffmpeg")
     }
-
     playstatus->exit = true;
-
     pthread_mutex_lock(&init_mutex);
     int sleepCount = 0;
     while (!exit){
@@ -261,5 +256,24 @@ void CyFFmpeg::seek(int64_t secds) {
 void CyFFmpeg::setVolume(int percent) {
     if (audio != NULL){
         audio->setVolume(percent);
+    }
+}
+
+void CyFFmpeg::setMute(int mute) {
+    if (audio != NULL){
+        audio->setMute(mute);
+    }
+
+}
+
+void CyFFmpeg::setPitch(float pitch) {
+    if (audio != NULL){
+        audio->setPitch(pitch);
+    }
+}
+
+void CyFFmpeg::setSpeed(float speed) {
+    if (audio != NULL){
+        audio->setSpeed(speed);
     }
 }

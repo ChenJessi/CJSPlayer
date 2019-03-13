@@ -11,6 +11,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.chen.cyplayer.bean.CyTimeInfoBean;
+import com.chen.cyplayer.enums.MuteEnum;
 import com.chen.cyplayer.listener.CyOnCompleteListener;
 import com.chen.cyplayer.listener.CyOnLoadListener;
 import com.chen.cyplayer.listener.CyOnParparedListener;
@@ -38,8 +39,9 @@ public class MainActivity extends AppCompatActivity {
         tvVolum = findViewById(R.id.tvVolum);
         seekVolume = findViewById(R.id.seekVolume);
         seekSeek = findViewById(R.id.seekSeek);
-
         cyPlayer = CyPlayer.getInstance();
+
+        seekVolume.setProgress(cyPlayer.getVolumePercent());
         cyPlayer.setCyOnParparedListener(new CyOnParparedListener() {
             @Override
             public void onParpared() {
@@ -116,13 +118,11 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
     public void begin(View view) {
-
+//        cyPlayer.setSource("https://github.com/chen188669/CyPlayer/blob/master/app/music/芙蓉锦铺.mp3");
         cyPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
-//        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/芙蓉锦铺.mp3");
         cyPlayer.parpared();
 
 
@@ -140,16 +140,39 @@ public class MainActivity extends AppCompatActivity {
         cyPlayer.stop();
     }
 
-    public void seek(View view) {
-        cyPlayer.seek(210);
-    }
-
     public void next(View view) {
         cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/芙蓉锦铺.mp3");
     }
 
-    public void volume(View view) {
-        cyPlayer.setVolume(0);
+    public void right(View view) {
+        cyPlayer.setMute(MuteEnum.MUTE_CENTER);
+    }
 
+    public void left(View view) {
+        cyPlayer.setMute(MuteEnum.MUTE_LEFT);
+    }
+
+    public void center(View view) {
+        cyPlayer.setMute(MuteEnum.MUTE_CENTER);
+    }
+
+    public void normal(View view) {
+        cyPlayer.setPitch(1.0f);
+        cyPlayer.setSpeed(1.0f);
+    }
+
+    public void pitch(View view) {
+        cyPlayer.setPitch(2.0f);
+        cyPlayer.setSpeed(1.0f);
+    }
+
+    public void speed(View view) {
+        cyPlayer.setPitch(1.0f);
+        cyPlayer.setSpeed(2.0f);
+    }
+
+    public void pitchSpeed(View view) {
+        cyPlayer.setPitch(2.0f);
+        cyPlayer.setSpeed(2.0f);
     }
 }

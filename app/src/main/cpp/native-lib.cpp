@@ -93,17 +93,21 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1stop(JNIEnv *env, jobject instance) {
     if (fFmpeg != NULL){
         fFmpeg->release();
         delete(fFmpeg);
+        LOGD("fFmpeg 释放")
         fFmpeg = NULL;
         if (callJava != NULL){
             delete(callJava);
             callJava = NULL;
+            LOGD("callJava 释放")
         }
         if (playstatus != NULL){
             delete(playstatus);
             playstatus = NULL;
+            LOGD("playstatus 释放")
         }
     }
     nexit = true;
+    LOGD("下一首")
     env->CallVoidMethod(instance, jmid_next);
 }
 
@@ -135,5 +139,27 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1volume(JNIEnv *env, jobject instance, 
     // TODO
     if (fFmpeg != NULL){
         fFmpeg->setVolume(percent);
+    }
+}extern "C"
+JNIEXPORT void JNICALL
+Java_com_chen_cyplayer_player_CyPlayer_n_1mute(JNIEnv *env, jobject instance, jint mute) {
+    // TODO
+    if (fFmpeg != NULL){
+        fFmpeg->setMute(mute);
+    }
+
+}extern "C"
+JNIEXPORT void JNICALL
+Java_com_chen_cyplayer_player_CyPlayer_n_1pitch(JNIEnv *env, jobject instance, jfloat pitch) {
+    // TODO
+    if (fFmpeg != NULL){
+        fFmpeg->setPitch(pitch);
+    }
+}extern "C"
+JNIEXPORT void JNICALL
+Java_com_chen_cyplayer_player_CyPlayer_n_1speed(JNIEnv *env, jobject instance, jfloat speed) {
+    // TODO
+    if (fFmpeg != NULL){
+        fFmpeg->setSpeed(speed);
     }
 }

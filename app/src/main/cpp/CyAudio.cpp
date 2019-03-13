@@ -10,10 +10,20 @@ CyAudio::CyAudio(CyPlaystatus *cyPlaystatus , int sample_rate, CyCallJava *callJ
     this->sample_rate = sample_rate;
     this->callJava = callJava;
     buffer = (uint8_t *)(av_malloc(sample_rate * 2 * 2));
+    LOGD("clock : %d",this->clock);
+
+    sampleBuffer = static_cast<SAMPLETYPE *>(malloc(sample_rate * 2 * 2));
+    soundTouch = new SoundTouch();
+    soundTouch->setSampleRate(sample_rate);
+    soundTouch->setChannels(2);
+    soundTouch->setPitch(pitch);
+    soundTouch->setTempo(speed);
+
+    pthread_mutex_init(&sound_mutex, NULL);
 }
 
 CyAudio::~CyAudio() {
-
+    pthread_mutex_destroy(&sound_mutex);
 }
 
 void *decodPlay(void *data){
@@ -29,13 +39,12 @@ void CyAudio::play() {
 
 }
 
-int CyAudio::resampleAudio() {
+int CyAudio::resampleAudio(void **pcmbuf) {
     data_size = 0;
     while (cyPlaystatus != NULL && !cyPlaystatus->exit){
         if (cyPlaystatus->seek){
             continue;
         }
-
         if (queue->getQueueSize() == 0){ //加载中
             if (!cyPlaystatus->load){
                 cyPlaystatus->load = true;
@@ -91,8 +100,7 @@ int CyAudio::resampleAudio() {
                 swr_free(&swr_ctx);
                 continue;
             }
-
-            int nb = swr_convert(
+            nb = swr_convert(
                     swr_ctx,
                     &buffer,
                     avFrame->nb_samples,
@@ -108,6 +116,7 @@ int CyAudio::resampleAudio() {
             }
             clock = now_time;
 
+            *pcmbuf = buffer;
             av_packet_free(&avPacket);
             av_free(avPacket);
             avPacket = NULL;
@@ -136,14 +145,14 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
     CyAudio *cyAudio = (CyAudio *)(context);
     // for streaming playback, replace this test by logic to find and fill the next buffer
     if (cyAudio != NULL){
-        int buffersize = cyAudio->resampleAudio();
+        int buffersize = cyAudio->getSoundTouchData();
         if (buffersize > 0){
             cyAudio->clock += buffersize / ((double)(cyAudio->sample_rate * 2 * 2));
            if (cyAudio->clock - cyAudio->last_time >= 0.1){
                cyAudio->last_time = cyAudio->clock;
                cyAudio->callJava->onCallTimeInfo(CHILD_THREAD, cyAudio->clock, cyAudio->duration);
            }
-            (* cyAudio->pcmBufferQueue)->Enqueue(cyAudio->pcmBufferQueue, (char *)cyAudio->buffer, buffersize);
+            (* cyAudio->pcmBufferQueue)->Enqueue(cyAudio->pcmBufferQueue, (char *)cyAudio->sampleBuffer, buffersize * 2 * 2);
         }
     }
 
@@ -187,7 +196,7 @@ void CyAudio::initOpenSLES() {
     };
     SLDataSource slDataSource = {&android_queue, &pcm};
 
-    const SLInterfaceID  ids[3] = {SL_IID_BUFFERQUEUE , SL_IID_EFFECTSEND , SL_IID_VOLUME};
+    const SLInterfaceID  ids[3] = {SL_IID_BUFFERQUEUE , SL_IID_MUTESOLO , SL_IID_VOLUME};
     const SLboolean req[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
 
     (*engineItf)->CreateAudioPlayer(engineItf,  &pcmPlayerObject, &slDataSource, &audioSnk, 3, ids, req);
@@ -197,10 +206,12 @@ void CyAudio::initOpenSLES() {
     //得到接口后调用 获取player接口
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_PLAY, &pcmPlayerPlay);
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_VOLUME, &pcmVolumePlay);
+    (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_MUTESOLO, &pcmMutePlay);
     //第四步----------------------------------------------------------------------------------------
     //创建缓冲区和回调函数
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_BUFFERQUEUE ,&pcmBufferQueue);
     setVolume(volumePercent);
+    setMute(mute);
     //缓冲接口回调
     (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue, pcmBufferCallBack,this);
 
@@ -338,5 +349,77 @@ void CyAudio::setVolume(int percent) {
         } else{
             (*pcmVolumePlay)->SetVolumeLevel(pcmVolumePlay, (100 - percent) * -100);
         }
+    }
+}
+
+void CyAudio::setMute(int mute) {
+    this->mute = mute;
+    if(pcmMutePlay != NULL){
+        if (mute == 0){  //right
+            (*pcmMutePlay)->SetChannelMute(pcmMutePlay, 1, false);
+            (*pcmMutePlay)->SetChannelMute(pcmMutePlay, 0, true);
+        }else if(mute == 1){ //left
+            (*pcmMutePlay)->SetChannelMute(pcmMutePlay, 1, true);
+            (*pcmMutePlay)->SetChannelMute(pcmMutePlay, 0, false);
+        } else if(mute == 2){ //center
+            (*pcmMutePlay)->SetChannelMute(pcmMutePlay, 1, false);
+            (*pcmMutePlay)->SetChannelMute(pcmMutePlay, 0, false);
+        }
+    }
+}
+
+int CyAudio::getSoundTouchData() {
+    pthread_mutex_lock(&sound_mutex);
+    while (cyPlaystatus != NULL && !cyPlaystatus->exit){
+        out_buffer = NULL;
+        if (finished){
+            finished = false;
+            data_size = resampleAudio(reinterpret_cast<void **>(&out_buffer));
+
+            if (data_size > 0){
+                for (int i = 0; i < data_size / 2 + 1; i++) {
+                    sampleBuffer[i] = (out_buffer[i * 2] | ((out_buffer[i * 2 + 1]) << 8));
+                }
+                soundTouch->putSamples(sampleBuffer, nb);
+                num = soundTouch->receiveSamples(sampleBuffer, data_size/4);
+
+            } else{
+                soundTouch->flush();
+            }
+        }
+        if (num == 0){
+            finished = true;
+            continue;
+        } else{
+            if (out_buffer == NULL){
+                num = soundTouch->receiveSamples(sampleBuffer, data_size / 4);
+                if (num == 0){
+                    finished = true;
+                    continue;
+                }
+            }
+            pthread_mutex_unlock(&sound_mutex);
+            return num;
+        }
+    }
+    return 0;
+
+}
+
+void CyAudio::setPitch(float pitch) {
+    this->pitch = pitch;
+    if (soundTouch != NULL){
+        pthread_mutex_lock(&sound_mutex);
+        soundTouch->setPitch(pitch);
+        pthread_mutex_unlock(&sound_mutex);
+    }
+}
+
+void CyAudio::setSpeed(float speed) {
+    this->speed = speed;
+    if (soundTouch != NULL){
+        pthread_mutex_lock(&sound_mutex);
+        soundTouch->setTempo(speed);
+        pthread_mutex_unlock(&sound_mutex);
     }
 }

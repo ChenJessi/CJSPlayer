@@ -29,11 +29,7 @@
         android:layout_height="wrap_content"
         android:text="resume"
         android:onClick="resume"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="seek"
-        android:onClick="seek"/>
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -66,4 +62,58 @@
         android:layout_marginTop="10dp"
         android:textColor="#000000"
         android:text="00:00/00:00"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="右声道"
+            android:onClick="right"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="左声道"
+            android:onClick="left"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="立体声"
+            android:onClick="center"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="正常"
+            android:onClick="normal"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="变调"
+            android:onClick="pitch"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="变调"
+            android:onClick="speed"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="变调变速"
+            android:onClick="pitchSpeed"
+            android:layout_weight="1"/>
+    </LinearLayout>
 </LinearLayout>

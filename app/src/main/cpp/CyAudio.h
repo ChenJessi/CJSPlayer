@@ -5,6 +5,7 @@
 #include "CyQueue.h"
 #include "CyCallJava.h"
 
+#include "SoundTouch.h"
 extern "C"{
 #include "libavcodec/avcodec.h"
 #import <libswresample/swresample.h>
@@ -13,6 +14,7 @@ extern "C"{
 #import <SLES/OpenSLES_Android.h>
 }
 
+using namespace soundtouch;
 #ifndef CYPLAYER_CYAUDIO_H
 #define CYPLAYER_CYAUDIO_H
 
@@ -41,7 +43,9 @@ public:
     double now_time;  // 当前frame时间
     double last_time; //上一次调用时间
 
-    int volumePercent = 100;
+    int volumePercent = 50;
+    int mute = 2;
+
     //引擎接口
     SLObjectItf  engineObject = NULL;
     SLEngineItf  engineItf = NULL;
@@ -55,16 +59,28 @@ public:
     SLObjectItf  pcmPlayerObject = NULL;
     SLPlayItf  pcmPlayerPlay = NULL;
     SLVolumeItf pcmVolumePlay = NULL;
+    SLMuteSoloItf  pcmMutePlay = NULL;
 
     //缓冲队列接口
     SLAndroidSimpleBufferQueueItf  pcmBufferQueue = NULL;
 
+    //soundTouch
+    uint8_t  *out_buffer = NULL;
+    bool  finished = true;
+    SoundTouch *soundTouch = NULL;
+    SAMPLETYPE  *sampleBuffer = NULL;
+    int nb = 0;
+    int num = 0;
+    float pitch = 1.0f;
+    float speed = 1.0f;
+
+    pthread_mutex_t sound_mutex;
 public:
     CyAudio(CyPlaystatus *cyPlaystatus, int sample_rate ,CyCallJava *callJava);
     ~CyAudio();
 
     void play();
-    int resampleAudio();
+    int resampleAudio(void **pcmbuf);
 
     void initOpenSLES();
 
@@ -77,6 +93,14 @@ public:
     void release();
 
     void setVolume(int percent);
+
+    void setMute(int mute);
+
+    int getSoundTouchData();
+
+    void setPitch(float pitch);
+
+    void setSpeed(float speed);
 };
 
 
