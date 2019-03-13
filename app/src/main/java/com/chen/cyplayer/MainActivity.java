@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         cyPlayer.setCyOnValumeDBListener(new CyOnValumeDBListener() {
             @Override
             public void onDbValue(int db) {
-                MyLog.d("dbvalue : " + db);
+//                MyLog.d("dbvalue : " + db);
             }
         });
     }

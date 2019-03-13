@@ -10,7 +10,6 @@ CyAudio::CyAudio(CyPlaystatus *cyPlaystatus , int sample_rate, CyCallJava *callJ
     this->sample_rate = sample_rate;
     this->callJava = callJava;
     buffer = (uint8_t *)(av_malloc(sample_rate * 2 * 2));
-    LOGD("clock : %d",this->clock);
 
     sampleBuffer = static_cast<SAMPLETYPE *>(malloc(sample_rate * 2 * 2));
     soundTouch = new SoundTouch();
@@ -74,7 +73,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
         avFrame = av_frame_alloc();
         ret = avcodec_receive_frame(avCodecContext, avFrame);
         if (ret == 0){
-            if (avFrame->channels > 0 && avFrame->channel_layout == 0){
+            if (avFrame->channels && avFrame->channel_layout == 0){
                 avFrame->channel_layout = av_get_default_channel_layout(avFrame->channels);
             } else if (avFrame->channels == 0 && avFrame->channel_layout > 0){
                 avFrame->channels = av_get_channel_layout_nb_channels(avFrame->channel_layout);
@@ -111,6 +110,8 @@ int CyAudio::resampleAudio(void **pcmbuf) {
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
             now_time = avFrame->pts * av_q2d(time_base);
+            LOGD("now_time ：%d" ,(int)now_time)
+            LOGD("now_time clock ：%d" ,(int)clock)
             if (now_time < clock){
                 now_time = clock;
             }
@@ -141,21 +142,25 @@ int CyAudio::resampleAudio(void **pcmbuf) {
 
 void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
     //assert(null == context)
-
     CyAudio *cyAudio = (CyAudio *)(context);
     // for streaming playback, replace this test by logic to find and fill the next buffer
     if (cyAudio != NULL){
         int buffersize = cyAudio->getSoundTouchData();
         if (buffersize > 0){
+            LOGD("clock ：%d" ,(int)cyAudio->clock)
             cyAudio->clock += buffersize / ((double)(cyAudio->sample_rate * 2 * 2));
+
            if (cyAudio->clock - cyAudio->last_time >= 0.1){
+
                cyAudio->last_time = cyAudio->clock;
+
                cyAudio->callJava->onCallTimeInfo(CHILD_THREAD, cyAudio->clock, cyAudio->duration);
            }
            cyAudio->callJava->onCallValumeDB(CHILD_THREAD,
              cyAudio->getPCMDB(reinterpret_cast<char *>(cyAudio->sampleBuffer), buffersize * 4));
             (* cyAudio->pcmBufferQueue)->Enqueue(cyAudio->pcmBufferQueue, (char *)cyAudio->sampleBuffer, buffersize * 2 * 2);
         }
+        pthread_mutex_unlock(&cyAudio->sound_mutex);
     }
 
 };
@@ -292,6 +297,7 @@ void CyAudio::stop() {
 }
 
 void CyAudio::release() {
+
     if (queue != NULL){
         delete(queue);
         queue = NULL;

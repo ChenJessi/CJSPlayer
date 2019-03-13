@@ -214,6 +214,8 @@ void CyFFmpeg::release() {
     }
 
     if (audio != NULL){
+        audio->clock = 0;
+        audio->last_time = 0;
         audio->release();
         delete(audio);
         audio = NULL;
