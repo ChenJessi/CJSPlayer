@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         cyPlayer = CyPlayer.getInstance();
 
         seekVolume.setProgress(cyPlayer.getVolumePercent());
+        tvVolum.setText("音量:" + cyPlayer.getVolumePercent()+"");
         cyPlayer.setCyOnParparedListener(new CyOnParparedListener() {
             @Override
             public void onParpared() {
@@ -129,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void begin(View view) {
-//        cyPlayer.setSource("https://github.com/chen188669/CyPlayer/blob/master/app/music/芙蓉锦铺.mp3");
         cyPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
         cyPlayer.parpared();
 
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void next(View view) {
-        cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/芙蓉锦铺.mp3");
+        cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
     }
 
     public void right(View view) {

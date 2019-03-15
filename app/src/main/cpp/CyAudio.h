@@ -78,6 +78,7 @@ public:
     pthread_mutex_t sound_mutex;
 
     bool isRecordPcm = false;
+    bool readFrameFinished = true;
 public:
     CyAudio(CyPlaystatus *cyPlaystatus, int sample_rate ,CyCallJava *callJava);
     ~CyAudio();
