@@ -2,6 +2,7 @@
 // Created by CHEN on 2019/2/26.
 //
 
+
 #include "CyAudio.h"
 
 CyAudio::CyAudio(CyPlaystatus *cyPlaystatus , int sample_rate, CyCallJava *callJava) {
@@ -42,6 +43,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
     data_size = 0;
     while (cyPlaystatus != NULL && !cyPlaystatus->exit){
         if (cyPlaystatus->seek){
+            av_usleep(1000 * 100);
             continue;
         }
         if (queue->getQueueSize() == 0){ //加载中
@@ -49,6 +51,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
                 cyPlaystatus->load = true;
                 callJava->onCallLoad(CHILD_THREAD, true);
             }
+            av_usleep(1000 * 100);
             continue;
         } else{
             if (cyPlaystatus->load){
@@ -110,8 +113,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
             now_time = avFrame->pts * av_q2d(time_base);
-            LOGD("now_time ：%d" ,(int)now_time)
-            LOGD("now_time clock ：%d" ,(int)clock)
+
             if (now_time < clock){
                 now_time = clock;
             }
@@ -141,13 +143,12 @@ int CyAudio::resampleAudio(void **pcmbuf) {
 
 
 void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
-    //assert(null == context)
     CyAudio *cyAudio = (CyAudio *)(context);
     // for streaming playback, replace this test by logic to find and fill the next buffer
     if (cyAudio != NULL){
         int buffersize = cyAudio->getSoundTouchData();
         if (buffersize > 0){
-            LOGD("clock ：%d" ,(int)cyAudio->clock)
+
             cyAudio->clock += buffersize / ((double)(cyAudio->sample_rate * 2 * 2));
 
            if (cyAudio->clock - cyAudio->last_time >= 0.1){
@@ -156,11 +157,14 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
 
                cyAudio->callJava->onCallTimeInfo(CHILD_THREAD, cyAudio->clock, cyAudio->duration);
            }
+           if (cyAudio->isRecordPcm){
+               cyAudio->callJava->onCallPcmToAAC(CHILD_THREAD, buffersize * 2 * 2, cyAudio->sampleBuffer);
+           }
+
            cyAudio->callJava->onCallValumeDB(CHILD_THREAD,
-             cyAudio->getPCMDB(reinterpret_cast<char *>(cyAudio->sampleBuffer), buffersize * 4));
+           cyAudio->getPCMDB(reinterpret_cast<char *>(cyAudio->sampleBuffer), buffersize * 4));
             (* cyAudio->pcmBufferQueue)->Enqueue(cyAudio->pcmBufferQueue, (char *)cyAudio->sampleBuffer, buffersize * 2 * 2);
         }
-        pthread_mutex_unlock(&cyAudio->sound_mutex);
     }
 
 };
@@ -203,10 +207,10 @@ void CyAudio::initOpenSLES() {
     };
     SLDataSource slDataSource = {&android_queue, &pcm};
 
-    const SLInterfaceID  ids[3] = {SL_IID_BUFFERQUEUE , SL_IID_MUTESOLO , SL_IID_VOLUME};
-    const SLboolean req[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+    const SLInterfaceID  ids[4] = {SL_IID_BUFFERQUEUE , SL_IID_MUTESOLO , SL_IID_PLAYBACKRATE ,SL_IID_VOLUME};
+    const SLboolean req[4] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
 
-    (*engineItf)->CreateAudioPlayer(engineItf,  &pcmPlayerObject, &slDataSource, &audioSnk, 3, ids, req);
+    (*engineItf)->CreateAudioPlayer(engineItf,  &pcmPlayerObject, &slDataSource, &audioSnk, 4, ids, req);
     //初始化播放器
     (*pcmPlayerObject)->Realize(pcmPlayerObject, SL_BOOLEAN_FALSE);
 
@@ -221,7 +225,6 @@ void CyAudio::initOpenSLES() {
     setMute(mute);
     //缓冲接口回调
     (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue, pcmBufferCallBack,this);
-
     //设置播放状态
     (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,  SL_PLAYSTATE_PLAYING);
 
@@ -230,8 +233,7 @@ void CyAudio::initOpenSLES() {
 
 SLuint32 CyAudio::getCurrentSampleRateForOpensles(int sample_rate) {
     int rate = 0;
-    switch (sample_rate)
-    {
+    switch (sample_rate) {
         case 8000:
             rate = SL_SAMPLINGRATE_8;
             break;
@@ -307,6 +309,8 @@ void CyAudio::release() {
         pcmPlayerObject = NULL;
         pcmPlayerPlay = NULL;
         pcmBufferQueue = NULL;
+        pcmMutePlay = NULL;
+        pcmVolumePlay = NULL;
     }
     if (outputMixObject != NULL){
         (*outputMixObject)->Destroy(outputMixObject);
@@ -321,6 +325,14 @@ void CyAudio::release() {
     if (buffer != NULL){
         free(buffer);
         buffer = NULL;
+    }
+    if(soundTouch == NULL) {
+        delete soundTouch;
+        soundTouch = NULL;
+    }
+    if(sampleBuffer != NULL) {
+        free(sampleBuffer);
+        sampleBuffer = NULL;
     }
     if (avCodecContext != NULL){
         avcodec_close(avCodecContext);
@@ -447,4 +459,8 @@ int CyAudio::getPCMDB(char *pcmdata, size_t pcmsize) {
         db = (int)20.0 *log10(sum);
     }
     return db;
+}
+
+void CyAudio::startStopRecord(bool start) {
+    this->isRecordPcm = start;
 }

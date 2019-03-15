@@ -163,3 +163,20 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1speed(JNIEnv *env, jobject instance, j
         fFmpeg->setSpeed(speed);
     }
 }
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_chen_cyplayer_player_CyPlayer_n_1samplerate(JNIEnv *env, jobject instance) {
+    // TODO
+    if (fFmpeg != NULL){
+        return  fFmpeg->getSampleRate();
+    }
+    return  0;
+}extern "C"
+JNIEXPORT void JNICALL
+Java_com_chen_cyplayer_player_CyPlayer_n_1startstoprecord(JNIEnv *env, jobject instance,
+                                                          jboolean start) {
+    // TODO
+    if (fFmpeg != NULL){
+        fFmpeg->startStopRecord(start);
+    }
+}

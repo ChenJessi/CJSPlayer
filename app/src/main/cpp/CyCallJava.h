@@ -2,7 +2,7 @@
 // Created by CHEN on 2019/2/26.
 //
 #include <jni.h>
-#include "AndroidLog.h"
+#include "androidLog.h"
 #ifndef CYPLAYER_CYCALLJAVA_H
 #define CYPLAYER_CYCALLJAVA_H
 #define MAIN_THREAD 0
@@ -22,6 +22,7 @@ public:
     jmethodID jmid_error;
     jmethodID jmid_complete;
     jmethodID jmid_valumeDB;
+    jmethodID jmid_pcmtoaac;
 
 public:
     CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
@@ -33,6 +34,7 @@ public:
     void onCallError(int type,int code, char *msg);
     void onCallComplete(int type);
     void onCallValumeDB(int type, int db);
+    void onCallPcmToAAC(int type, int size, void *buffer);
 };
 
 

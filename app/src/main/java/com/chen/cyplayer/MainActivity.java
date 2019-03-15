@@ -183,4 +183,8 @@ public class MainActivity extends AppCompatActivity {
         cyPlayer.setPitch(2.0f);
         cyPlayer.setSpeed(2.0f);
     }
+
+    public void startRecord(View view) {
+        cyPlayer.startRecord(new File("/mnt/sdcard/tencent/QQfile_recv/test1.aac"));
+    }
 }

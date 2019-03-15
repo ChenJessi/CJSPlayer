@@ -106,7 +106,7 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="变调"
+            android:text="变速"
             android:onClick="speed"
             android:layout_weight="1"/>
         <Button
@@ -116,4 +116,10 @@
             android:onClick="pitchSpeed"
             android:layout_weight="1"/>
     </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开始录制"
+        android:onClick="startRecord"/>
 </LinearLayout>

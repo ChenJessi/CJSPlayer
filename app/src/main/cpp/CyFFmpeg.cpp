@@ -140,9 +140,11 @@ void CyFFmpeg::start() {
 
     while (playstatus != NULL && !playstatus->exit) {
         if (playstatus->seek){
+            av_usleep(1000 * 100);
             continue;
         }
-        if (audio->queue->getQueueSize() > 40){
+        if (audio->queue->getQueueSize() > 10){
+            av_usleep(1000 * 100);
             continue;
         }
         //读取音频帧
@@ -160,6 +162,7 @@ void CyFFmpeg::start() {
             av_free(avPacket);
             while (playstatus != NULL && !playstatus->exit){
                 if (audio->queue->getQueueSize() > 0){
+                    av_usleep(1000 * 100);
                     continue;
                 } else{
                     playstatus->exit = true;
@@ -203,7 +206,7 @@ void CyFFmpeg::release() {
             exit = true;
         }
         if (LOG_DEBUG){
-            LOGD("wait ffmpeg exit %d",  sleepCount);
+            LOGD("wait ffmpeg exit");
         }
         sleepCount++;
         av_usleep(1000 * 10);
@@ -278,3 +281,18 @@ void CyFFmpeg::setSpeed(float speed) {
         audio->setSpeed(speed);
     }
 }
+
+int CyFFmpeg::getSampleRate() {
+    if (audio != NULL){
+        return  audio->avCodecContext->sample_rate;
+    }
+    return  0;
+}
+
+void CyFFmpeg::startStopRecord(bool start) {
+    if (audio != NULL){
+        audio->startStopRecord(start);
+    }
+}
+
+

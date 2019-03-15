@@ -12,6 +12,7 @@ extern "C"{
 #include "libavcodec/avcodec.h"
 #import <SLES/OpenSLES.h>
 #import <SLES/OpenSLES_Android.h>
+#include <libavutil/time.h>
 }
 
 using namespace soundtouch;
@@ -75,6 +76,8 @@ public:
     float speed = 1.0f;
 
     pthread_mutex_t sound_mutex;
+
+    bool isRecordPcm = false;
 public:
     CyAudio(CyPlaystatus *cyPlaystatus, int sample_rate ,CyCallJava *callJava);
     ~CyAudio();
@@ -103,6 +106,8 @@ public:
     void setSpeed(float speed);
 
     int getPCMDB(char *pcmdata, size_t pcmsize);
+
+    void startStopRecord(bool start);
 };
 
 
