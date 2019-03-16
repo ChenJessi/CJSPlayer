@@ -31,7 +31,7 @@ public:
     CyFFmpeg( CyPlaystatus *playstatus, CyCallJava *callJava, const char *url);
     ~CyFFmpeg();
 
-    void parpared();
+    void prepared();
     void decodeFFmpegThread();
     void start();
 

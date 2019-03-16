@@ -19,7 +19,7 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
         }
         return ;
     }
-    jmid_parpared = env->GetMethodID(jlz,"onCallParpared","()V");
+    jmid_prepared = env->GetMethodID(jlz,"onCallPrepared","()V");
     jmid_load = env->GetMethodID(jlz,"onCallLoad","(Z)V");
     jmid_timeInfo = env->GetMethodID(jlz,"onCallTimeInfo","(II)V");
     jmid_error = env->GetMethodID(jlz,"onCallError","(ILjava/lang/String;)V");
@@ -30,9 +30,9 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     jmid_pcmrate = env->GetMethodID(jlz, "onCallPcmRate", "(I)V");
 }
 
-void CyCallJava::onCallParpared(int type) {
+void CyCallJava::onCallPrepared(int type) {
     if (type == MAIN_THREAD){
-        jniEnv->CallVoidMethod(jobj,jmid_parpared);
+        jniEnv->CallVoidMethod(jobj,jmid_prepared);
     } else if (type == CHILD_THREAD){
         JNIEnv *jniEnv;
         if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
@@ -41,7 +41,7 @@ void CyCallJava::onCallParpared(int type) {
             }
             return;
         }
-        jniEnv->CallVoidMethod(jobj,jmid_parpared);
+        jniEnv->CallVoidMethod(jobj,jmid_prepared);
         javaVM->DetachCurrentThread();
     };
 }

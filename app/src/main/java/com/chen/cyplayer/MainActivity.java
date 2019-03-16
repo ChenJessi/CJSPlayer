@@ -2,10 +2,8 @@ package com.chen.cyplayer;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -14,7 +12,7 @@ import com.chen.cyplayer.bean.CyTimeInfoBean;
 import com.chen.cyplayer.enums.MuteEnum;
 import com.chen.cyplayer.listener.CyOnCompleteListener;
 import com.chen.cyplayer.listener.CyOnLoadListener;
-import com.chen.cyplayer.listener.CyOnParparedListener;
+import com.chen.cyplayer.listener.CyOnPreparedListener;
 import com.chen.cyplayer.listener.CyOnPcmInfoListener;
 import com.chen.cyplayer.listener.CyOnTimeInfoListener;
 import com.chen.cyplayer.listener.CyOnValumeDBListener;
@@ -48,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
 
         seekVolume.setProgress(cyPlayer.getVolumePercent());
         tvVolum.setText("音量:" + cyPlayer.getVolumePercent()+"");
-        cyPlayer.setCyOnParparedListener(new CyOnParparedListener() {
+        cyPlayer.setCyOnPreparedListener(new CyOnPreparedListener() {
             @Override
-            public void onParpared() {
+            public void onPrepared() {
                 boolean b = Looper.getMainLooper() == Looper.myLooper();
                 MyLog.d("准备好了，可以开始播放声音了！  "+b);
 
@@ -154,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void begin(View view) {
         cyPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
-        cyPlayer.parpared();
+        cyPlayer.prepared();
 
     }
 

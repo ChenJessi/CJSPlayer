@@ -21,7 +21,7 @@ void *decodeFFmpeg(void *data) {
 /**
  * 准备
  */
-void CyFFmpeg::parpared() {
+void CyFFmpeg::prepared() {
     pthread_create(&decodeThread, NULL, decodeFFmpeg, this);
 }
 
@@ -122,7 +122,7 @@ void CyFFmpeg::decodeFFmpegThread() {
     }
     if (callJava != NULL){
         if (playstatus != NULL && !playstatus->exit){
-            callJava->onCallParpared(CHILD_THREAD);
+            callJava->onCallPrepared(CHILD_THREAD);
         } else{
             exit = true;
         }

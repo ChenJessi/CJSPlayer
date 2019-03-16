@@ -317,7 +317,6 @@ void CyAudio::stop() {
 }
 
 void CyAudio::release() {
-
     if (queue != NULL){
         delete(queue);
         queue = NULL;

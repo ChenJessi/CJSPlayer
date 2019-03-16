@@ -6,14 +6,13 @@ import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.chen.cyplayer.enums.MuteEnum;
 import com.chen.cyplayer.bean.CyTimeInfoBean;
 import com.chen.cyplayer.listener.CyOnCompleteListener;
 import com.chen.cyplayer.listener.CyOnErrorListener;
 import com.chen.cyplayer.listener.CyOnLoadListener;
-import com.chen.cyplayer.listener.CyOnParparedListener;
+import com.chen.cyplayer.listener.CyOnPreparedListener;
 import com.chen.cyplayer.listener.CyOnPauseResumeListener;
 import com.chen.cyplayer.listener.CyOnPcmInfoListener;
 import com.chen.cyplayer.listener.CyOnRecordTimeListener;
@@ -24,7 +23,6 @@ import com.chen.cyplayer.log.MyLog;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 /**
@@ -59,7 +57,7 @@ public class CyPlayer {
     private boolean initmediacodec = false;
     private boolean isCut = false;
 
-    private CyOnParparedListener cyOnParparedListener;
+    private CyOnPreparedListener cyOnPreparedListener;
     private CyOnLoadListener cyOnLoadListener;
     private CyOnPauseResumeListener cyOnPauseResumeListener;
     private CyOnTimeInfoListener cyOnTimeInfoListener;
@@ -87,10 +85,10 @@ public class CyPlayer {
 
     /**
      * 设置准备接口回调
-     * @param cyOnParparedListener
+     * @param cyOnPreparedListener
      */
-    public void setCyOnParparedListener(CyOnParparedListener cyOnParparedListener) {
-        this.cyOnParparedListener = cyOnParparedListener;
+    public void setCyOnPreparedListener(CyOnPreparedListener cyOnPreparedListener) {
+        this.cyOnPreparedListener = cyOnPreparedListener;
     }
 
     public void setCyOnLoadListener(CyOnLoadListener cyOnLoadListener) {
@@ -125,7 +123,7 @@ public class CyPlayer {
         this.cyOnPcmInfoListener = cyOnPcmInfoListener;
     }
 
-    public void parpared(){
+    public void prepared(){
         if (TextUtils.isEmpty(source)){
             MyLog.d("source not be empty!");
             return;
@@ -133,7 +131,7 @@ public class CyPlayer {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                n_parpared(source);
+                n_prepared(source);
             }
         }).start();
     }
@@ -260,9 +258,9 @@ public class CyPlayer {
     /**
      * c++回调java的方法
      */
-    private void onCallParpared(){
-        if (cyOnParparedListener != null){
-            cyOnParparedListener.onParpared();
+    private void onCallPrepared(){
+        if (cyOnPreparedListener != null){
+            cyOnPreparedListener.onPrepared();
         }
     }
 
@@ -304,7 +302,7 @@ public class CyPlayer {
     private void onCallNext(){
         if (playNext){
             playNext = false;
-            parpared();
+            prepared();
         }
     }
 
@@ -341,7 +339,7 @@ public class CyPlayer {
         }
     };
 
-    private native void n_parpared(String source);
+    private native void n_prepared(String source);
     private native void n_start();
     private native int n_duration();
     private native void n_pause();

@@ -22,7 +22,7 @@ pthread_t thread_start;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_chen_cyplayer_player_CyPlayer_n_1parpared(JNIEnv *env, jobject instance, jstring source_) {
+Java_com_chen_cyplayer_player_CyPlayer_n_1prepared(JNIEnv *env, jobject instance, jstring source_) {
     const char *source = env->GetStringUTFChars(source_, 0);
 
     if (fFmpeg == NULL){
@@ -32,7 +32,7 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1parpared(JNIEnv *env, jobject instance
         callJava->onCallLoad(MAIN_THREAD, true);
         playstatus = new CyPlaystatus();
         fFmpeg = new CyFFmpeg(playstatus,callJava,source);
-        fFmpeg->parpared();
+        fFmpeg->prepared();
     }
 }
 

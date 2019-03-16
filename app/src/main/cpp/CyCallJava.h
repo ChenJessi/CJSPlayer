@@ -16,7 +16,7 @@ public:
     JNIEnv *jniEnv = NULL;
     jobject jobj;
 
-    jmethodID jmid_parpared;
+    jmethodID jmid_prepared;
     jmethodID jmid_load;
     jmethodID jmid_timeInfo;
     jmethodID jmid_error;
@@ -30,7 +30,7 @@ public:
     CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
     ~CyCallJava();
 
-    void onCallParpared(int type);
+    void onCallPrepared(int type);
     void onCallLoad(int type, bool load);
     void onCallTimeInfo(int type,int currentTime, int totalTime);
     void onCallError(int type,int code, char *msg);
