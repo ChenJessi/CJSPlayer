@@ -23,6 +23,8 @@ public:
     jmethodID jmid_complete;
     jmethodID jmid_valumeDB;
     jmethodID jmid_pcmtoaac;
+    jmethodID jmid_pcminfo;
+    jmethodID jmid_pcmrate;
 
 public:
     CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
@@ -35,6 +37,8 @@ public:
     void onCallComplete(int type);
     void onCallValumeDB(int type, int db);
     void onCallPcmToAAC(int type, int size, void *buffer);
+    void onCallPcmInfo(int size, void *buffer);
+    void onCallPcmRate(int samplerate);
 };
 
 

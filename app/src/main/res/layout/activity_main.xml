@@ -122,4 +122,10 @@
         android:layout_height="wrap_content"
         android:text="开始录制"
         android:onClick="startRecord"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开始裁剪"
+        android:onClick="startCut"/>
 </LinearLayout>

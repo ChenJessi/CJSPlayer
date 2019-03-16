@@ -37,7 +37,7 @@ public:
 
     void pause();
     void resume();
-
+    void stop();
     void release();
 
     void seek(int64_t secds);
@@ -53,6 +53,8 @@ public:
     int getSampleRate();
 
     void startStopRecord(bool start);
+
+    bool cutAudioPlay(int start_time, int end_time, bool showPcm);
 };
 
 

@@ -12,6 +12,10 @@ CyAudio::CyAudio(CyPlaystatus *cyPlaystatus , int sample_rate, CyCallJava *callJ
     this->callJava = callJava;
     buffer = (uint8_t *)(av_malloc(sample_rate * 2 * 2));
 
+    this->isCut = false;
+    this->end_time = 0;
+    this->showPcm = false;
+
     sampleBuffer = static_cast<SAMPLETYPE *>(malloc(sample_rate * 2 * 2));
     soundTouch = new SoundTouch();
     soundTouch->setSampleRate(sample_rate);
@@ -150,10 +154,10 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
     CyAudio *cyAudio = (CyAudio *)(context);
     // for streaming playback, replace this test by logic to find and fill the next buffer
     if (cyAudio != NULL){
-        int buffersize = cyAudio->getSoundTouchData();
-        if (buffersize > 0){
+        int samplesize = cyAudio->getSoundTouchData();
+        if (samplesize > 0){
 
-            cyAudio->clock += buffersize / ((double)(cyAudio->sample_rate * 2 * 2));
+            cyAudio->clock += samplesize / ((double)(cyAudio->sample_rate * 2 * 2));
 
            if (cyAudio->clock - cyAudio->last_time >= 0.1){
 
@@ -162,12 +166,22 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
                cyAudio->callJava->onCallTimeInfo(CHILD_THREAD, cyAudio->clock, cyAudio->duration);
            }
            if (cyAudio->isRecordPcm){
-               cyAudio->callJava->onCallPcmToAAC(CHILD_THREAD, buffersize * 2 * 2, cyAudio->sampleBuffer);
+               cyAudio->callJava->onCallPcmToAAC(CHILD_THREAD, samplesize * 2 * 2, cyAudio->sampleBuffer);
            }
 
            cyAudio->callJava->onCallValumeDB(CHILD_THREAD,
-           cyAudio->getPCMDB(reinterpret_cast<char *>(cyAudio->sampleBuffer), buffersize * 4));
-            (* cyAudio->pcmBufferQueue)->Enqueue(cyAudio->pcmBufferQueue, (char *)cyAudio->sampleBuffer, buffersize * 2 * 2);
+           cyAudio->getPCMDB(reinterpret_cast<char *>(cyAudio->sampleBuffer), samplesize * 4));
+            (* cyAudio->pcmBufferQueue)->Enqueue(cyAudio->pcmBufferQueue, (char *)cyAudio->sampleBuffer, samplesize * 2 * 2);
+            if (cyAudio->isCut){
+                if (cyAudio->showPcm){
+                    cyAudio->callJava->onCallPcmInfo(samplesize * 2 * 2, cyAudio->sampleBuffer);
+                }
+                if (cyAudio->clock > cyAudio->end_time){
+                    LOGE("裁剪退出...")
+                    cyAudio->isCut = false;
+                    cyAudio->cyPlaystatus->exit = true;
+                }
+            }
         }
     }
 
@@ -330,8 +344,11 @@ void CyAudio::release() {
         free(buffer);
         buffer = NULL;
     }
+    if(out_buffer != NULL) {
+        out_buffer = NULL;
+    }
     if(soundTouch == NULL) {
-        delete soundTouch;
+        delete(soundTouch) ;
         soundTouch = NULL;
     }
     if(sampleBuffer != NULL) {
@@ -426,6 +443,7 @@ int CyAudio::getSoundTouchData() {
             return num;
         }
     }
+    pthread_mutex_unlock(&sound_mutex);
     return 0;
 
 }
@@ -452,14 +470,12 @@ int CyAudio::getPCMDB(char *pcmdata, size_t pcmsize) {
     int db = 0;
     short int pervalue = 0;
     double sum = 0;
-    for(int i = 0; i < pcmsize; i+= 2)
-    {
+    for(int i = 0; i < pcmsize; i+= 2) {
         memcpy(&pervalue, pcmdata+i, 2);
         sum += abs(pervalue);
     }
     sum = sum / (pcmsize / 2);
-    if(sum > 0)
-    {
+    if(sum > 0) {
         db = (int)20.0 *log10(sum);
     }
     return db;

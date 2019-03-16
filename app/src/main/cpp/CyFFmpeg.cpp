@@ -73,6 +73,7 @@ void CyFFmpeg::decodeFFmpegThread() {
                 audio->duration = pFormatCtx->duration / AV_TIME_BASE;
                 audio->time_base = pFormatCtx->streams[i]->time_base;
                 duration = audio->duration;
+                callJava->onCallPcmRate(audio->sample_rate);
             }
         }
     }
@@ -143,7 +144,7 @@ void CyFFmpeg::start() {
             av_usleep(1000 * 100);
             continue;
         }
-        if (audio->queue->getQueueSize() > 10){
+        if (audio->queue->getQueueSize() > 40){
             av_usleep(1000 * 100);
             continue;
         }
@@ -151,7 +152,6 @@ void CyFFmpeg::start() {
         AVPacket *avPacket = av_packet_alloc();
         if (av_read_frame(pFormatCtx, avPacket) == 0) {
             if (avPacket->stream_index == audio->streamIndex) {
-
                 audio->queue->putAvpacket(avPacket);
             } else{
                 av_packet_free(&avPacket);
@@ -219,6 +219,9 @@ void CyFFmpeg::release() {
     if (audio != NULL){
         audio->clock = 0;
         audio->last_time = 0;
+        audio->isCut = false;
+        audio->end_time = 0;
+        audio->showPcm = false;
         audio->release();
         delete(audio);
         audio = NULL;
@@ -294,6 +297,23 @@ void CyFFmpeg::startStopRecord(bool start) {
     if (audio != NULL){
         audio->startStopRecord(start);
     }
+}
+
+void CyFFmpeg::stop() {
+    if (audio != NULL){
+        audio->stop();
+    }
+}
+
+bool CyFFmpeg::cutAudioPlay(int start_time, int end_time, bool showPcm) {
+    if (start_time >= 0 && end_time <= duration && start_time < end_time){
+        audio->isCut = true;
+        audio->end_time = end_time;
+        audio->showPcm = showPcm;
+        seek(start_time);
+        return true;
+    }
+    return false;
 }
 
 

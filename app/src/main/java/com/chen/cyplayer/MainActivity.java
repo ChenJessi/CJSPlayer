@@ -15,6 +15,7 @@ import com.chen.cyplayer.enums.MuteEnum;
 import com.chen.cyplayer.listener.CyOnCompleteListener;
 import com.chen.cyplayer.listener.CyOnLoadListener;
 import com.chen.cyplayer.listener.CyOnParparedListener;
+import com.chen.cyplayer.listener.CyOnPcmInfoListener;
 import com.chen.cyplayer.listener.CyOnTimeInfoListener;
 import com.chen.cyplayer.listener.CyOnValumeDBListener;
 import com.chen.cyplayer.log.MyLog;
@@ -32,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar seekSeek;
     private boolean isSeekBar = false;
     private int position;
+
+    private boolean isCut = false;
+//    https://res.exexm.com/cw_145225549855002
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,17 +53,23 @@ public class MainActivity extends AppCompatActivity {
             public void onParpared() {
                 boolean b = Looper.getMainLooper() == Looper.myLooper();
                 MyLog.d("准备好了，可以开始播放声音了！  "+b);
-                cyPlayer.start();
+
+                if (isCut){
+                    isCut = false;
+                    cyPlayer.cutAudioPlay(20,40 );
+                }else {
+                    cyPlayer.start();
+                }
+
             }
         });
         cyPlayer.setCyOnLoadListener(new CyOnLoadListener() {
             @Override
             public void onLoad(boolean load) {
-                boolean b = Looper.getMainLooper() == Looper.myLooper();
                 if (load){
-                    MyLog.d("加载中...  "+b);
+                    MyLog.d("加载中...  ");
                 }else {
-                    MyLog.d("播放中...  "+b);
+                    MyLog.d("播放中...  ");
                 }
             }
         });
@@ -79,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete() {
                 MyLog.d("播放完成");
+                cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
             }
         });
 
@@ -127,12 +138,23 @@ public class MainActivity extends AppCompatActivity {
 //                MyLog.d("dbvalue : " + db);
             }
         });
+
+        cyPlayer.setCyOnPcmInfoListener(new CyOnPcmInfoListener() {
+            @Override
+            public void onPcmInfo(int samplesize, byte[] buffer) {
+//                MyLog.d("samplesize: "+samplesize +"  buffer"+buffer);
+            }
+
+            @Override
+            public void onPcmRate(int samplerate, int bit, int channels) {
+
+            }
+        });
     }
 
     public void begin(View view) {
         cyPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
         cyPlayer.parpared();
-
 
     }
 
@@ -186,5 +208,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void startRecord(View view) {
         cyPlayer.startRecord(new File("/mnt/sdcard/tencent/QQfile_recv/test1.aac"));
+    }
+
+    public void startCut(View view) {
+        isCut = true;
+        cyPlayer.cutAudioPlay(20,40 );
     }
 }

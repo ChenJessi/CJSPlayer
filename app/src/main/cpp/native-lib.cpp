@@ -73,7 +73,6 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1pause(JNIEnv *env, jobject instance) {
 }extern "C"
 JNIEXPORT void JNICALL
 Java_com_chen_cyplayer_player_CyPlayer_n_1resume(JNIEnv *env, jobject instance) {
-
     // TODO
     if (fFmpeg != NULL){
         fFmpeg->resume();
@@ -86,11 +85,11 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1stop(JNIEnv *env, jobject instance) {
     if (!nexit){
         return;
     }
-
     jclass clz = env->GetObjectClass(instance);
     jmethodID jmid_next = env->GetMethodID(clz, "onCallNext","()V");
     nexit = false;
     if (fFmpeg != NULL){
+
         fFmpeg->release();
         delete(fFmpeg);
         LOGD("fFmpeg 释放")
@@ -107,7 +106,6 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1stop(JNIEnv *env, jobject instance) {
         }
     }
     nexit = true;
-    LOGD("下一首")
     env->CallVoidMethod(instance, jmid_next);
 }
 
@@ -179,4 +177,14 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1startstoprecord(JNIEnv *env, jobject i
     if (fFmpeg != NULL){
         fFmpeg->startStopRecord(start);
     }
+}extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_chen_cyplayer_player_CyPlayer_n_1cutaudioplay(JNIEnv *env, jobject instance,
+                                                       jint start_time, jint end_time,
+                                                       jboolean showPcm) {
+    // TODO
+    if (fFmpeg != NULL){
+        return fFmpeg->cutAudioPlay(start_time, end_time, showPcm);
+    }
+    return false;
 }

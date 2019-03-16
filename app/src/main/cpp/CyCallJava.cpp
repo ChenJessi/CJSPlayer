@@ -26,6 +26,8 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     jmid_complete = env->GetMethodID(jlz,"onCallComplete","()V");
     jmid_valumeDB = env->GetMethodID(jlz,"onCallValumeDB","(I)V");
     jmid_pcmtoaac = env->GetMethodID(jlz, "encodecPcmToAAc", "(I[B)V");
+    jmid_pcminfo = env->GetMethodID(jlz, "onCallPcmInfo", "(I[B)V");
+    jmid_pcmrate = env->GetMethodID(jlz, "onCallPcmRate", "(I)V");
 }
 
 void CyCallJava::onCallParpared(int type) {
@@ -124,7 +126,7 @@ void CyCallJava::onCallValumeDB(int type, int db) {
         JNIEnv *jniEnv;
         if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
             if (LOG_DEBUG) {
-                LOGE("call onCallTimeInfo worng!");
+                LOGE("call onCallValumeDB worng!");
             }
             return;
         }
@@ -147,7 +149,7 @@ void CyCallJava::onCallPcmToAAC(int type, int size, void *buffer) {
         JNIEnv *jniEnv;
         if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
             if(LOG_DEBUG) {
-                LOGE("call onCallComplete worng");
+                LOGE("call onCallPcmToAAC worng");
             }
             return;
         }
@@ -160,5 +162,38 @@ void CyCallJava::onCallPcmToAAC(int type, int size, void *buffer) {
 
         javaVM->DetachCurrentThread();
     }
+}
+
+void CyCallJava::onCallPcmInfo(int size, void *buffer) {
+    JNIEnv *jniEnv;
+    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if(LOG_DEBUG) {
+            LOGE("call onCallPcmInfo worng");
+        }
+        return;
+    }
+    jbyteArray jbuffer = jniEnv->NewByteArray(size);
+    jniEnv->SetByteArrayRegion(jbuffer, 0, size, static_cast<const jbyte *>(buffer));
+
+    jniEnv->CallVoidMethod(jobj, jmid_pcminfo, size, jbuffer);
+
+    jniEnv->DeleteLocalRef(jbuffer);
+
+    javaVM->DetachCurrentThread();
+}
+
+void CyCallJava::onCallPcmRate(int samplerate) {
+    JNIEnv *jniEnv;
+    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK)
+    {
+        if(LOG_DEBUG)
+        {
+            LOGE("call onCallPcmRate worng");
+        }
+        return;
+    }
+    jniEnv->CallVoidMethod(jobj, jmid_pcmrate, samplerate);
+
+    javaVM->DetachCurrentThread();
 }
 

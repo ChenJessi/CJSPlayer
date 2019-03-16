@@ -79,6 +79,10 @@ public:
 
     bool isRecordPcm = false;
     bool readFrameFinished = true;
+
+    bool isCut = false;
+    int end_time = 0;
+    bool showPcm = false;
 public:
     CyAudio(CyPlaystatus *cyPlaystatus, int sample_rate ,CyCallJava *callJava);
     ~CyAudio();

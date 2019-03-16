@@ -15,6 +15,7 @@ import com.chen.cyplayer.listener.CyOnErrorListener;
 import com.chen.cyplayer.listener.CyOnLoadListener;
 import com.chen.cyplayer.listener.CyOnParparedListener;
 import com.chen.cyplayer.listener.CyOnPauseResumeListener;
+import com.chen.cyplayer.listener.CyOnPcmInfoListener;
 import com.chen.cyplayer.listener.CyOnRecordTimeListener;
 import com.chen.cyplayer.listener.CyOnTimeInfoListener;
 import com.chen.cyplayer.listener.CyOnValumeDBListener;
@@ -56,6 +57,7 @@ public class CyPlayer {
     private float pitch = 1.0f;
     private float speed = 1.0f;
     private boolean initmediacodec = false;
+    private boolean isCut = false;
 
     private CyOnParparedListener cyOnParparedListener;
     private CyOnLoadListener cyOnLoadListener;
@@ -65,6 +67,7 @@ public class CyPlayer {
     private CyOnCompleteListener cyOnCompleteListener;
     private CyOnValumeDBListener cyOnValumeDBListener;
     private CyOnRecordTimeListener cyOnRecordTimeListener;
+    private CyOnPcmInfoListener cyOnPcmInfoListener;
 
     private CyPlayer() {}
 
@@ -118,6 +121,10 @@ public class CyPlayer {
         this.cyOnRecordTimeListener = cyOnRecordTimeListener;
     }
 
+    public void setCyOnPcmInfoListener(CyOnPcmInfoListener cyOnPcmInfoListener) {
+        this.cyOnPcmInfoListener = cyOnPcmInfoListener;
+    }
+
     public void parpared(){
         if (TextUtils.isEmpty(source)){
             MyLog.d("source not be empty!");
@@ -164,6 +171,7 @@ public class CyPlayer {
     public void stop(){
         timeInfoBean = null;
         duration = -1;
+        stopRecord();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -239,22 +247,32 @@ public class CyPlayer {
     public void resumeRecord(){
         n_startstoprecord(true);
     }
+
+    public void cutAudioPlay(int start_time, int end_time){
+        boolean showPcm = cyOnPcmInfoListener != null;
+        if (n_cutaudioplay(start_time, end_time, showPcm)){
+            start();
+        }else {
+            stop();
+            onCallError(2001, "cutaudio params is wrong");
+        }
+    }
     /**
      * c++回调java的方法
      */
-    public void onCallParpared(){
+    private void onCallParpared(){
         if (cyOnParparedListener != null){
             cyOnParparedListener.onParpared();
         }
     }
 
-    public void onCallLoad(boolean load){
+    private void onCallLoad(boolean load){
         if (cyOnLoadListener != null){
             cyOnLoadListener.onLoad(load);
         }
     }
 
-    public void onCallTimeInfo(int currentTime, int totalTime){
+    private void onCallTimeInfo(int currentTime, int totalTime){
         if (cyOnTimeInfoListener != null){
             if (timeInfoBean == null){
                 timeInfoBean = new CyTimeInfoBean();
@@ -269,34 +287,44 @@ public class CyPlayer {
         }
     }
 
-    public void onCallError(int code, String msg){
+    private void onCallError(int code, String msg){
         stop();
         if (cyOnErrorListener != null){
             cyOnErrorListener.onError(code, msg);
         }
     }
 
-    public void onCallComplete(){
+    private void onCallComplete(){
         stop();
         if (cyOnCompleteListener != null){
             cyOnCompleteListener.onComplete();
         }
     }
 
-    public void onCallNext(){
+    private void onCallNext(){
         if (playNext){
             playNext = false;
             parpared();
         }
     }
 
-    public void onCallValumeDB(int db){
+    private void onCallValumeDB(int db){
         if (cyOnValumeDBListener != null){
             cyOnValumeDBListener.onDbValue(db);
         }
     }
 
+    private void onCallPcmInfo(int samplesize, byte[] buffer){
+        if (cyOnPcmInfoListener != null){
+            cyOnPcmInfoListener.onPcmInfo(samplesize, buffer);
+        }
+    }
 
+    private void onCallPcmRate(int samplerate){
+        if (cyOnPcmInfoListener != null){
+            cyOnPcmInfoListener.onPcmRate(samplerate, 16, 2);
+        }
+    }
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -326,6 +354,7 @@ public class CyPlayer {
     private native void n_speed(float speed);
     private native int n_samplerate();
     private native void n_startstoprecord(boolean start);
+    private native boolean n_cutaudioplay(int start_time, int end_time ,boolean showPcm);
 
 
     /**
