@@ -89,7 +89,6 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1stop(JNIEnv *env, jobject instance) {
     jmethodID jmid_next = env->GetMethodID(clz, "onCallNext","()V");
     nexit = false;
     if (fFmpeg != NULL){
-
         fFmpeg->release();
         delete(fFmpeg);
         LOGD("fFmpeg 释放")

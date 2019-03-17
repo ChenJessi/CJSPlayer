@@ -4,8 +4,9 @@
 #include "CyPlaystatus.h"
 #include "CyQueue.h"
 #include "CyCallJava.h"
-
 #include "SoundTouch.h"
+#include "CyPcmBean.h"
+#include "CyBufferQueue.h"
 extern "C"{
 #include "libavcodec/avcodec.h"
 #import <libswresample/swresample.h>
@@ -47,6 +48,7 @@ public:
     int volumePercent = 50;
     int mute = 2;
 
+    pthread_mutex_t sles_mutex;
     //引擎接口
     SLObjectItf  engineObject = NULL;
     SLEngineItf  engineItf = NULL;
@@ -83,6 +85,10 @@ public:
     bool isCut = false;
     int end_time = 0;
     bool showPcm = false;
+
+    pthread_t pcmCallBackThread;
+    CyBufferQueue *bufferQueue = NULL;
+    int defaultPcmSize = 4096;
 public:
     CyAudio(CyPlaystatus *cyPlaystatus, int sample_rate ,CyCallJava *callJava);
     ~CyAudio();

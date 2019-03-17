@@ -49,9 +49,7 @@ public class MainActivity extends AppCompatActivity {
         cyPlayer.setCyOnPreparedListener(new CyOnPreparedListener() {
             @Override
             public void onPrepared() {
-                boolean b = Looper.getMainLooper() == Looper.myLooper();
-                MyLog.d("准备好了，可以开始播放声音了！  "+b);
-
+                MyLog.d("准备好了，可以开始播放声音了！  ");
                 if (isCut){
                     isCut = false;
                     cyPlayer.cutAudioPlay(20,40 );
@@ -87,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete() {
                 MyLog.d("播放完成");
-                cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
+//                cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
             }
         });
 
@@ -116,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 cyPlayer.setVolume(progress);
                 tvVolum.setText("音量:" + cyPlayer.getVolumePercent()+"");
-                MyLog.d("volmue: "+cyPlayer.getVolumePercent());
+//                MyLog.d("volmue: "+cyPlayer.getVolumePercent());
             }
 
             @Override
@@ -211,5 +209,17 @@ public class MainActivity extends AppCompatActivity {
     public void startCut(View view) {
         isCut = true;
         cyPlayer.cutAudioPlay(20,40 );
+    }
+
+    public void stopRecord(View view) {
+        cyPlayer.stopRecord();
+    }
+
+    public void pauseRecord(View view) {
+        cyPlayer.pauseRecord();
+    }
+
+    public void resumeRcord(View view) {
+        cyPlayer.resumeRcord();
     }
 }

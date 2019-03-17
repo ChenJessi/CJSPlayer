@@ -63,6 +63,7 @@ void CyFFmpeg::decodeFFmpegThread() {
         pthread_mutex_unlock(&init_mutex);
         return;
     }
+
     //获取音频流
     for (int i = 0; i < pFormatCtx->nb_streams; i++) {
         if (pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {

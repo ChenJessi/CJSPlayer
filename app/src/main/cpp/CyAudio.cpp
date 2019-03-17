@@ -7,14 +7,15 @@
 
 CyAudio::CyAudio(CyPlaystatus *cyPlaystatus , int sample_rate, CyCallJava *callJava) {
     this->cyPlaystatus = cyPlaystatus;
-    queue = new CyQueue(cyPlaystatus);
     this->sample_rate = sample_rate;
     this->callJava = callJava;
-    buffer = (uint8_t *)(av_malloc(sample_rate * 2 * 2));
-
     this->isCut = false;
     this->end_time = 0;
     this->showPcm = false;
+
+    queue = new CyQueue(cyPlaystatus);
+    bufferQueue = new CyBufferQueue(cyPlaystatus);
+    buffer = (uint8_t *)(av_malloc(sample_rate * 2 * 2));
 
     sampleBuffer = static_cast<SAMPLETYPE *>(malloc(sample_rate * 2 * 2));
     soundTouch = new SoundTouch();
@@ -24,10 +25,12 @@ CyAudio::CyAudio(CyPlaystatus *cyPlaystatus , int sample_rate, CyCallJava *callJ
     soundTouch->setTempo(speed);
 
     pthread_mutex_init(&sound_mutex, NULL);
+    pthread_mutex_init(&sles_mutex, NULL);
 }
 
 CyAudio::~CyAudio() {
     pthread_mutex_destroy(&sound_mutex);
+    pthread_mutex_destroy(&sles_mutex);
 }
 
 void *decodPlay(void *data){
@@ -37,10 +40,55 @@ void *decodPlay(void *data){
 
     pthread_exit(&cyAudio->thread_play);
 }
-
+void *pcmCallBack(void *data){
+    CyAudio *audio = static_cast<CyAudio *>(data);
+    while (audio->cyPlaystatus != NULL && !audio->cyPlaystatus->exit){
+        CyPcmBean *pcmBean = NULL;
+        audio->bufferQueue->getBuffer(&pcmBean);
+        if (pcmBean == NULL){
+            continue;
+        }
+       if (pcmBean->buffersize <= audio->defaultPcmSize){
+           if (audio->isRecordPcm){
+               audio->callJava->onCallPcmToAAC(CHILD_THREAD, pcmBean->buffersize, audio->buffer);
+           }
+           if (audio->showPcm){
+               audio->callJava->onCallPcmInfo(pcmBean->buffersize, audio->buffer);
+           }
+       } else{
+           int pack_num = pcmBean->buffersize / audio->defaultPcmSize;
+           int pack_sub = pcmBean->buffersize % audio->defaultPcmSize;
+           for (int i = 0; i < pack_num; i++) {
+               char *bf = static_cast<char *>(malloc(audio->defaultPcmSize));
+               memcpy(bf, pcmBean->buffer + i * audio->defaultPcmSize, audio->defaultPcmSize);
+               if (audio->isRecordPcm){
+                   audio->callJava->onCallPcmToAAC(CHILD_THREAD, audio->defaultPcmSize, bf);
+               }
+               if (audio->showPcm){
+                   audio->callJava->onCallPcmInfo(pcmBean->buffersize, audio->buffer);
+               }
+               free(bf);
+               bf = NULL;
+           }
+           if (pack_sub > 0){
+               char *bf = static_cast<char *>(malloc(pack_sub));
+               memcpy(bf, pcmBean->buffer + pack_num * audio->defaultPcmSize, pack_sub);
+               if (audio->isRecordPcm){
+                   audio->callJava->onCallPcmToAAC(CHILD_THREAD, pack_sub, bf);
+               }
+               if (audio->showPcm){
+                   audio->callJava->onCallPcmInfo(pack_sub, bf);
+               }
+           }
+       }
+       delete(pcmBean);
+       pcmBean = NULL;
+    }
+    pthread_exit(&audio->pcmCallBackThread);
+};
 void CyAudio::play() {
     pthread_create(&thread_play, NULL, decodPlay, this);
-
+    pthread_create(&pcmCallBackThread, NULL, pcmCallBack , this);
 }
 
 int CyAudio::resampleAudio(void **pcmbuf) {
@@ -155,30 +203,22 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
     // for streaming playback, replace this test by logic to find and fill the next buffer
     if (cyAudio != NULL){
         int samplesize = cyAudio->getSoundTouchData();
+
         if (samplesize > 0){
-
             cyAudio->clock += samplesize / ((double)(cyAudio->sample_rate * 2 * 2));
-
            if (cyAudio->clock - cyAudio->last_time >= 0.1){
 
                cyAudio->last_time = cyAudio->clock;
 
                cyAudio->callJava->onCallTimeInfo(CHILD_THREAD, cyAudio->clock, cyAudio->duration);
            }
-           if (cyAudio->isRecordPcm){
-               cyAudio->callJava->onCallPcmToAAC(CHILD_THREAD, samplesize * 2 * 2, cyAudio->sampleBuffer);
-           }
-
+            cyAudio->bufferQueue->putBuffer(cyAudio->sampleBuffer,samplesize * 4);
            cyAudio->callJava->onCallValumeDB(CHILD_THREAD,
            cyAudio->getPCMDB(reinterpret_cast<char *>(cyAudio->sampleBuffer), samplesize * 4));
             (* cyAudio->pcmBufferQueue)->Enqueue(cyAudio->pcmBufferQueue, (char *)cyAudio->sampleBuffer, samplesize * 2 * 2);
             if (cyAudio->isCut){
-                if (cyAudio->showPcm){
-                    cyAudio->callJava->onCallPcmInfo(samplesize * 2 * 2, cyAudio->sampleBuffer);
-                }
                 if (cyAudio->clock > cyAudio->end_time){
                     LOGE("裁剪退出...")
-                    cyAudio->isCut = false;
                     cyAudio->cyPlaystatus->exit = true;
                 }
             }
@@ -192,7 +232,11 @@ void CyAudio::initOpenSLES() {
     SLresult  result;
     //d第一步---------------------------------------------------------
     //创建引擎对象
-    slCreateEngine(&engineObject,0,0,0,0,0);
+    result = slCreateEngine(&engineObject,0,0,0,0,0);
+    if (result != SL_RESULT_SUCCESS) {
+        LOGE("slCreateEngine failed.");
+        return ;
+    }
     (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE);
     (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineItf);
 
@@ -201,8 +245,16 @@ void CyAudio::initOpenSLES() {
     const SLInterfaceID mids[1] = {SL_IID_ENVIRONMENTALREVERB};
     const SLboolean mreq[1] = {SL_BOOLEAN_FALSE};
     result = (*engineItf)->CreateOutputMix(engineItf, &outputMixObject, 1, mids, mreq);
+    if (result != SL_RESULT_SUCCESS) {
+        LOGE("CreateOutputMix failed.");
+        return ;
+    }
     (void)result;
     result = (*outputMixObject)->Realize(outputMixObject,SL_BOOLEAN_FALSE);
+    if (result != SL_RESULT_SUCCESS) {
+        LOGE("Realize OutputMix failed.");
+        return ;
+    }
     (void)result;
     result = (*outputMixObject)->GetInterface(outputMixObject, SL_IID_ENVIRONMENTALREVERB, &outputMixEnvironmentalReverb);
     if (SL_RESULT_SUCCESS == result){
@@ -228,25 +280,37 @@ void CyAudio::initOpenSLES() {
     const SLInterfaceID  ids[4] = {SL_IID_BUFFERQUEUE , SL_IID_MUTESOLO , SL_IID_PLAYBACKRATE ,SL_IID_VOLUME};
     const SLboolean req[4] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
 
-    (*engineItf)->CreateAudioPlayer(engineItf,  &pcmPlayerObject, &slDataSource, &audioSnk, 4, ids, req);
+    result = (*engineItf)->CreateAudioPlayer(engineItf,  &pcmPlayerObject, &slDataSource, &audioSnk, 4, ids, req);
+    if (result != SL_RESULT_SUCCESS) {
+        LOGE("CreateAudioPlayer failed.");
+        return ;
+    }
     //初始化播放器
-    (*pcmPlayerObject)->Realize(pcmPlayerObject, SL_BOOLEAN_FALSE);
-
+    result = (*pcmPlayerObject)->Realize(pcmPlayerObject, SL_BOOLEAN_FALSE);
+    if (result != SL_RESULT_SUCCESS) {
+        LOGE("Realize Player failed.");
+        return ;
+    }
     //得到接口后调用 获取player接口
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_PLAY, &pcmPlayerPlay);
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_VOLUME, &pcmVolumePlay);
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_MUTESOLO, &pcmMutePlay);
     //第四步----------------------------------------------------------------------------------------
     //创建缓冲区和回调函数
-    (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_BUFFERQUEUE ,&pcmBufferQueue);
+    result = (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_BUFFERQUEUE ,&pcmBufferQueue);
+    if (result != SL_RESULT_SUCCESS) {
+        LOGE("create BufferQueue failed.");
+//        return ;
+    }
     setVolume(volumePercent);
     setMute(mute);
     //缓冲接口回调
     (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue, pcmBufferCallBack,this);
     //设置播放状态
     (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,  SL_PLAYSTATE_PLAYING);
-
+    LOGD("初始化完成");
     pcmBufferCallBack(pcmBufferQueue, this);
+
 }
 
 SLuint32 CyAudio::getCurrentSampleRateForOpensles(int sample_rate) {
@@ -317,6 +381,14 @@ void CyAudio::stop() {
 }
 
 void CyAudio::release() {
+
+    if(bufferQueue != NULL) {
+        bufferQueue->noticeThread();
+        pthread_join(pcmCallBackThread, NULL);
+        bufferQueue->release();
+        delete(bufferQueue);
+        bufferQueue = NULL;
+    }
     if (queue != NULL){
         delete(queue);
         queue = NULL;

@@ -232,6 +232,12 @@ public class CyPlayer {
         }
     }
 
+
+    public void resumeRcord()
+    {
+        n_startstoprecord(true);
+        MyLog.d("继续录制");
+    }
     public void stopRecord(){
         if (initmediacodec){
             n_startstoprecord(false);
@@ -381,6 +387,7 @@ public class CyPlayer {
                 MyLog.d("craete encoder wrong");
                 return;
             }
+            recordTime = 0;
             encoder.configure(encoderFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
             outputStream = new FileOutputStream(outfile);
             encoder.start();
@@ -396,13 +403,10 @@ public class CyPlayer {
                 cyOnRecordTimeListener.onRecordTime((int)recordTime);
             }
             int inputBufferindex = encoder.dequeueInputBuffer(0);
-            MyLog.d("size : " + size + "  buffer : " + buffer +"   inputBufferindex : "+inputBufferindex);
             if(inputBufferindex >= 0) {
                 ByteBuffer byteBuffer = encoder.getInputBuffer(inputBufferindex);
-                MyLog.d("buffer : "+byteBuffer);
                 byteBuffer.clear();
                 byteBuffer.put(buffer);
-
                 encoder.queueInputBuffer(inputBufferindex, 0, size, 0, 0);
             }
             int index = encoder.dequeueOutputBuffer(info, 0);
@@ -412,7 +416,7 @@ public class CyPlayer {
                     perpcmsize = info.size + 7;
                     outByteBuffer = new byte[perpcmsize];
 
-                    ByteBuffer byteBuffer = encoder.getOutputBuffers()[index];
+                    ByteBuffer byteBuffer = encoder.getOutputBuffer(index);
                     byteBuffer.position(info.offset);
                     byteBuffer.limit(info.offset + info.size);
 
