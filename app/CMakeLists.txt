@@ -16,6 +16,7 @@ add_library( # Sets the name of the library.
         src/main/cpp/CyPlaystatus.cpp
         src/main/cpp/CyPcmBean.cpp
         src/main/cpp/CyBufferQueue.cpp
+        src/main/cpp/CyVideo.cpp
 
         src/main/cpp/soundtouch/SoundTouch/AAFilter.cpp
         src/main/cpp/soundtouch/SoundTouch/FIFOSampleBuffer.cpp

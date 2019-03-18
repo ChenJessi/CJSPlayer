@@ -64,7 +64,7 @@ void CyFFmpeg::decodeFFmpegThread() {
         return;
     }
 
-    //获取音频流
+    //获取音视频流
     for (int i = 0; i < pFormatCtx->nb_streams; i++) {
         if (pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (audio == NULL) {
@@ -76,50 +76,20 @@ void CyFFmpeg::decodeFFmpegThread() {
                 duration = audio->duration;
                 callJava->onCallPcmRate(audio->sample_rate);
             }
+        } else if (pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO){
+            if (video == NULL){
+                video = new CyVideo(playstatus, callJava);
+                video->streamIndex = i;
+                video->codecpar = pFormatCtx->streams[i]->codecpar;
+                video->time_base = pFormatCtx->streams[i]->time_base;
+            }
         }
     }
-    //获取解码器
-    AVCodec *dec = avcodec_find_decoder(audio->codecpar->codec_id);
-    if (!dec) {
-        if (LOG_DEBUG) {
-            LOGE("can not find decoder!")
-        }
-        callJava->onCallError(CHILD_THREAD, 1003, "can not find decoder");
-        exit = true;
-        pthread_mutex_unlock(&init_mutex);
-        return;
+    if (audio != NULL){
+        getCodecContext(audio->codecpar , &audio->avCodecContext);
     }
-
-    //创建解码器上下文
-    audio->avCodecContext = avcodec_alloc_context3(dec);
-    if (!audio->avCodecContext) {
-        if (LOG_DEBUG) {
-            LOGE("can not alloc new decodecctx")
-        }
-        callJava->onCallError(CHILD_THREAD, 1004, "can not alloc new decodecctx");
-        exit = true;
-        pthread_mutex_unlock(&init_mutex);
-        return;
-    }
-    //将codecpar复制到解码器上下文
-    if (avcodec_parameters_to_context(audio->avCodecContext, audio->codecpar) < 0) {
-        if (LOG_DEBUG) {
-            LOGE("can not fill decodecctx!");
-        }
-        callJava->onCallError(CHILD_THREAD, 1005, "an not fill decodecctx");
-        exit = true;
-        pthread_mutex_unlock(&init_mutex);
-        return;
-    }
-    //打开解码器
-    if (avcodec_open2(audio->avCodecContext, dec, 0) != 0) {
-        if (LOG_DEBUG) {
-            LOGE("can not open audio strames!")
-        }
-        callJava->onCallError(CHILD_THREAD, 1006, "can not open audio !");
-        exit = true;
-        pthread_mutex_unlock(&init_mutex);
-        return;
+    if (video != NULL){
+        getCodecContext(audio->codecpar , &audio->avCodecContext);
     }
     if (callJava != NULL){
         if (playstatus != NULL && !playstatus->exit){
@@ -139,7 +109,7 @@ void CyFFmpeg::start() {
         return;
     }
     audio->play();
-
+    video->play();
     while (playstatus != NULL && !playstatus->exit) {
         if (playstatus->seek){
             av_usleep(1000 * 100);
@@ -154,7 +124,9 @@ void CyFFmpeg::start() {
         if (av_read_frame(pFormatCtx, avPacket) == 0) {
             if (avPacket->stream_index == audio->streamIndex) {
                 audio->queue->putAvpacket(avPacket);
-            } else{
+            } else if (avPacket->stream_index == video->streamIndex){
+                video->queue->putAvpacket(avPacket);
+            }else{
                 av_packet_free(&avPacket);
                 av_free(avPacket);
             }
@@ -243,6 +215,54 @@ void CyFFmpeg::release() {
     pthread_mutex_unlock(&init_mutex);
 }
 
+int CyFFmpeg::getCodecContext(AVCodecParameters *codecpar, AVCodecContext **avCodecContext) {
+    //获取解码器
+    AVCodec *dec = avcodec_find_decoder(audio->codecpar->codec_id);
+    if (!dec) {
+        if (LOG_DEBUG) {
+            LOGE("can not find decoder!")
+        }
+        callJava->onCallError(CHILD_THREAD, 1003, "can not find decoder");
+        exit = true;
+        pthread_mutex_unlock(&init_mutex);
+        return -1;
+    }
+
+    //创建解码器上下文
+    audio->avCodecContext = avcodec_alloc_context3(dec);
+    if (!audio->avCodecContext) {
+        if (LOG_DEBUG) {
+            LOGE("can not alloc new decodecctx")
+        }
+        callJava->onCallError(CHILD_THREAD, 1004, "can not alloc new decodecctx");
+        exit = true;
+        pthread_mutex_unlock(&init_mutex);
+        return -1;
+    }
+    //将codecpar复制到解码器上下文
+    if (avcodec_parameters_to_context(audio->avCodecContext, audio->codecpar) < 0) {
+        if (LOG_DEBUG) {
+            LOGE("can not fill decodecctx!");
+        }
+        callJava->onCallError(CHILD_THREAD, 1005, "an not fill decodecctx");
+        exit = true;
+        pthread_mutex_unlock(&init_mutex);
+        return -1;
+    }
+    //打开解码器
+    if (avcodec_open2(audio->avCodecContext, dec, 0) != 0) {
+        if (LOG_DEBUG) {
+            LOGE("can not open audio strames!")
+        }
+        callJava->onCallError(CHILD_THREAD, 1006, "can not open audio !");
+        exit = true;
+        pthread_mutex_unlock(&init_mutex);
+        return -1;
+    }
+    return 0;
+}
+
+
 void CyFFmpeg::seek(int64_t secds) {
     if (duration <= 0){
         return;
@@ -316,5 +336,6 @@ bool CyFFmpeg::cutAudioPlay(int start_time, int end_time, bool showPcm) {
     }
     return false;
 }
+
 
 

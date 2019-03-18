@@ -149,7 +149,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void begin(View view) {
-        cyPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
+//        cyPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
+        //        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/几个你_薛之谦.aac");
+//        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/test2.aac.aac");
+        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/test2.mp4");
         cyPlayer.prepared();
 
     }

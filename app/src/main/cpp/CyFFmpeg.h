@@ -4,6 +4,7 @@
 #include "pthread.h"
 #include "CyCallJava.h"
 #include "CyAudio.h"
+#include "CyVideo.h"
 
 #ifndef CYPLAYER_CYFFMPEG_H
 #define CYPLAYER_CYFFMPEG_H
@@ -20,6 +21,7 @@ public:
     pthread_t decodeThread;
     AVFormatContext *pFormatCtx = NULL;
     CyAudio *audio = NULL;
+    CyVideo *video = NULL;
     CyPlaystatus *playstatus = NULL;
 
     pthread_mutex_t init_mutex;
@@ -40,6 +42,9 @@ public:
     void stop();
     void release();
 
+    int getCodecContext(AVCodecParameters *codecpar , AVCodecContext **avCodecContext);
+
+
     void seek(int64_t secds);
 
     void setVolume(int percent);
@@ -55,6 +60,8 @@ public:
     void startStopRecord(bool start);
 
     bool cutAudioPlay(int start_time, int end_time, bool showPcm);
+
+
 };
 
 
