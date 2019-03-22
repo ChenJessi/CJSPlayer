@@ -48,7 +48,6 @@ public:
     int volumePercent = 50;
     int mute = 2;
 
-    pthread_mutex_t sles_mutex;
     //引擎接口
     SLObjectItf  engineObject = NULL;
     SLEngineItf  engineItf = NULL;
@@ -78,6 +77,7 @@ public:
     float speed = 1.0f;
 
     pthread_mutex_t sound_mutex;
+    pthread_mutex_t samples_mutex;
 
     bool isRecordPcm = false;
     bool readFrameFinished = true;

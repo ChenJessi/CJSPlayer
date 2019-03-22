@@ -89,7 +89,7 @@ void CyFFmpeg::decodeFFmpegThread() {
         getCodecContext(audio->codecpar , &audio->avCodecContext);
     }
     if (video != NULL){
-        getCodecContext(audio->codecpar , &audio->avCodecContext);
+        getCodecContext(video->codecpar , &video->avCodecContext);
     }
     if (callJava != NULL){
         if (playstatus != NULL && !playstatus->exit){
@@ -106,6 +106,9 @@ void CyFFmpeg::decodeFFmpegThread() {
  */
 void CyFFmpeg::start() {
     if (audio == NULL) {
+        return;
+    }
+    if (video == NULL) {
         return;
     }
     audio->play();
@@ -199,6 +202,14 @@ void CyFFmpeg::release() {
         delete(audio);
         audio = NULL;
     }
+    if(LOG_DEBUG) {
+        LOGE("释放 video");
+    }
+    if(video != NULL) {
+        video->release();
+        delete(video);
+        video = NULL;
+    }
    if (pFormatCtx != NULL){
        avformat_close_input(&pFormatCtx);
        avformat_free_context(pFormatCtx);
@@ -217,7 +228,7 @@ void CyFFmpeg::release() {
 
 int CyFFmpeg::getCodecContext(AVCodecParameters *codecpar, AVCodecContext **avCodecContext) {
     //获取解码器
-    AVCodec *dec = avcodec_find_decoder(audio->codecpar->codec_id);
+    AVCodec *dec = avcodec_find_decoder(codecpar->codec_id);
     if (!dec) {
         if (LOG_DEBUG) {
             LOGE("can not find decoder!")
@@ -229,8 +240,8 @@ int CyFFmpeg::getCodecContext(AVCodecParameters *codecpar, AVCodecContext **avCo
     }
 
     //创建解码器上下文
-    audio->avCodecContext = avcodec_alloc_context3(dec);
-    if (!audio->avCodecContext) {
+    *avCodecContext = avcodec_alloc_context3(dec);
+    if (!*avCodecContext) {
         if (LOG_DEBUG) {
             LOGE("can not alloc new decodecctx")
         }
@@ -240,7 +251,7 @@ int CyFFmpeg::getCodecContext(AVCodecParameters *codecpar, AVCodecContext **avCo
         return -1;
     }
     //将codecpar复制到解码器上下文
-    if (avcodec_parameters_to_context(audio->avCodecContext, audio->codecpar) < 0) {
+    if (avcodec_parameters_to_context(*avCodecContext, codecpar) < 0) {
         if (LOG_DEBUG) {
             LOGE("can not fill decodecctx!");
         }
@@ -250,7 +261,7 @@ int CyFFmpeg::getCodecContext(AVCodecParameters *codecpar, AVCodecContext **avCo
         return -1;
     }
     //打开解码器
-    if (avcodec_open2(audio->avCodecContext, dec, 0) != 0) {
+    if (avcodec_open2(*avCodecContext, dec, 0) != 0) {
         if (LOG_DEBUG) {
             LOGE("can not open audio strames!")
         }

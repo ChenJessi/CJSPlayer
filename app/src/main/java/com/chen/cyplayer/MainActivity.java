@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -149,10 +150,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void begin(View view) {
-//        cyPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
-        //        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/几个你_薛之谦.aac");
-//        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/test2.aac.aac");
-        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/test2.mp4");
+
+//        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/几个你_薛之谦.aac");
+        cyPlayer.setSource("/mnt/sdcard/tencent/QQfile_recv/测试.mp4");
         cyPlayer.prepared();
 
     }
@@ -170,7 +170,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void next(View view) {
-        cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
+        for (int i = 0; i  <= 1000; i++){
+            Log.e("music", "next : "+i);
+            try {
+                Thread.sleep(1000);
+                Log.e("music", "next : "+i);
+                cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+//        cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
     }
 
     public void right(View view) {

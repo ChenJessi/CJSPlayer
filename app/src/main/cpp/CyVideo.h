@@ -10,6 +10,7 @@
 extern "C"
 {
 #include <libavcodec/avcodec.h>
+#include "libavutil/time.h"
 };
 
 class CyVideo {
@@ -28,6 +29,8 @@ public:
     CyVideo( CyPlaystatus *playstatus, CyCallJava *callJava);
    ~CyVideo();
     void play();
+    void release();
+
 };
 
 

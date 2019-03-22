@@ -25,12 +25,12 @@ CyAudio::CyAudio(CyPlaystatus *cyPlaystatus , int sample_rate, CyCallJava *callJ
     soundTouch->setTempo(speed);
 
     pthread_mutex_init(&sound_mutex, NULL);
-    pthread_mutex_init(&sles_mutex, NULL);
+    pthread_mutex_init(&samples_mutex, NULL);
 }
 
 CyAudio::~CyAudio() {
     pthread_mutex_destroy(&sound_mutex);
-    pthread_mutex_destroy(&sles_mutex);
+    pthread_mutex_destroy(&samples_mutex);
 }
 
 void *decodPlay(void *data){
@@ -493,8 +493,9 @@ int CyAudio::getSoundTouchData() {
                     sampleBuffer[i] = (out_buffer[i * 2] | ((out_buffer[i * 2 + 1]) << 8));
                 }
                 soundTouch->putSamples(sampleBuffer, nb);
+                pthread_mutex_lock(&samples_mutex);
                 num = soundTouch->receiveSamples(sampleBuffer, data_size/4);
-
+                pthread_mutex_unlock(&samples_mutex);
             } else{
                 soundTouch->flush();
             }
@@ -504,7 +505,9 @@ int CyAudio::getSoundTouchData() {
             continue;
         } else{
             if (out_buffer == NULL){
+                pthread_mutex_lock(&samples_mutex);
                 num = soundTouch->receiveSamples(sampleBuffer, data_size / 4);
+                pthread_mutex_unlock(&samples_mutex);
                 if (num == 0){
                     finished = true;
                     continue;
