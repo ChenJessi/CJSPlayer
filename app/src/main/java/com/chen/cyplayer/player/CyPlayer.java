@@ -329,6 +329,11 @@ public class CyPlayer {
             cyOnPcmInfoListener.onPcmRate(samplerate, 16, 2);
         }
     }
+    private void onCallRenderYUV(int width, int height, byte[] y, byte[] u, byte[] v) {
+        MyLog.d("获取到视频的yuv数据");
+    }
+
+
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {

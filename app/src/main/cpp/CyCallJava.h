@@ -25,6 +25,7 @@ public:
     jmethodID jmid_pcmtoaac;
     jmethodID jmid_pcminfo;
     jmethodID jmid_pcmrate;
+    jmethodID jmid_renderyuv;
 
 public:
     CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
@@ -39,6 +40,8 @@ public:
     void onCallPcmToAAC(int type, int size, void *buffer);
     void onCallPcmInfo(int size, void *buffer);
     void onCallPcmRate(int samplerate);
+
+    void onCallRenderYUV(int width, int height, uint8_t *fy, uint8_t *fu, uint8_t *fv);
 };
 
 

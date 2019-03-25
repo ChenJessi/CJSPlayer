@@ -28,6 +28,7 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     jmid_pcmtoaac = env->GetMethodID(jlz, "encodecPcmToAAc", "(I[B)V");
     jmid_pcminfo = env->GetMethodID(jlz, "onCallPcmInfo", "(I[B)V");
     jmid_pcmrate = env->GetMethodID(jlz, "onCallPcmRate", "(I)V");
+    jmid_renderyuv = env->GetMethodID(jlz, "onCallRenderYUV", "(II[B[B[B)V");
 }
 
 void CyCallJava::onCallPrepared(int type) {
@@ -184,15 +185,35 @@ void CyCallJava::onCallPcmInfo(int size, void *buffer) {
 
 void CyCallJava::onCallPcmRate(int samplerate) {
     JNIEnv *jniEnv;
-    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK)
-    {
-        if(LOG_DEBUG)
-        {
+    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if(LOG_DEBUG) {
             LOGE("call onCallPcmRate worng");
         }
         return;
     }
     jniEnv->CallVoidMethod(jobj, jmid_pcmrate, samplerate);
+
+    javaVM->DetachCurrentThread();
+}
+
+void CyCallJava::onCallRenderYUV(int width, int height, uint8_t *fy, uint8_t *fu, uint8_t *fv) {
+    JNIEnv *jniEnv;
+    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if(LOG_DEBUG) {
+            LOGE("call onCallRenderYUV worng");
+        }
+        return;
+    }
+    jbyteArray y = jniEnv->NewByteArray(width * height);
+    jniEnv->SetByteArrayRegion(y, 0, width * height, reinterpret_cast<const jbyte *>(fy));
+    jbyteArray u = jniEnv->NewByteArray(width * height / 4);
+    jniEnv->SetByteArrayRegion(u, 0, width * height / 4, reinterpret_cast<const jbyte *>(fu));
+    jbyteArray v = jniEnv->NewByteArray(width * height / 4);
+    jniEnv->SetByteArrayRegion(v, 0, width * height / 4, reinterpret_cast<const jbyte *>(fv));
+    jniEnv->CallVoidMethod(jobj, jmid_renderyuv, width, height, y, u, v);
+    jniEnv->DeleteLocalRef(y);
+    jniEnv->DeleteLocalRef(u);
+    jniEnv->DeleteLocalRef(v);
 
     javaVM->DetachCurrentThread();
 }
