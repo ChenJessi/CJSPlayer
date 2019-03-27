@@ -19,6 +19,7 @@ import com.chen.cyplayer.listener.CyOnRecordTimeListener;
 import com.chen.cyplayer.listener.CyOnTimeInfoListener;
 import com.chen.cyplayer.listener.CyOnValumeDBListener;
 import com.chen.cyplayer.log.MyLog;
+import com.chen.cyplayer.opengl.CyGLSurfaceView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,6 +67,8 @@ public class CyPlayer {
     private CyOnValumeDBListener cyOnValumeDBListener;
     private CyOnRecordTimeListener cyOnRecordTimeListener;
     private CyOnPcmInfoListener cyOnPcmInfoListener;
+
+    private CyGLSurfaceView cyGLSurfaceView;
 
     private CyPlayer() {}
 
@@ -121,6 +124,10 @@ public class CyPlayer {
 
     public void setCyOnPcmInfoListener(CyOnPcmInfoListener cyOnPcmInfoListener) {
         this.cyOnPcmInfoListener = cyOnPcmInfoListener;
+    }
+
+    public void setCyGLSurfaceView(CyGLSurfaceView cyGLSurfaceView) {
+        this.cyGLSurfaceView = cyGLSurfaceView;
     }
 
     public void prepared(){
@@ -331,6 +338,9 @@ public class CyPlayer {
     }
     private void onCallRenderYUV(int width, int height, byte[] y, byte[] u, byte[] v) {
         MyLog.d("获取到视频的yuv数据");
+        if (cyGLSurfaceView != null){
+            cyGLSurfaceView.setYUVData(width, height, y, u, v);
+        }
     }
 
 

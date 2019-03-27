@@ -108,9 +108,9 @@ void CyFFmpeg::start() {
     if (audio == NULL) {
         return;
     }
-    if (video == NULL) {
-        return;
-    }
+//    if (video == NULL) {
+////        return;
+////    }
     audio->play();
     video->play();
     while (playstatus != NULL && !playstatus->exit) {
@@ -118,10 +118,10 @@ void CyFFmpeg::start() {
             av_usleep(1000 * 100);
             continue;
         }
-        if (audio->queue->getQueueSize() > 40){
-            av_usleep(1000 * 100);
-            continue;
-        }
+//        if (audio->queue->getQueueSize() > 40){
+//            av_usleep(1000 * 100);
+//            continue;
+//        }
         //读取音频帧
         AVPacket *avPacket = av_packet_alloc();
         if (av_read_frame(pFormatCtx, avPacket) == 0) {
@@ -172,7 +172,7 @@ CyFFmpeg::~CyFFmpeg() {
 
 void CyFFmpeg::release() {
     if (LOG_DEBUG){
-        LOGE("start release ffmpeg")
+        LOGD("start release ffmpeg")
     }
     playstatus->exit = true;
     pthread_mutex_lock(&init_mutex);
@@ -189,7 +189,7 @@ void CyFFmpeg::release() {
     }
 
     if (LOG_DEBUG){
-        LOGE("release audio;")
+        LOGD("release audio;")
     }
 
     if (audio != NULL){
@@ -203,7 +203,7 @@ void CyFFmpeg::release() {
         audio = NULL;
     }
     if(LOG_DEBUG) {
-        LOGE("释放 video");
+        LOGD("释放 video");
     }
     if(video != NULL) {
         video->release();

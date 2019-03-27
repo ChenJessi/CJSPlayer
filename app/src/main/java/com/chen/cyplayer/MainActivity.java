@@ -18,6 +18,7 @@ import com.chen.cyplayer.listener.CyOnPcmInfoListener;
 import com.chen.cyplayer.listener.CyOnTimeInfoListener;
 import com.chen.cyplayer.listener.CyOnValumeDBListener;
 import com.chen.cyplayer.log.MyLog;
+import com.chen.cyplayer.opengl.CyGLSurfaceView;
 import com.chen.cyplayer.player.CyPlayer;
 import com.chen.cyplayer.util.CyTimeUtil;
 
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private int position;
 
     private boolean isCut = false;
+    private CyGLSurfaceView surfaceView;
 //    https://res.exexm.com/cw_145225549855002
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +45,9 @@ public class MainActivity extends AppCompatActivity {
         tvVolum = findViewById(R.id.tvVolum);
         seekVolume = findViewById(R.id.seekVolume);
         seekSeek = findViewById(R.id.seekSeek);
+        surfaceView = findViewById(R.id.surfaceView);
         cyPlayer = CyPlayer.getInstance();
-
+        cyPlayer.setCyGLSurfaceView(surfaceView);
         seekVolume.setProgress(cyPlayer.getVolumePercent());
         tvVolum.setText("音量:" + cyPlayer.getVolumePercent()+"");
         cyPlayer.setCyOnPreparedListener(new CyOnPreparedListener() {
@@ -57,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     cyPlayer.start();
                 }
-
             }
         });
         cyPlayer.setCyOnLoadListener(new CyOnLoadListener() {
