@@ -9,15 +9,20 @@ CyVideo::CyVideo(CyPlaystatus *playstatus, CyCallJava *callJava) {
     this->playstatus = playstatus;
     this->callJava = callJava;
     queue = new CyQueue(playstatus);
+    pthread_mutex_init(&codecMutex, NULL);
 }
 
 CyVideo::~CyVideo() {
-
+    pthread_mutex_destroy(&codecMutex);
 }
 void * playVideo(void *data){
     CyVideo *video = static_cast<CyVideo *>(data);
     while (video->playstatus != NULL && !video->playstatus->exit){
         if (video->playstatus->seek){
+            av_usleep(1000 * 100);
+            continue;
+        }
+        if (video->playstatus->pause){
             av_usleep(1000 * 100);
             continue;
         }
@@ -41,11 +46,13 @@ void * playVideo(void *data){
             avPacket = NULL;
             continue;
         }
+        pthread_mutex_lock(&video->codecMutex);
         int ret = avcodec_send_packet(video->avCodecContext, avPacket);
         if ( ret != 0){
             av_packet_free(&avPacket);
             av_free(avPacket);
             avPacket = NULL;
+            pthread_mutex_unlock(&video->codecMutex);
             continue;
         }
 
@@ -57,10 +64,13 @@ void * playVideo(void *data){
             av_packet_free(&avPacket);
             av_free(avPacket);
             avPacket = NULL;
+            pthread_mutex_unlock(&video->codecMutex);
             continue;
         }
         if (avFrame->format == AV_PIX_FMT_YUV420P){
             LOGE("当前视频是YUV420P格式");
+            double diff = video->getFrameDiffTime(avFrame);
+            av_usleep(video->getDelayTime(diff) * 1000000);
             video->callJava->onCallRenderYUV(
                     video->avCodecContext->width,
                     video->avCodecContext->height,
@@ -96,6 +106,7 @@ void * playVideo(void *data){
                 av_frame_free(&pFrameYUV420P);
                 av_free(pFrameYUV420P);
                 pFrameYUV420P = NULL;
+                pthread_mutex_unlock(&video->codecMutex);
                 continue;
             }
             sws_scale(
@@ -107,6 +118,8 @@ void * playVideo(void *data){
                     pFrameYUV420P->data,
                     pFrameYUV420P->linesize);
             //渲染
+            double diff = video->getFrameDiffTime(avFrame);
+            av_usleep(video->getDelayTime(diff) * 1000000);
             video->callJava->onCallRenderYUV(
                     video->avCodecContext->width,
                     video->avCodecContext->height,
@@ -124,6 +137,7 @@ void * playVideo(void *data){
         av_packet_free(&avPacket);
         av_free(avPacket);
         avPacket = NULL;
+        pthread_mutex_unlock(&video->codecMutex);
     }
     pthread_exit(&video->pthread_play);
 }
@@ -138,9 +152,11 @@ void CyVideo::release() {
         queue = NULL;
     }
     if(avCodecContext != NULL) {
+        pthread_mutex_lock(&codecMutex);
         avcodec_close(avCodecContext);
         avcodec_free_context(&avCodecContext);
         avCodecContext = NULL;
+        pthread_mutex_unlock(&codecMutex);
     }
     if(playstatus != NULL) {
         playstatus = NULL;
@@ -148,4 +164,46 @@ void CyVideo::release() {
     if(callJava != NULL) {
         callJava = NULL;
     }
+}
+
+double CyVideo::getFrameDiffTime(AVFrame *avFrame) {
+    double pts = av_frame_get_best_effort_timestamp(avFrame);
+    if (pts == AV_NOPTS_VALUE){
+        pts = 0;
+    }
+    pts *= av_q2d(time_base);
+    if (pts > 0){
+        clock = pts;
+    }
+    double diff = audio->clock - clock;
+    return diff;
+}
+
+double CyVideo::getDelayTime(double diff) {
+    if (diff > 0.003){
+        delayTime = delayTime * 2 / 3;
+        if(delayTime < defaultDelayTime / 2) {
+            delayTime = defaultDelayTime * 2 / 3;
+        } else if(delayTime > defaultDelayTime * 2) {
+            delayTime = defaultDelayTime * 2;
+        }
+    } else if (diff < - 0.003){
+        delayTime = delayTime * 3 / 2;
+        if(delayTime < defaultDelayTime / 2) {
+            delayTime = defaultDelayTime * 2 / 3;
+        } else if(delayTime > defaultDelayTime * 2) {
+            delayTime = defaultDelayTime * 2;
+        }
+    } else if (diff == 0.003){
+
+    }
+    if (diff >= 0.5){
+        delayTime = 0;
+    } else if (diff <= -0.5){
+        delayTime = defaultDelayTime * 2;
+    }
+    if (fabs(diff) >= 10){
+        delayTime = defaultDelayTime;
+    }
+    return delayTime;
 }

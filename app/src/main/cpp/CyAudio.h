@@ -89,6 +89,8 @@ public:
     pthread_t pcmCallBackThread;
     CyBufferQueue *bufferQueue = NULL;
     int defaultPcmSize = 4096;
+
+    pthread_mutex_t codecMutex;
 public:
     CyAudio(CyPlaystatus *cyPlaystatus, int sample_rate ,CyCallJava *callJava);
     ~CyAudio();

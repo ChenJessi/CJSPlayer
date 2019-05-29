@@ -6,6 +6,7 @@
 #define CYPLAYER_CYVIDEO_H
 #include "CyQueue.h"
 #include "CyCallJava.h"
+#include "CyAudio.h"
 
 extern "C"
 {
@@ -24,8 +25,13 @@ public:
     CyPlaystatus *playstatus = NULL;
     CyCallJava *callJava = NULL;
     AVRational time_base;
-
     pthread_t  pthread_play;
+
+    CyAudio *audio = NULL;
+    double clock = 0;
+    double delayTime = 0;
+    double defaultDelayTime = 0.04;
+    pthread_mutex_t codecMutex;
 
 public:
     CyVideo( CyPlaystatus *playstatus, CyCallJava *callJava);
@@ -33,6 +39,8 @@ public:
     void play();
     void release();
 
+    double getFrameDiffTime(AVFrame *avFrame);
+    double getDelayTime(double diff);
 };
 
 

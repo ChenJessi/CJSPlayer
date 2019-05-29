@@ -108,43 +108,48 @@ void CyFFmpeg::start() {
     if (audio == NULL) {
         return;
     }
-//    if (video == NULL) {
-////        return;
-////    }
+    if (video == NULL) {
+        return;
+    }
+    video->audio = audio;
     audio->play();
     video->play();
     while (playstatus != NULL && !playstatus->exit) {
-        if (playstatus->seek){
+        if(playstatus->seek) {
             av_usleep(1000 * 100);
             continue;
         }
-//        if (audio->queue->getQueueSize() > 40){
-//            av_usleep(1000 * 100);
-//            continue;
-//        }
+        if(audio->queue->getQueueSize() > 40) {
+            av_usleep(1000 * 100);
+            continue;
+        }
         //读取音频帧
         AVPacket *avPacket = av_packet_alloc();
-        if (av_read_frame(pFormatCtx, avPacket) == 0) {
-            if (avPacket->stream_index == audio->streamIndex) {
+        if(av_read_frame(pFormatCtx, avPacket) == 0) {
+            if(avPacket->stream_index == audio->streamIndex) {
                 audio->queue->putAvpacket(avPacket);
-            } else if (avPacket->stream_index == video->streamIndex){
+            } else if(avPacket->stream_index == video->streamIndex) {
                 video->queue->putAvpacket(avPacket);
-            }else{
+            } else{
                 av_packet_free(&avPacket);
                 av_free(avPacket);
             }
-        } else {
+        } else{
             av_packet_free(&avPacket);
             av_free(avPacket);
-            while (playstatus != NULL && !playstatus->exit){
-                if (audio->queue->getQueueSize() > 0){
+            while(playstatus != NULL && !playstatus->exit) {
+                if(audio->queue->getQueueSize() > 0) {
                     av_usleep(1000 * 100);
                     continue;
                 } else{
-                    playstatus->exit = true;
+                    if(!playstatus->seek) {
+                        av_usleep(1000 * 100);
+                        playstatus->exit = true;
+                    }
                     break;
                 }
             }
+            break;
         }
     }
     if (callJava != NULL){
@@ -154,12 +159,18 @@ void CyFFmpeg::start() {
 }
 
 void CyFFmpeg::pause() {
+    if (playstatus != NULL){
+        playstatus->pause = true;
+    }
     if (audio != NULL){
         audio->pause();
     }
 }
 
 void CyFFmpeg::resume() {
+    if (playstatus != NULL){
+        playstatus->pause = false;
+    }
     if (audio != NULL){
         audio->resume();
     }
@@ -279,18 +290,27 @@ void CyFFmpeg::seek(int64_t secds) {
         return;
     }
     if (secds >= 0 && secds <= duration){
+        playstatus->seek =  true;
+        pthread_mutex_lock(&seek_mutex);
+        int64_t  rel = secds * AV_TIME_BASE;
+        avformat_seek_file(pFormatCtx, -1 , INT64_MIN, rel, INT64_MAX, 0);
         if (audio != NULL){
-            playstatus->seek =  true;
             audio->queue->clearAvpacket();
             audio->clock = 0;
             audio->last_time = 0;
-            pthread_mutex_lock(&seek_mutex);
-            int64_t  rel = secds * AV_TIME_BASE;
+            pthread_mutex_lock(&audio->codecMutex);
             avcodec_flush_buffers(audio->avCodecContext);
-            avformat_seek_file(pFormatCtx, -1 , INT64_MIN, rel, INT64_MAX, 0);
-            pthread_mutex_unlock(&seek_mutex);
-            playstatus->seek = false;
+            pthread_mutex_unlock(&audio->codecMutex);
         }
+        if (video != NULL){
+            video->queue->clearAvpacket();
+            video->clock = 0;
+            pthread_mutex_lock(&video->codecMutex);
+            avcodec_flush_buffers(video->avCodecContext);
+            pthread_mutex_unlock(&video->codecMutex);
+        }
+        pthread_mutex_unlock(&seek_mutex);
+        playstatus->seek = false;
     }
 }
 

@@ -26,11 +26,13 @@ CyAudio::CyAudio(CyPlaystatus *cyPlaystatus , int sample_rate, CyCallJava *callJ
 
     pthread_mutex_init(&sound_mutex, NULL);
     pthread_mutex_init(&samples_mutex, NULL);
+    pthread_mutex_init(&codecMutex, NULL);
 }
 
 CyAudio::~CyAudio() {
     pthread_mutex_destroy(&sound_mutex);
     pthread_mutex_destroy(&samples_mutex);
+    pthread_mutex_destroy(&codecMutex);
 }
 
 void *decodPlay(void *data){
@@ -111,12 +113,14 @@ int CyAudio::resampleAudio(void **pcmbuf) {
                 callJava->onCallLoad(CHILD_THREAD, false);
             }
         }
+        pthread_mutex_lock(&codecMutex);
         if (readFrameFinished){
             avPacket = av_packet_alloc();
             if (queue->getAvpacket(avPacket) != 0){
                 av_packet_free(&avPacket);
                 av_free(avPacket);
                 avPacket = NULL;
+                pthread_mutex_unlock(&codecMutex);
                 continue;
             }
             ret = avcodec_send_packet(avCodecContext, avPacket);
@@ -124,6 +128,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
                 av_packet_free(&avPacket);
                 av_free(avPacket);
                 avPacket = NULL;
+                pthread_mutex_unlock(&codecMutex);
                 continue;
             }
         }
@@ -157,6 +162,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
                 avFrame = NULL;
                 swr_free(&swr_ctx);
                 readFrameFinished = true;
+                pthread_mutex_unlock(&codecMutex);
                 continue;
             }
             nb = swr_convert(
@@ -182,6 +188,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
             av_free(avFrame);
             avFrame = NULL;
             swr_free(&swr_ctx);
+            pthread_mutex_unlock(&codecMutex);
             break;
         } else{
             readFrameFinished = true;
@@ -191,6 +198,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
             av_frame_free(&avFrame);
             av_free(avFrame);
             avFrame = NULL;
+            pthread_mutex_unlock(&codecMutex);
             continue;
         }
     }
