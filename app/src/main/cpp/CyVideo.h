@@ -8,6 +8,8 @@
 #include "CyCallJava.h"
 #include "CyAudio.h"
 
+#define CODEC_YUV 0
+#define CODEC_MEDIACODEC 1
 extern "C"
 {
 #include <libswscale/swscale.h>
@@ -32,6 +34,9 @@ public:
     double delayTime = 0;
     double defaultDelayTime = 0.04;
     pthread_mutex_t codecMutex;
+
+    int codectype = CODEC_YUV;
+    AVBSFContext *abs_ctx = NULL;
 
 public:
     CyVideo( CyPlaystatus *playstatus, CyCallJava *callJava);

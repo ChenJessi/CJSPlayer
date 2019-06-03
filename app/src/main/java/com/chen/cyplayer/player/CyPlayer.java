@@ -20,6 +20,7 @@ import com.chen.cyplayer.listener.CyOnTimeInfoListener;
 import com.chen.cyplayer.listener.CyOnValumeDBListener;
 import com.chen.cyplayer.log.MyLog;
 import com.chen.cyplayer.opengl.CyGLSurfaceView;
+import com.chen.cyplayer.util.CyVideoSupportUitl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -342,9 +343,11 @@ public class CyPlayer {
             cyGLSurfaceView.setYUVData(width, height, y, u, v);
         }
     }
+    private boolean onCallIsSupportMediaCodec(String ffcodename){
+        return CyVideoSupportUitl.isSupportCodec(ffcodename);
+    };
 
-
-    Handler handler = new Handler(){
+    private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);

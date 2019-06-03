@@ -29,6 +29,7 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     jmid_pcminfo = env->GetMethodID(jlz, "onCallPcmInfo", "(I[B)V");
     jmid_pcmrate = env->GetMethodID(jlz, "onCallPcmRate", "(I)V");
     jmid_renderyuv = env->GetMethodID(jlz, "onCallRenderYUV", "(II[B[B[B)V");
+    jmid_supportvideo = env->GetMethodID(jlz, "onCallIsSupportMediaCodec", "(Ljava/lang/String;)Z");
 }
 
 void CyCallJava::onCallPrepared(int type) {
@@ -216,5 +217,22 @@ void CyCallJava::onCallRenderYUV(int width, int height, uint8_t *fy, uint8_t *fu
     jniEnv->DeleteLocalRef(v);
 
     javaVM->DetachCurrentThread();
+}
+
+bool CyCallJava::onCallSupportVideo(const char *ffcodename) {
+    bool support = false;
+    JNIEnv *jniEnv;
+    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if (LOG_DEBUG) {
+            LOGE("call onCallSupportVideo worng");
+        }
+        return support;
+    }
+
+    jstring jname = jniEnv->NewStringUTF(ffcodename);
+    support = jniEnv->CallBooleanMethod(jobj,jmid_supportvideo,jname);
+    jniEnv->DeleteLocalRef(jname);
+    javaVM->DetachCurrentThread();
+    return support;
 }
 

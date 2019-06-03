@@ -2,6 +2,7 @@
 // Created by CHEN on 2019/2/26.
 //
 #include <jni.h>
+#include <cstddef>
 #include "androidLog.h"
 #ifndef CYPLAYER_CYCALLJAVA_H
 #define CYPLAYER_CYCALLJAVA_H
@@ -12,6 +13,7 @@
 
 class CyCallJava {
 public:
+
     _JavaVM *javaVM = NULL;
     JNIEnv *jniEnv = NULL;
     jobject jobj;
@@ -26,6 +28,7 @@ public:
     jmethodID jmid_pcminfo;
     jmethodID jmid_pcmrate;
     jmethodID jmid_renderyuv;
+    jmethodID jmid_supportvideo;
 
 public:
     CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
@@ -40,8 +43,9 @@ public:
     void onCallPcmToAAC(int type, int size, void *buffer);
     void onCallPcmInfo(int size, void *buffer);
     void onCallPcmRate(int samplerate);
-
     void onCallRenderYUV(int width, int height, uint8_t *fy, uint8_t *fu, uint8_t *fv);
+
+    bool onCallSupportVideo(const char *ffcodename);
 };
 
 

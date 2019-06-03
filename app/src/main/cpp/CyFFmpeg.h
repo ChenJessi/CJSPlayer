@@ -29,6 +29,8 @@ public:
 
     pthread_mutex_t seek_mutex;
     int duration = 0;
+    bool supportMediacodec = false;
+    const AVBitStreamFilter *bsFilter = NULL;
 public:
     CyFFmpeg( CyPlaystatus *playstatus, CyCallJava *callJava, const char *url);
     ~CyFFmpeg();
@@ -36,32 +38,20 @@ public:
     void prepared();
     void decodeFFmpegThread();
     void start();
-
     void pause();
     void resume();
     void stop();
     void release();
-
     int getCodecContext(AVCodecParameters *codecpar , AVCodecContext **avCodecContext);
 
-
     void seek(int64_t secds);
-
     void setVolume(int percent);
-
     void setMute(int mute);
-
     void setPitch(float pitch);
-
     void setSpeed(float speed);
-
     int getSampleRate();
-
     void startStopRecord(bool start);
-
     bool cutAudioPlay(int start_time, int end_time, bool showPcm);
-
-
 };
 
 

@@ -111,7 +111,44 @@ void CyFFmpeg::start() {
     if (video == NULL) {
         return;
     }
+    supportMediacodec = false;
     video->audio = audio;
+    const  char* codename = video->avCodecContext->codec->name;
+
+    if (supportMediacodec = callJava->onCallSupportVideo(codename)){
+        LOGE("当前设备支持硬解码当前视频")
+        //找到相应解码器的过滤器
+        if (strcasecmp(codename,"h264") == 0){
+            bsFilter = av_bsf_get_by_name("h264_mp4toannexb");
+        } else if (strcasecmp(codename,"h265")){
+            bsFilter = av_bsf_get_by_name("hevc_mp4toannexb");
+        }
+        if (bsFilter == NULL){
+            goto end;
+        }
+        if (av_bsf_alloc(bsFilter,&video->abs_ctx) != 0){
+            supportMediacodec = false;
+            goto end;
+        }
+        //添加解码器属性
+        if (avcodec_parameters_copy(video->abs_ctx->par_in,video->codecpar) < 0 ){
+            supportMediacodec = false;
+            av_bsf_free(&video->abs_ctx);
+            video->abs_ctx = NULL;
+            goto end;
+        }
+        if (av_bsf_init(video->abs_ctx) != 0){
+            supportMediacodec = false;
+            av_bsf_free(&video->abs_ctx);
+            video->abs_ctx = NULL;
+            goto end;
+        }
+        video->abs_ctx->time_base_in = video->time_base;
+    }
+    end:
+    if (supportMediacodec){
+        video->codectype = CODEC_MEDIACODEC;
+    }
     audio->play();
     video->play();
     while (playstatus != NULL && !playstatus->exit) {
