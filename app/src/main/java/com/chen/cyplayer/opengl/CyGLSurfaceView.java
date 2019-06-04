@@ -13,7 +13,7 @@ public class CyGLSurfaceView extends GLSurfaceView {
     private CyRender cyRender;
 
     public CyGLSurfaceView(Context context) {
-        super(context);
+        this(context,null);
     }
 
     public CyGLSurfaceView(Context context, AttributeSet attrs) {
