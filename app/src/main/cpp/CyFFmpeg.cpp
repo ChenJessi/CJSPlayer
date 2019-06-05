@@ -148,6 +148,15 @@ void CyFFmpeg::start() {
     end:
     if (supportMediacodec){
         video->codectype = CODEC_MEDIACODEC;
+        video->callJava->onCallInitMediaCodec(
+                codename,
+                video->avCodecContext->width,
+                video->avCodecContext->height,
+                video->avCodecContext->extradata_size,
+                video->avCodecContext->extradata_size,
+                video->avCodecContext->extradata,
+                video->avCodecContext->extradata
+                );
     }
     audio->play();
     video->play();

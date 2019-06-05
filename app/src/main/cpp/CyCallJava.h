@@ -29,6 +29,8 @@ public:
     jmethodID jmid_pcmrate;
     jmethodID jmid_renderyuv;
     jmethodID jmid_supportvideo;
+    jmethodID jmid_decodeAVPacket;
+    jmethodID jmid_initMediaCodec;
 
 public:
     CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
@@ -46,6 +48,9 @@ public:
     void onCallRenderYUV(int width, int height, uint8_t *fy, uint8_t *fu, uint8_t *fv);
 
     bool onCallSupportVideo(const char *ffcodename);
+
+    void onCallInitMediaCodec(const char *mime, int width, int height, int csd0_size, int csd1_size, uint8_t *csd_0, uint8_t *csd_1);
+    void onCallDecodeAVPacket(int datasize, uint8_t *data);
 };
 
 

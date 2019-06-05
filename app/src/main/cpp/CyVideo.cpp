@@ -49,7 +49,7 @@ void *playVideo(void *data) {
         }
         if (video->codectype == CODEC_MEDIACODEC) {
             LOGE("硬解码视频");
-            if (av_bsf_send_packet(video->abs_ctx, avPacket)){
+            if (av_bsf_send_packet(video->abs_ctx, avPacket) != 0){
                 av_packet_free(&avPacket);
                 av_free(avPacket);
                 avPacket = NULL;
@@ -57,6 +57,12 @@ void *playVideo(void *data) {
             }
             while (av_bsf_receive_packet(video->abs_ctx,avPacket) == 0){
                 LOGE("开始解码")
+                double  diff = video->getFrameDiffTime(NULL, avPacket);
+                LOGE("diff is %f", diff);
+
+                av_usleep(video->getDelayTime(diff) * 1000000);
+                video->callJava->onCallDecodeAVPacket(avPacket->size, avPacket->data);
+
                 av_packet_free(&avPacket);
                 av_free(avPacket);
                 continue;
@@ -87,7 +93,7 @@ void *playVideo(void *data) {
             }
             if (avFrame->format == AV_PIX_FMT_YUV420P) {
                 LOGE("当前视频是YUV420P格式");
-                double diff = video->getFrameDiffTime(avFrame);
+                double diff = video->getFrameDiffTime(avFrame ,NULL);
                 av_usleep(video->getDelayTime(diff) * 1000000);
                 video->callJava->onCallRenderYUV(
                         video->avCodecContext->width,
@@ -136,7 +142,7 @@ void *playVideo(void *data) {
                         pFrameYUV420P->data,
                         pFrameYUV420P->linesize);
                 //渲染
-                double diff = video->getFrameDiffTime(avFrame);
+                double diff = video->getFrameDiffTime(avFrame, NULL);
                 av_usleep(video->getDelayTime(diff) * 1000000);
                 video->callJava->onCallRenderYUV(
                         video->avCodecContext->width,
@@ -189,8 +195,15 @@ void CyVideo::release() {
     }
 }
 
-double CyVideo::getFrameDiffTime(AVFrame *avFrame) {
-    double pts = av_frame_get_best_effort_timestamp(avFrame);
+
+double CyVideo::getFrameDiffTime(AVFrame *avFrame, AVPacket *avPacket) {
+    double pts = 0;
+    if (avFrame != NULL){
+        pts = av_frame_get_best_effort_timestamp(avFrame);
+    }
+    if (avPacket != NULL){
+        pts = avPacket->pts;
+    }
     if (pts == AV_NOPTS_VALUE) {
         pts = 0;
     }

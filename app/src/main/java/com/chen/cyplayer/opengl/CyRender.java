@@ -1,10 +1,11 @@
 package com.chen.cyplayer.opengl;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
+import android.view.Surface;
 
 import com.chen.cyplayer.R;
 
@@ -20,6 +21,9 @@ import javax.microedition.khronos.opengles.GL10;
  * @email 188669@163.com
  */
 public class CyRender implements GLSurfaceView.Renderer {
+
+    public static final int RENDER_YUV = 1;
+    public static final int RENDER_MEDIACODEC = 2;
 
     private Context context;
     private final float[] vertexData = {
@@ -37,6 +41,8 @@ public class CyRender implements GLSurfaceView.Renderer {
 
     private FloatBuffer vertexBuffer;
     private FloatBuffer textureBuffer;
+    private int renderType = RENDER_YUV;
+    //yuv
     private int program_yuv;
     private int avPosition_yuv;
     private int afPosition_yuv;
@@ -52,6 +58,18 @@ public class CyRender implements GLSurfaceView.Renderer {
     private ByteBuffer u;
     private ByteBuffer v;
 
+    //mediacodec
+    private int program_mediacodec;
+    private int avPosition_mediacodec;
+    private int afPosition_mediacodec;
+    private int samplerOES_mediacodec;
+    private int textureId_mediacodec;
+    private SurfaceTexture surfaceTexture;
+    private Surface surface;
+
+    private OnSurfaceCreateListener onSurfaceCreateListener;
+    private OnRenderListener onRenderListener;
+
     public CyRender(Context context) {
         this.context = context;
         vertexBuffer = ByteBuffer.allocateDirect(vertexData.length * 4)
@@ -64,6 +82,18 @@ public class CyRender implements GLSurfaceView.Renderer {
                 .asFloatBuffer()
                 .put(textureData);
         textureBuffer.position(0);
+    }
+
+    public void setRenderType(int renderType) {
+        this.renderType = renderType;
+    }
+
+    public void setOnSurfaceCreateListener(OnSurfaceCreateListener onSurfaceCreateListener) {
+        this.onSurfaceCreateListener = onSurfaceCreateListener;
+    }
+
+    public void setOnRenderListener(OnRenderListener onRenderListener) {
+        this.onRenderListener = onRenderListener;
     }
 
     @Override
@@ -80,13 +110,17 @@ public class CyRender implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        renderYUV();
+        if (renderType == RENDER_YUV){
+            renderYUV();
+        }else if (renderType == RENDER_MEDIACODEC){
+            renderMediacodec();
+        }
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
     }
 
     private void initRenderYUV() {
         String vertexSource = CyShaderUtil.readRawTxt(context, R.raw.vertex_shader);
-        String fragmentSource = CyShaderUtil.readRawTxt(context, R.raw.fragment_shader);
+        String fragmentSource = CyShaderUtil.readRawTxt(context, R.raw.fragment_yuv);
         program_yuv = CyShaderUtil.createProgram(vertexSource, fragmentSource);
         avPosition_yuv = GLES20.glGetAttribLocation(program_yuv, "av_Position");
         afPosition_yuv = GLES20.glGetAttribLocation(program_yuv, "af_Position");
@@ -148,4 +182,17 @@ public class CyRender implements GLSurfaceView.Renderer {
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         }
     }
+
+    private void renderMediacodec(){
+
+    }
+
+
+    private interface OnSurfaceCreateListener{
+        void onSurfaceCreate(Surface surface);
+    }
+    public interface OnRenderListener{
+        void onRender();
+    }
+
 }

@@ -6,6 +6,8 @@ import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.Surface;
 
 import com.chen.cyplayer.enums.MuteEnum;
 import com.chen.cyplayer.bean.CyTimeInfoBean;
@@ -320,6 +322,7 @@ public class CyPlayer {
         }
     }
 
+
     private void onCallValumeDB(int db){
         if (cyOnValumeDBListener != null){
             cyOnValumeDBListener.onDbValue(db);
@@ -347,6 +350,22 @@ public class CyPlayer {
         return CyVideoSupportUitl.isSupportCodec(ffcodename);
     };
 
+    private void decodeAVPacket(int datasize, byte[] data){
+        if (surface != null && datasize > 0 && data != null){
+            int intputBufferIndex = mediaCodec.dequeueInputBuffer(10);
+            if (intputBufferIndex >= 0){
+                ByteBuffer byteBuffer = mediaCodec.getOutputBuffer(intputBufferIndex);
+                byteBuffer.clear();
+                byteBuffer.put(data);
+                mediaCodec.queueInputBuffer(intputBufferIndex,0, datasize,0, 0);
+                int outputBufferIndex = mediaCodec.dequeueOutputBuffer(info , 10);
+                while (outputBufferIndex >= 0 ){
+                    mediaCodec.releaseOutputBuffer(outputBufferIndex,true);
+                    outputBufferIndex = mediaCodec.dequeueOutputBuffer(info, 10);
+                }
+            }
+        }
+    }
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -384,13 +403,50 @@ public class CyPlayer {
      */
     private MediaFormat encoderFormat = null;
     private MediaCodec encoder = null;
-    private MediaCodec.BufferInfo info = null;
+    private MediaCodec.BufferInfo audioInfo = null;
     private FileOutputStream outputStream = null;
     private int perpcmsize = 0;
     private int aacsamplerate = 4;
     private byte[] outByteBuffer = null;
     private double recordTime = 0;
     private int audioSamplerate = 0;
+    private Surface surface;
+
+    private MediaFormat mediaFormat = null;
+    private MediaCodec mediaCodec = null;
+    private MediaCodec.BufferInfo info = null;
+    /**
+     *
+     * @param codecName
+     * @param width
+     * @param height
+     * @param csd_0
+     * @param csd_1
+     */
+    private void initMediaCodec(String codecName, int width, int height, byte[] csd_0, byte[] csd_1 ){
+        if (surface != null){
+            try {
+                String mime = CyVideoSupportUitl.findCodecName(codecName);
+                mediaFormat = MediaFormat.createVideoFormat(mime,width,height);
+                mediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, width * height);
+                mediaFormat.setByteBuffer("csd-0", ByteBuffer.wrap(csd_0));
+                mediaFormat.setByteBuffer("csd-1", ByteBuffer.wrap(csd_1));
+                MyLog.d(mediaFormat.toString());
+
+                mediaCodec = MediaCodec.createDecoderByType(mime);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }else {
+            if(cyOnErrorListener != null){
+                cyOnErrorListener.onError(2001, "surface is null");
+            }
+        }
+    }
+
+
+
+
 
     private void initMediacodec(int samperate, File outfile){
         try {
@@ -400,7 +456,7 @@ public class CyPlayer {
             encoderFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
             encoderFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 4096);
             encoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_AAC);
-            info = new MediaCodec.BufferInfo();
+            audioInfo = new MediaCodec.BufferInfo();
             if(encoder == null) {
                 MyLog.d("craete encoder wrong");
                 return;
@@ -427,25 +483,25 @@ public class CyPlayer {
                 byteBuffer.put(buffer);
                 encoder.queueInputBuffer(inputBufferindex, 0, size, 0, 0);
             }
-            int index = encoder.dequeueOutputBuffer(info, 0);
+            int index = encoder.dequeueOutputBuffer(audioInfo, 0);
 
             while (index >= 0){
                 try {
-                    perpcmsize = info.size + 7;
+                    perpcmsize = audioInfo.size + 7;
                     outByteBuffer = new byte[perpcmsize];
 
                     ByteBuffer byteBuffer = encoder.getOutputBuffer(index);
-                    byteBuffer.position(info.offset);
-                    byteBuffer.limit(info.offset + info.size);
+                    byteBuffer.position(audioInfo.offset);
+                    byteBuffer.limit(audioInfo.offset + audioInfo.size);
 
                     addADtsHeader(outByteBuffer, perpcmsize, aacsamplerate);
 
-                    byteBuffer.get(outByteBuffer, 7, info.size);
-                    byteBuffer.position(info.offset);
+                    byteBuffer.get(outByteBuffer, 7, audioInfo.size);
+                    byteBuffer.position(audioInfo.offset);
                     outputStream.write(outByteBuffer, 0, perpcmsize);
 
                     encoder.releaseOutputBuffer(index, false);
-                    index = encoder.dequeueOutputBuffer(info, 0);
+                    index = encoder.dequeueOutputBuffer(audioInfo, 0);
                     outByteBuffer = null;
                     MyLog.d("编码...");
                 } catch (IOException e) {
