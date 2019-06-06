@@ -46,7 +46,8 @@ public class MainActivity extends AppCompatActivity {
         seekVolume = findViewById(R.id.seekVolume);
         seekSeek = findViewById(R.id.seekSeek);
         surfaceView = findViewById(R.id.surfaceView);
-        cyPlayer = CyPlayer.getInstance();
+//        cyPlayer = CyPlayer.getInstance();
+        cyPlayer = new CyPlayer();
         cyPlayer.setCyGLSurfaceView(surfaceView);
         seekVolume.setProgress(cyPlayer.getVolumePercent());
         tvVolum.setText("音量:" + cyPlayer.getVolumePercent()+"");
@@ -54,12 +55,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPrepared() {
                 MyLog.d("准备好了，可以开始播放声音了！  ");
-                if (isCut){
-                    isCut = false;
-                    cyPlayer.cutAudioPlay(20,40 );
-                }else {
-                    cyPlayer.start();
-                }
+               cyPlayer.start();
+
             }
         });
         cyPlayer.setCyOnLoadListener(new CyOnLoadListener() {
@@ -75,8 +72,7 @@ public class MainActivity extends AppCompatActivity {
         cyPlayer.setCyOnTimeInfoListener(new CyOnTimeInfoListener() {
             @Override
             public void timeInfo(CyTimeInfoBean timeInfoBean) {
-
-                if (!isSeekBar){
+                if (!isSeekBar && timeInfoBean.getTotalTime() > 0){
                     seekSeek.setProgress(timeInfoBean.getCurrentTime() * 100 / timeInfoBean.getTotalTime()  );
                 }
 

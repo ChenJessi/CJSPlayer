@@ -40,7 +40,7 @@ void *decodPlay(void *data){
 
     cyAudio->initOpenSLES();
 
-    pthread_exit(&cyAudio->thread_play);
+    return 0;
 }
 void *pcmCallBack(void *data){
     CyAudio *audio = static_cast<CyAudio *>(data);
@@ -86,7 +86,7 @@ void *pcmCallBack(void *data){
        delete(pcmBean);
        pcmBean = NULL;
     }
-    pthread_exit(&audio->pcmCallBackThread);
+    return 0;
 };
 void CyAudio::play() {
     pthread_create(&thread_play, NULL, decodPlay, this);
@@ -184,6 +184,9 @@ int CyAudio::resampleAudio(void **pcmbuf) {
 
             *pcmbuf = buffer;
 
+            av_packet_free(&avPacket);
+            av_free(avPacket);
+            avPacket = NULL;
             av_frame_free(&avFrame);
             av_free(avFrame);
             avFrame = NULL;
@@ -210,14 +213,15 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
     CyAudio *cyAudio = (CyAudio *)(context);
     // for streaming playback, replace this test by logic to find and fill the next buffer
     if (cyAudio != NULL){
+        LOGE("samplesize 2clock %f",cyAudio->clock);
         int samplesize = cyAudio->getSoundTouchData();
-
+        LOGE("samplesize 1clock %f",cyAudio->clock);
         if (samplesize > 0){
-            cyAudio->clock += samplesize / ((double)(cyAudio->sample_rate * 2 * 2));
-           if (cyAudio->clock - cyAudio->last_time >= 0.1){
-
+           cyAudio->clock += samplesize / ((double)(cyAudio->sample_rate * 2 * 2));
+            LOGE("samplesize 3clock %f",cyAudio->clock);
+            LOGE("samplesize last_time %f",cyAudio->last_time);
+            if (cyAudio->clock - cyAudio->last_time >= 0.1){
                cyAudio->last_time = cyAudio->clock;
-
                cyAudio->callJava->onCallTimeInfo(CHILD_THREAD, cyAudio->clock, cyAudio->duration);
            }
             cyAudio->bufferQueue->putBuffer(cyAudio->sampleBuffer,samplesize * 4);
@@ -235,8 +239,8 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
 
 };
 
-void CyAudio::initOpenSLES() {
 
+void CyAudio::initOpenSLES() {
     SLresult  result;
     //d第一步---------------------------------------------------------
     //创建引擎对象
@@ -397,6 +401,11 @@ void CyAudio::release() {
         delete(bufferQueue);
         bufferQueue = NULL;
     }
+    if(queue != NULL)
+    {
+        queue->noticeQueue();
+    }
+    pthread_join(thread_play, NULL);
     if (queue != NULL){
         delete(queue);
         queue = NULL;

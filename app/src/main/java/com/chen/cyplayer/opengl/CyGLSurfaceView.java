@@ -22,6 +22,13 @@ public class CyGLSurfaceView extends GLSurfaceView {
         cyRender = new CyRender(context);
         setRenderer(cyRender);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+
+        cyRender.setOnRenderListener(new CyRender.OnRenderListener() {
+            @Override
+            public void onRender() {
+                requestRender();
+            }
+        });
     }
 
     public void setYUVData(int width , int height , byte[] y, byte[] u, byte[] v){
@@ -29,5 +36,9 @@ public class CyGLSurfaceView extends GLSurfaceView {
             cyRender.setYUVRenderData(width, height, y, u, v);
             requestRender();
         }
+    }
+
+    public CyRender getCyRender(){
+        return cyRender;
     }
 }

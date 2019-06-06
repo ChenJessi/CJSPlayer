@@ -8,6 +8,7 @@ CyFFmpeg::CyFFmpeg( CyPlaystatus *playstatus, CyCallJava *callJava, const char *
     this->callJava = callJava;
     this->url = url;
     this->playstatus = playstatus;
+    this->exit = false;
     pthread_mutex_init(&init_mutex, NULL);
     pthread_mutex_init(&seek_mutex, NULL);
 }
@@ -15,7 +16,7 @@ CyFFmpeg::CyFFmpeg( CyPlaystatus *playstatus, CyCallJava *callJava, const char *
 void *decodeFFmpeg(void *data) {
     CyFFmpeg *cyFFmpeg = (CyFFmpeg *) data;
     cyFFmpeg->decodeFFmpegThread();
-    pthread_exit(&cyFFmpeg->decodeThread);
+    return 0;
 }
 
 /**
@@ -232,6 +233,7 @@ void CyFFmpeg::release() {
         LOGD("start release ffmpeg")
     }
     playstatus->exit = true;
+    pthread_join(decodeThread, NULL);
     pthread_mutex_lock(&init_mutex);
     int sleepCount = 0;
     while (!exit){
@@ -250,11 +252,6 @@ void CyFFmpeg::release() {
     }
 
     if (audio != NULL){
-        audio->clock = 0;
-        audio->last_time = 0;
-        audio->isCut = false;
-        audio->end_time = 0;
-        audio->showPcm = false;
         audio->release();
         delete(audio);
         audio = NULL;
@@ -332,10 +329,12 @@ int CyFFmpeg::getCodecContext(AVCodecParameters *codecpar, AVCodecContext **avCo
 
 
 void CyFFmpeg::seek(int64_t secds) {
+    LOGE("seek time %d", secds);
     if (duration <= 0){
         return;
     }
     if (secds >= 0 && secds <= duration){
+        LOGE("seek 成功  %d", duration);
         playstatus->seek =  true;
         pthread_mutex_lock(&seek_mutex);
         int64_t  rel = secds * AV_TIME_BASE;

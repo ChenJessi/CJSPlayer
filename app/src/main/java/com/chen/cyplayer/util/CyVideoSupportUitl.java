@@ -30,10 +30,7 @@ public class CyVideoSupportUitl {
         int count = MediaCodecList.getCodecCount();
         for (int i = 0; i < count; i++) {
             String[] types = MediaCodecList.getCodecInfoAt(i).getSupportedTypes();
-            Log.e("video","type : "+MediaCodecList.getCodecInfoAt(i).getName());
-            Log.e("video","type : "+MediaCodecList.getCodecInfoAt(i).toString());
             for (int j = 0; j < types.length; j++) {
-                Log.e("video","type : "+types[j]);
                 if (types[j].equals(findCodecName(ffcodename))){
                     supportvideo = true;
                     break;

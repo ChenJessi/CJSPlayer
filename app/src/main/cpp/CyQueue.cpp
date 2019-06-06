@@ -67,3 +67,7 @@ void CyQueue::clearAvpacket() {
     }
     pthread_mutex_unlock(&mutexPacket);
 }
+
+void CyQueue::noticeQueue() {
+    pthread_cond_signal(&condPacket);
+}

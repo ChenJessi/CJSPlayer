@@ -22,6 +22,7 @@ import com.chen.cyplayer.listener.CyOnTimeInfoListener;
 import com.chen.cyplayer.listener.CyOnValumeDBListener;
 import com.chen.cyplayer.log.MyLog;
 import com.chen.cyplayer.opengl.CyGLSurfaceView;
+import com.chen.cyplayer.opengl.CyRender;
 import com.chen.cyplayer.util.CyVideoSupportUitl;
 
 import java.io.File;
@@ -73,14 +74,15 @@ public class CyPlayer {
 
     private CyGLSurfaceView cyGLSurfaceView;
 
-    private CyPlayer() {}
+    public CyPlayer() {}
 
-    private static class SingletonInstance {
-        private static final CyPlayer instance = new CyPlayer();
-    }
-    public static CyPlayer getInstance(){
-        return SingletonInstance.instance;
-    }
+//    private static class SingletonInstance {
+//        private static final CyPlayer instance = new CyPlayer();
+//    }
+//    public static CyPlayer getInstance(){
+//        return SingletonInstance.instance;
+//    }
+
     /**
      * 设置数据源
      * @param source
@@ -131,6 +133,15 @@ public class CyPlayer {
 
     public void setCyGLSurfaceView(CyGLSurfaceView cyGLSurfaceView) {
         this.cyGLSurfaceView = cyGLSurfaceView;
+        cyGLSurfaceView.getCyRender().setOnSurfaceCreateListener(new CyRender.OnSurfaceCreateListener() {
+            @Override
+            public void onSurfaceCreate(Surface s) {
+                if (surface == null){
+                    surface = s;
+                    MyLog.d("onSurfaceCreate");
+                }
+            }
+        });
     }
 
     public void prepared(){
@@ -179,11 +190,12 @@ public class CyPlayer {
     public void stop(){
         timeInfoBean = null;
         duration = -1;
-        stopRecord();
         new Thread(new Runnable() {
             @Override
             public void run() {
                 n_stop();
+                stopRecord();
+                releaseMediacodec();
             }
         }).start();
     }
@@ -287,10 +299,12 @@ public class CyPlayer {
     }
 
     private void onCallTimeInfo(int currentTime, int totalTime){
+        MyLog.d("currentTime error : "+ currentTime);
         if (cyOnTimeInfoListener != null){
             if (timeInfoBean == null){
                 timeInfoBean = new CyTimeInfoBean();
             }
+
             timeInfoBean.setCurrentTime(currentTime);
             timeInfoBean.setTotalTime(totalTime);
 
@@ -343,6 +357,7 @@ public class CyPlayer {
     private void onCallRenderYUV(int width, int height, byte[] y, byte[] u, byte[] v) {
         MyLog.d("获取到视频的yuv数据");
         if (cyGLSurfaceView != null){
+            cyGLSurfaceView.getCyRender().setRenderType(CyRender.RENDER_YUV);
             cyGLSurfaceView.setYUVData(width, height, y, u, v);
         }
     }
@@ -351,10 +366,11 @@ public class CyPlayer {
     };
 
     private void decodeAVPacket(int datasize, byte[] data){
-        if (surface != null && datasize > 0 && data != null){
+        if (surface != null && datasize > 0 && data != null && mediaCodec != null){
+            try{
             int intputBufferIndex = mediaCodec.dequeueInputBuffer(10);
             if (intputBufferIndex >= 0){
-                ByteBuffer byteBuffer = mediaCodec.getOutputBuffer(intputBufferIndex);
+                ByteBuffer byteBuffer = mediaCodec.getInputBuffer(intputBufferIndex);
                 byteBuffer.clear();
                 byteBuffer.put(data);
                 mediaCodec.queueInputBuffer(intputBufferIndex,0, datasize,0, 0);
@@ -364,6 +380,24 @@ public class CyPlayer {
                     outputBufferIndex = mediaCodec.dequeueOutputBuffer(info, 10);
                 }
             }
+            }catch (Exception e){
+
+            }
+        }
+    }
+    private void releaseMediacodec() {
+        if(mediaCodec != null) {
+            try {
+                mediaCodec.flush();
+                mediaCodec.stop();
+                mediaCodec.release();
+            }
+            catch(Exception e) {
+                //e.printStackTrace();
+            }
+            mediaCodec = null;
+            mediaFormat = null;
+            info = null;
         }
     }
     private Handler handler = new Handler(){
@@ -376,6 +410,7 @@ public class CyPlayer {
                     if (cyTimeInfoBean == null){
                         MyLog.d("info error : "+ cyTimeInfoBean);
                     }
+                    MyLog.d("info error : "+ cyTimeInfoBean);
                     cyOnTimeInfoListener.timeInfo(cyTimeInfoBean);
                     break;
             }
@@ -426,6 +461,7 @@ public class CyPlayer {
     private void initMediaCodec(String codecName, int width, int height, byte[] csd_0, byte[] csd_1 ){
         if (surface != null){
             try {
+                cyGLSurfaceView.getCyRender().setRenderType(CyRender.RENDER_MEDIACODEC);
                 String mime = CyVideoSupportUitl.findCodecName(codecName);
                 mediaFormat = MediaFormat.createVideoFormat(mime,width,height);
                 mediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, width * height);
@@ -434,6 +470,10 @@ public class CyPlayer {
                 MyLog.d(mediaFormat.toString());
 
                 mediaCodec = MediaCodec.createDecoderByType(mime);
+
+                info = new MediaCodec.BufferInfo();
+                mediaCodec.configure(mediaFormat, surface, null, 0);
+                mediaCodec.start();
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -571,8 +611,7 @@ public class CyPlayer {
         return rate;
     }
 
-    private void releaseMedicacodec()
-    {
+    private void releaseMedicacodec() {
         if(encoder == null) {
             return;
         }
@@ -583,7 +622,7 @@ public class CyPlayer {
             encoder.release();
             encoder = null;
             encoderFormat = null;
-            info = null;
+            audioInfo = null;
             initmediacodec = false;
 
             MyLog.d("录制完成...");

@@ -39,7 +39,7 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1prepared(JNIEnv *env, jobject instance
 void *startCallBack(void *data){
     CyFFmpeg *cyFFmpeg = (CyFFmpeg *)data;
     cyFFmpeg->start();
-    pthread_exit(&thread_start);
+    return 0;
 }
 extern "C"
 JNIEXPORT void JNICALL
@@ -90,6 +90,7 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1stop(JNIEnv *env, jobject instance) {
     nexit = false;
     if (fFmpeg != NULL){
         fFmpeg->release();
+        pthread_join(thread_start, NULL);
         delete(fFmpeg);
         LOGD("fFmpeg 释放")
         fFmpeg = NULL;
@@ -114,6 +115,7 @@ Java_com_chen_cyplayer_player_CyPlayer_n_1seek(JNIEnv *env, jobject instance, ji
 
     // TODO
     if (fFmpeg != NULL){
+        LOGE("seek 1time %d", secds);
         fFmpeg->seek(secds);
     }
 

@@ -164,7 +164,7 @@ void *playVideo(void *data) {
             pthread_mutex_unlock(&video->codecMutex);
         }
     }
-    pthread_exit(&video->pthread_play);
+    return 0;
 }
 
 void CyVideo::play() {
@@ -172,6 +172,11 @@ void CyVideo::play() {
 }
 
 void CyVideo::release() {
+    if(queue != NULL)
+    {
+        queue->noticeQueue();
+    }
+    pthread_join(pthread_play, NULL);
     if (queue != NULL) {
         delete (queue);
         queue = NULL;
@@ -243,3 +248,4 @@ double CyVideo::getDelayTime(double diff) {
     }
     return delayTime;
 }
+
