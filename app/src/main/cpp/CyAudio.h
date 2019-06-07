@@ -41,9 +41,9 @@ public:
 
     int duration = 0;
     AVRational time_base;
-    double clock;   // 播放时长
-    double now_time;  // 当前frame时间
-    double last_time; //上一次调用时间
+    double clock = 0;   // 播放时长
+    double now_time = 0;  // 当前frame时间
+    double last_time = 0; //上一次调用时间
 
     int volumePercent = 50;
     int mute = 2;

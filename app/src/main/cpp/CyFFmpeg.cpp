@@ -329,7 +329,7 @@ int CyFFmpeg::getCodecContext(AVCodecParameters *codecpar, AVCodecContext **avCo
 
 
 void CyFFmpeg::seek(int64_t secds) {
-    LOGE("seek time %d", secds);
+    LOGE("seek time %lld", secds);
     if (duration <= 0){
         return;
     }
