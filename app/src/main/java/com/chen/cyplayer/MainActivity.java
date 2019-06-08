@@ -168,17 +168,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void next(View view) {
-//        for (int i = 0; i  <= 1000; i++){
-//            Log.e("music", "next : "+i);
-//            try {
-//                Thread.sleep(1000);
-//                Log.e("music", "next : "+i);
-//                cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/许嵩+-+千古.ape");
+        cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/追光者.mp4");
     }
 
     public void right(View view) {
@@ -213,24 +203,24 @@ public class MainActivity extends AppCompatActivity {
         cyPlayer.setSpeed(2.0f);
     }
 
-    public void startRecord(View view) {
-        cyPlayer.startRecord(new File("/mnt/sdcard/tencent/QQfile_recv/test1.aac"));
-    }
-
-    public void startCut(View view) {
+//    public void startRecord(View view) {
+//        cyPlayer.startRecord(new File("/mnt/sdcard/tencent/QQfile_recv/test1.aac"));
+//    }
+//
+//    public void startCut(View view) {
 //        isCut = true;
 //        cyPlayer.cutAudioPlay(20,40 );
-    }
-
-    public void stopRecord(View view) {
+//    }
+//
+//    public void stopRecord(View view) {
 //        cyPlayer.stopRecord();
-    }
-
-    public void pauseRecord(View view) {
+//    }
+//
+//    public void pauseRecord(View view) {
 //        cyPlayer.pauseRecord();
-    }
-
-    public void resumeRcord(View view) {
+//    }
+//
+//    public void resumeRcord(View view) {
 //        cyPlayer.resumeRcord();
-    }
+//    }
 }
