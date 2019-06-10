@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
         seekVolume = findViewById(R.id.seekVolume);
         seekSeek = findViewById(R.id.seekSeek);
         surfaceView = findViewById(R.id.surfaceView);
-//        cyPlayer = CyPlayer.getInstance();
-        cyPlayer = new CyPlayer();
+        cyPlayer = CyPlayer.getInstance();
+//        cyPlayer = new CyPlayer();
         cyPlayer.setCyGLSurfaceView(surfaceView);
         seekVolume.setProgress(cyPlayer.getVolumePercent());
         tvVolum.setText("音量:" + cyPlayer.getVolumePercent()+"");
@@ -169,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void next(View view) {
         cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/追光者.mp4");
+//        cyPlayer.playNext("/mnt/sdcard/tencent/QQfile_recv/测试.mp4");
     }
 
     public void right(View view) {

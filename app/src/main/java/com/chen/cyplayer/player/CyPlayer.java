@@ -8,6 +8,7 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
+import android.view.ViewStub;
 
 import com.chen.cyplayer.enums.MuteEnum;
 import com.chen.cyplayer.bean.CyTimeInfoBean;
@@ -48,7 +49,7 @@ public class CyPlayer {
     }
 
 
-    private  final int MSG_TIMEINFO = 1000;
+    private final int MSG_TIMEINFO = 1000;
 
     private String source;//数据源
 
@@ -56,7 +57,7 @@ public class CyPlayer {
     private boolean playNext = false;
     private int duration = -1;
     private int volumePercent = 50;
-    private  MuteEnum muteEnum = MuteEnum.MUTE_CENTER;
+    private MuteEnum muteEnum = MuteEnum.MUTE_CENTER;
     private float pitch = 1.0f;
     private float speed = 1.0f;
     private boolean initmediacodec = false;
@@ -74,17 +75,20 @@ public class CyPlayer {
 
     private CyGLSurfaceView cyGLSurfaceView;
 
-    public CyPlayer() {}
+    private CyPlayer() {
+    }
 
-//    private static class SingletonInstance {
-//        private static final CyPlayer instance = new CyPlayer();
-//    }
-//    public static CyPlayer getInstance(){
-//        return SingletonInstance.instance;
-//    }
+    private static class SingletonInstance {
+        private static final CyPlayer instance = new CyPlayer();
+    }
+
+    public static CyPlayer getInstance() {
+        return SingletonInstance.instance;
+    }
 
     /**
      * 设置数据源
+     *
      * @param source
      */
     public void setSource(String source) {
@@ -93,6 +97,7 @@ public class CyPlayer {
 
     /**
      * 设置准备接口回调
+     *
      * @param cyOnPreparedListener
      */
     public void setCyOnPreparedListener(CyOnPreparedListener cyOnPreparedListener) {
@@ -136,7 +141,7 @@ public class CyPlayer {
         cyGLSurfaceView.getCyRender().setOnSurfaceCreateListener(new CyRender.OnSurfaceCreateListener() {
             @Override
             public void onSurfaceCreate(Surface s) {
-                if (surface == null){
+                if (surface == null) {
                     surface = s;
                     MyLog.d("onSurfaceCreate");
                 }
@@ -144,8 +149,8 @@ public class CyPlayer {
         });
     }
 
-    public void prepared(){
-        if (TextUtils.isEmpty(source)){
+    public void prepared() {
+        if (TextUtils.isEmpty(source)) {
             MyLog.d("source not be empty!");
             return;
         }
@@ -157,8 +162,8 @@ public class CyPlayer {
         }).start();
     }
 
-    public void start(){
-        if (TextUtils.isEmpty(source)){
+    public void start() {
+        if (TextUtils.isEmpty(source)) {
             MyLog.d("source is empty!");
             return;
         }
@@ -174,20 +179,21 @@ public class CyPlayer {
         }).start();
     }
 
-    public void pause(){
+    public void pause() {
         n_pause();
-        if (cyOnPauseResumeListener != null){
+        if (cyOnPauseResumeListener != null) {
             cyOnPauseResumeListener.onPause(true);
         }
     }
 
-    public void resume(){
+    public void resume() {
         n_resume();
-        if (cyOnPauseResumeListener != null){
+        if (cyOnPauseResumeListener != null) {
             cyOnPauseResumeListener.onPause(false);
         }
     }
-    public void stop(){
+
+    public void stop() {
         timeInfoBean = null;
         duration = -1;
         new Thread(new Runnable() {
@@ -200,54 +206,55 @@ public class CyPlayer {
         }).start();
     }
 
-    public void seek(int secds){
+    public void seek(int secds) {
         n_seek(secds);
     }
+
     public void playNext(String url) {
         source = url;
         playNext = true;
         stop();
     }
 
-    public int getDuration(){
-        if (duration < 0){
+    public int getDuration() {
+        if (duration < 0) {
             duration = n_duration();
         }
         return duration;
     }
 
-    public void setVolume(int percent){
-        if (percent >= 0 && percent <= 100){
+    public void setVolume(int percent) {
+        if (percent >= 0 && percent <= 100) {
             volumePercent = percent;
             n_volume(percent);
         }
     }
 
-    public void setMute(MuteEnum mute){
+    public void setMute(MuteEnum mute) {
         muteEnum = mute;
         n_mute(mute.getValue());
     }
 
-    public int getVolumePercent(){
+    public int getVolumePercent() {
         return volumePercent;
     }
 
-    public void setPitch(float pitch){
+    public void setPitch(float pitch) {
         this.pitch = pitch;
         n_pitch(pitch);
     }
 
-    public void setSpeed(float speed){
+    public void setSpeed(float speed) {
         this.speed = speed;
         n_speed(speed);
     }
 
-    public void startRecord(File outfile){
-        if (!initmediacodec){
+    public void startRecord(File outfile) {
+        if (!initmediacodec) {
             audioSamplerate = n_samplerate();
-            if (audioSamplerate > 0){
+            if (audioSamplerate > 0) {
                 initmediacodec = true;
-                initMediacodec(audioSamplerate, outfile );
+                initMediacodec(audioSamplerate, outfile);
                 n_startstoprecord(true);
                 MyLog.d("开始录制");
             }
@@ -255,53 +262,54 @@ public class CyPlayer {
     }
 
 
-    public void resumeRcord()
-    {
+    public void resumeRcord() {
         n_startstoprecord(true);
         MyLog.d("继续录制");
     }
-    public void stopRecord(){
-        if (initmediacodec){
+
+    public void stopRecord() {
+        if (initmediacodec) {
             n_startstoprecord(false);
             releaseMedicacodec();
         }
     }
-    public void pauseRecord(){
+
+    public void pauseRecord() {
         n_startstoprecord(false);
     }
 
-    public void resumeRecord(){
+    public void resumeRecord() {
         n_startstoprecord(true);
     }
 
-    public void cutAudioPlay(int start_time, int end_time){
+    public void cutAudioPlay(int start_time, int end_time) {
         boolean showPcm = cyOnPcmInfoListener != null;
-        if (n_cutaudioplay(start_time, end_time, showPcm)){
+        if (n_cutaudioplay(start_time, end_time, showPcm)) {
             start();
-        }else {
+        } else {
             stop();
             onCallError(2001, "cutaudio params is wrong");
         }
     }
+
     /**
      * c++回调java的方法
      */
-    private void onCallPrepared(){
-        if (cyOnPreparedListener != null){
+    private void onCallPrepared() {
+        if (cyOnPreparedListener != null) {
             cyOnPreparedListener.onPrepared();
         }
     }
 
-    private void onCallLoad(boolean load){
-        if (cyOnLoadListener != null){
+    private void onCallLoad(boolean load) {
+        if (cyOnLoadListener != null) {
             cyOnLoadListener.onLoad(load);
         }
     }
 
-    private void onCallTimeInfo(int currentTime, int totalTime){
-        MyLog.d("currentTime error : "+ currentTime);
-        if (cyOnTimeInfoListener != null){
-            if (timeInfoBean == null){
+    private void onCallTimeInfo(int currentTime, int totalTime) {
+        if (cyOnTimeInfoListener != null) {
+            if (timeInfoBean == null) {
                 timeInfoBean = new CyTimeInfoBean();
             }
 
@@ -315,102 +323,106 @@ public class CyPlayer {
         }
     }
 
-    private void onCallError(int code, String msg){
+    private void onCallError(int code, String msg) {
         stop();
-        if (cyOnErrorListener != null){
+        if (cyOnErrorListener != null) {
             cyOnErrorListener.onError(code, msg);
         }
     }
 
-    private void onCallComplete(){
+    private void onCallComplete() {
         stop();
-        if (cyOnCompleteListener != null){
+        if (cyOnCompleteListener != null) {
             cyOnCompleteListener.onComplete();
         }
     }
 
-    private void onCallNext(){
-        if (playNext){
+    private void onCallNext() {
+        if (playNext) {
             playNext = false;
             prepared();
         }
     }
 
 
-    private void onCallValumeDB(int db){
-        if (cyOnValumeDBListener != null){
+    private void onCallValumeDB(int db) {
+        if (cyOnValumeDBListener != null) {
             cyOnValumeDBListener.onDbValue(db);
         }
     }
 
-    private void onCallPcmInfo(int samplesize, byte[] buffer){
-        if (cyOnPcmInfoListener != null){
+    private void onCallPcmInfo(int samplesize, byte[] buffer) {
+        if (cyOnPcmInfoListener != null) {
             cyOnPcmInfoListener.onPcmInfo(samplesize, buffer);
         }
     }
 
-    private void onCallPcmRate(int samplerate){
-        if (cyOnPcmInfoListener != null){
+    private void onCallPcmRate(int samplerate) {
+        if (cyOnPcmInfoListener != null) {
             cyOnPcmInfoListener.onPcmRate(samplerate, 16, 2);
         }
     }
+
     private void onCallRenderYUV(int width, int height, byte[] y, byte[] u, byte[] v) {
         MyLog.d("获取到视频的yuv数据");
-        if (cyGLSurfaceView != null){
+        if (cyGLSurfaceView != null) {
             cyGLSurfaceView.getCyRender().setRenderType(CyRender.RENDER_YUV);
             cyGLSurfaceView.setYUVData(width, height, y, u, v);
         }
     }
-    private boolean onCallIsSupportMediaCodec(String ffcodename){
-        return CyVideoSupportUitl.isSupportCodec(ffcodename);
-    };
 
-    private void decodeAVPacket(int datasize, byte[] data){
-        if (surface != null && datasize > 0 && data != null && mediaCodec != null){
-            try{
-            int intputBufferIndex = mediaCodec.dequeueInputBuffer(10);
-            if (intputBufferIndex >= 0){
-                ByteBuffer byteBuffer = mediaCodec.getInputBuffer(intputBufferIndex);
-                byteBuffer.clear();
-                byteBuffer.put(data);
-                mediaCodec.queueInputBuffer(intputBufferIndex,0, datasize,0, 0);
-                int outputBufferIndex = mediaCodec.dequeueOutputBuffer(info , 10);
-                while (outputBufferIndex >= 0 ){
-                    mediaCodec.releaseOutputBuffer(outputBufferIndex,true);
+    private boolean onCallIsSupportMediaCodec(String ffcodename) {
+        return CyVideoSupportUitl.isSupportCodec(ffcodename);
+    }
+
+    ;
+
+    private void decodeAVPacket(int datasize, byte[] data) {
+        if (surface != null && datasize > 0 && data != null && mediaCodec != null) {
+            try {
+                int intputBufferIndex = mediaCodec.dequeueInputBuffer(10);
+                if (intputBufferIndex >= 0) {
+                    ByteBuffer byteBuffer = mediaCodec.getInputBuffer(intputBufferIndex);
+                    byteBuffer.clear();
+                    byteBuffer.put(data);
+                    mediaCodec.queueInputBuffer(intputBufferIndex, 0, datasize, 0, 0);
+                }
+                int outputBufferIndex = mediaCodec.dequeueOutputBuffer(info, 10);
+                while (outputBufferIndex >= 0) {
+                    mediaCodec.releaseOutputBuffer(outputBufferIndex, true);
                     outputBufferIndex = mediaCodec.dequeueOutputBuffer(info, 10);
                 }
-            }
-            }catch (Exception e){
-
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
+
     private void releaseMediacodec() {
-        if(mediaCodec != null) {
+        if (mediaCodec != null) {
             try {
                 mediaCodec.flush();
                 mediaCodec.stop();
                 mediaCodec.release();
-            }
-            catch(Exception e) {
-                //e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             mediaCodec = null;
             mediaFormat = null;
             info = null;
         }
     }
-    private Handler handler = new Handler(){
+
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case MSG_TIMEINFO:
                     CyTimeInfoBean cyTimeInfoBean = (CyTimeInfoBean) msg.obj;
-                    if (cyTimeInfoBean == null){
-                        MyLog.d("info error : "+ cyTimeInfoBean);
+                    if (cyTimeInfoBean == null) {
+                        MyLog.d("info error : " + cyTimeInfoBean);
                     }
-                    MyLog.d("info error : "+ cyTimeInfoBean);
                     cyOnTimeInfoListener.timeInfo(cyTimeInfoBean);
                     break;
             }
@@ -418,23 +430,36 @@ public class CyPlayer {
     };
 
     private native void n_prepared(String source);
+
     private native void n_start();
+
     private native int n_duration();
+
     private native void n_pause();
+
     private native void n_resume();
+
     private native void n_stop();
+
     private native void n_seek(int secds);
+
     private native void n_volume(int percent);
+
     private native void n_mute(int mute);
+
     private native void n_pitch(float pitch);
+
     private native void n_speed(float speed);
+
     private native int n_samplerate();
+
     private native void n_startstoprecord(boolean start);
-    private native boolean n_cutaudioplay(int start_time, int end_time ,boolean showPcm);
+
+    private native boolean n_cutaudioplay(int start_time, int end_time, boolean showPcm);
 
 
     /**
-     *  mediacodec
+     * mediacodec
      */
     private MediaFormat encoderFormat = null;
     private MediaCodec encoder = null;
@@ -450,45 +475,45 @@ public class CyPlayer {
     private MediaFormat mediaFormat = null;
     private MediaCodec mediaCodec = null;
     private MediaCodec.BufferInfo info = null;
+
     /**
-     *
      * @param codecName
      * @param width
      * @param height
      * @param csd_0
      * @param csd_1
      */
-    private void initMediaCodec(String codecName, int width, int height, byte[] csd_0, byte[] csd_1 ){
-        if (surface != null){
-            try {
-                cyGLSurfaceView.getCyRender().setRenderType(CyRender.RENDER_MEDIACODEC);
-                String mime = CyVideoSupportUitl.findCodecName(codecName);
-                mediaFormat = MediaFormat.createVideoFormat(mime,width,height);
-                mediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, width * height);
-                mediaFormat.setByteBuffer("csd-0", ByteBuffer.wrap(csd_0));
-                mediaFormat.setByteBuffer("csd-1", ByteBuffer.wrap(csd_1));
-                MyLog.d(mediaFormat.toString());
-
-                mediaCodec = MediaCodec.createDecoderByType(mime);
-
-                info = new MediaCodec.BufferInfo();
-                mediaCodec.configure(mediaFormat, surface, null, 0);
-                mediaCodec.start();
-            }catch (Exception e){
-                e.printStackTrace();
+    private void initMediaCodec(String codecName, int width, int height, byte[] csd_0, byte[] csd_1) {
+        boolean isSuccess = false;
+        if (surface != null) {
+            while (!isSuccess) {
+                try {
+                    MyLog.d("视频硬解码");
+                    cyGLSurfaceView.getCyRender().setRenderType(CyRender.RENDER_MEDIACODEC);
+                    String mime = CyVideoSupportUitl.findCodecName(codecName);
+                    mediaFormat = MediaFormat.createVideoFormat(mime, width, height);
+                    mediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, width * height);
+                    mediaFormat.setByteBuffer("csd-0", ByteBuffer.wrap(csd_0));
+                    mediaFormat.setByteBuffer("csd-1", ByteBuffer.wrap(csd_1));
+                    MyLog.d(mediaFormat.toString());
+                    mediaCodec = MediaCodec.createDecoderByType(mime);
+                    info = new MediaCodec.BufferInfo();
+                    mediaCodec.configure(mediaFormat, surface, null, 0);
+                    mediaCodec.start();
+                    isSuccess = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        }else {
-            if(cyOnErrorListener != null){
+        } else {
+            if (cyOnErrorListener != null) {
                 cyOnErrorListener.onError(2001, "surface is null");
             }
         }
     }
 
 
-
-
-
-    private void initMediacodec(int samperate, File outfile){
+    private void initMediacodec(int samperate, File outfile) {
         try {
             aacsamplerate = getADTSsamplerate(samperate);
             encoderFormat = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC, samperate, 2);
@@ -497,7 +522,7 @@ public class CyPlayer {
             encoderFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 4096);
             encoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_AAC);
             audioInfo = new MediaCodec.BufferInfo();
-            if(encoder == null) {
+            if (encoder == null) {
                 MyLog.d("craete encoder wrong");
                 return;
             }
@@ -510,14 +535,14 @@ public class CyPlayer {
         }
     }
 
-    private void encodecPcmToAAc(int size, byte[] buffer){
-        if (buffer != null && encoder != null){
+    private void encodecPcmToAAc(int size, byte[] buffer) {
+        if (buffer != null && encoder != null) {
             recordTime += size * 1.0 / (audioSamplerate * 2 * (16 / 8));
-            if (cyOnRecordTimeListener != null){
-                cyOnRecordTimeListener.onRecordTime((int)recordTime);
+            if (cyOnRecordTimeListener != null) {
+                cyOnRecordTimeListener.onRecordTime((int) recordTime);
             }
             int inputBufferindex = encoder.dequeueInputBuffer(0);
-            if(inputBufferindex >= 0) {
+            if (inputBufferindex >= 0) {
                 ByteBuffer byteBuffer = encoder.getInputBuffer(inputBufferindex);
                 byteBuffer.clear();
                 byteBuffer.put(buffer);
@@ -525,7 +550,7 @@ public class CyPlayer {
             }
             int index = encoder.dequeueOutputBuffer(audioInfo, 0);
 
-            while (index >= 0){
+            while (index >= 0) {
                 try {
                     perpcmsize = audioInfo.size + 7;
                     outByteBuffer = new byte[perpcmsize];
@@ -551,7 +576,7 @@ public class CyPlayer {
         }
     }
 
-    private void addADtsHeader(byte[] packet, int packetLen, int samplerate){
+    private void addADtsHeader(byte[] packet, int packetLen, int samplerate) {
         int profile = 2; // AAC LC
         int freqIdx = samplerate; // samplerate
         int chanCfg = 2; // CPE
@@ -565,7 +590,7 @@ public class CyPlayer {
         packet[6] = (byte) 0xFC;
     }
 
-    private int getADTSsamplerate(int samplerate){
+    private int getADTSsamplerate(int samplerate) {
         int rate = 4;
         switch (samplerate) {
             case 96000:
@@ -612,7 +637,7 @@ public class CyPlayer {
     }
 
     private void releaseMedicacodec() {
-        if(encoder == null) {
+        if (encoder == null) {
             return;
         }
         try {
@@ -628,10 +653,8 @@ public class CyPlayer {
             MyLog.d("录制完成...");
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
-            if(outputStream != null)
-            {
+        } finally {
+            if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (IOException e) {

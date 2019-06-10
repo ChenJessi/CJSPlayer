@@ -181,7 +181,7 @@ int CyAudio::resampleAudio(void **pcmbuf) {
                 now_time = clock;
             }
             clock = now_time;
-            LOGE("samplesize 1clockclock %f",clock);
+
             *pcmbuf = buffer;
 
             av_packet_free(&avPacket);
@@ -214,12 +214,8 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context){
     // for streaming playback, replace this test by logic to find and fill the next buffer
     if (cyAudio != NULL){
         int samplesize = cyAudio->getSoundTouchData();
-        LOGE("samplesize 1clock %f",cyAudio->clock);
-        LOGE("samplesize  %f",samplesize);
         if (samplesize > 0){
            cyAudio->clock += samplesize / ((double)(cyAudio->sample_rate * 2 * 2));
-            LOGE("samplesize 2clock %f",cyAudio->clock);
-            LOGE("samplesize 2clock %f",cyAudio->last_time);
             if (cyAudio->clock - cyAudio->last_time >= 0.1){
                cyAudio->last_time = cyAudio->clock;
                cyAudio->callJava->onCallTimeInfo(CHILD_THREAD, cyAudio->clock, cyAudio->duration);

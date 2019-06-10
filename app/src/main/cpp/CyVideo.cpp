@@ -48,7 +48,7 @@ void *playVideo(void *data) {
             continue;
         }
         if (video->codectype == CODEC_MEDIACODEC) {
-            LOGE("硬解码视频");
+            //硬解码
             if (av_bsf_send_packet(video->abs_ctx, avPacket) != 0){
                 av_packet_free(&avPacket);
                 av_free(avPacket);
@@ -56,10 +56,7 @@ void *playVideo(void *data) {
                 continue;
             }
             while (av_bsf_receive_packet(video->abs_ctx,avPacket) == 0){
-                LOGE("开始解码")
                 double  diff = video->getFrameDiffTime(NULL, avPacket);
-                LOGE("diff is %f", diff);
-
                 av_usleep(video->getDelayTime(diff) * 1000000);
                 video->callJava->onCallDecodeAVPacket(avPacket->size, avPacket->data);
 

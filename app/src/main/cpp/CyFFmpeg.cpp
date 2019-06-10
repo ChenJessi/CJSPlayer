@@ -329,12 +329,10 @@ int CyFFmpeg::getCodecContext(AVCodecParameters *codecpar, AVCodecContext **avCo
 
 
 void CyFFmpeg::seek(int64_t secds) {
-    LOGE("seek time %lld", secds);
     if (duration <= 0){
         return;
     }
     if (secds >= 0 && secds <= duration){
-        LOGE("seek 成功  %d", duration);
         playstatus->seek =  true;
         pthread_mutex_lock(&seek_mutex);
         int64_t  rel = secds * AV_TIME_BASE;
