@@ -201,7 +201,7 @@ void CyVideo::release() {
 double CyVideo::getFrameDiffTime(AVFrame *avFrame, AVPacket *avPacket) {
     double pts = 0;
     if (avFrame != NULL){
-        pts = av_frame_get_best_effort_timestamp(avFrame);
+        pts = avFrame->pts;
     }
     if (avPacket != NULL){
         pts = avPacket->pts;
