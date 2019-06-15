@@ -122,8 +122,8 @@ public class CyRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameA
     }
 
     private void initRenderYUV() {
-        String vertexSource = CyShaderUtil.readRawTxt(context, R.raw.vertex_shader);
-        String fragmentSource = CyShaderUtil.readRawTxt(context, R.raw.fragment_yuv);
+        String vertexSource = CyShaderUtil.getRawResource(context, R.raw.vertex_shader);
+        String fragmentSource = CyShaderUtil.getRawResource(context, R.raw.fragment_yuv);
         program_yuv = CyShaderUtil.createProgram(vertexSource, fragmentSource);
         avPosition_yuv = GLES20.glGetAttribLocation(program_yuv, "av_Position");
         afPosition_yuv = GLES20.glGetAttribLocation(program_yuv, "af_Position");
@@ -186,8 +186,8 @@ public class CyRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameA
     }
 
     private void initRenderMediacodec(){
-        String vertexSource = CyShaderUtil.readRawTxt(context, R.raw.vertex_shader);
-        String fragmentSource = CyShaderUtil.readRawTxt(context, R.raw.fragment_mediacodec);
+        String vertexSource = CyShaderUtil.getRawResource(context, R.raw.vertex_shader);
+        String fragmentSource = CyShaderUtil.getRawResource(context, R.raw.fragment_mediacodec);
         program_mediacodec = CyShaderUtil.createProgram(vertexSource, fragmentSource);
 
         avPosition_mediacodec = GLES20.glGetAttribLocation(program_mediacodec, "av_Position");

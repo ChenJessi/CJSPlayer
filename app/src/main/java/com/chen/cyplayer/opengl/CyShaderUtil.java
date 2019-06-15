@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
  * @email 188669@163.com
  */
 public class CyShaderUtil {
-    public static String readRawTxt(Context context , int rawId){
+    public static String getRawResource(Context context , int rawId){
         InputStream inputStream = context.getResources().openRawResource(rawId);
         BufferedReader reader =new BufferedReader(new InputStreamReader(inputStream));
         StringBuffer sb = new StringBuffer();

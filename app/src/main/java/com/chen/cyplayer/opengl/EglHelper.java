@@ -1,5 +1,6 @@
 package com.chen.cyplayer.opengl;
 
+import android.opengl.EGL14;
 import android.view.Surface;
 
 import javax.microedition.khronos.egl.EGL10;
@@ -57,10 +58,14 @@ public class EglHelper {
             throw new IllegalArgumentException("eglChooseConfig#2 failed");
         }
         //创建EglContext
+        int[] attrib_list = {
+                EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
+                EGL10.EGL_NONE
+        };
         if (eglContext != null) {
-            mEglContext = mEgl.eglCreateContext(mEglDisplay, configs[0], eglContext, null);
+            mEglContext = mEgl.eglCreateContext(mEglDisplay, configs[0], eglContext, attrib_list);
         } else {
-            mEglContext = mEgl.eglCreateContext(mEglDisplay, configs[0], EGL10.EGL_NO_CONTEXT, null);
+            mEglContext = mEgl.eglCreateContext(mEglDisplay, configs[0], EGL10.EGL_NO_CONTEXT, attrib_list);
         }
         //创建渲染的Surface
         mEglSurface = mEgl.eglCreateWindowSurface(mEglDisplay, configs[0], surface, null);
