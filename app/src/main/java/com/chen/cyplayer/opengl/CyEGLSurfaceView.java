@@ -37,32 +37,35 @@ public abstract class CyEGLSurfaceView extends SurfaceView implements SurfaceHol
         super(context, attrs, defStyleAttr);
         getHolder().addCallback(this);
     }
-    public void setRender(CyGLRender cyGLRender){
-        this.cyGLRender = cyGLRender;
+
+    public void setRender(CyGLRender wlGLRender) {
+        this.cyGLRender = wlGLRender;
     }
 
-    public EGLContext getEglContext(){
-        if(cyEGLThread != null) {
-            return cyEGLThread.getEglContext();
-        }
-        return null;
-    }
+    public void setRenderMode(int mRenderMode) {
 
-    public void setRenderMode(int mRenderMode){
         if(cyGLRender == null) {
             throw  new RuntimeException("must set render before");
         }
         this.mRenderMode = mRenderMode;
     }
 
-
-    public void setSurfaceAndEglContext(Surface surface, EGLContext eglContext){
+    public void setSurfaceAndEglContext(Surface surface, EGLContext eglContext) {
         this.surface = surface;
         this.eglContext = eglContext;
     }
 
-    public void requestRender(){
-        if (cyEGLThread != null){
+    public EGLContext getEglContext() {
+        if(cyEGLThread != null)
+        {
+            return cyEGLThread.getEglContext();
+        }
+        return null;
+    }
+
+    public void requestRender() {
+        if(cyEGLThread != null)
+        {
             cyEGLThread.requestRender();
         }
     }
@@ -78,9 +81,10 @@ public abstract class CyEGLSurfaceView extends SurfaceView implements SurfaceHol
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        cyEGLThread.isChange = true;
+
         cyEGLThread.width = width;
         cyEGLThread.height = height;
+        cyEGLThread.isChange = true;
     }
 
     @Override
@@ -91,9 +95,9 @@ public abstract class CyEGLSurfaceView extends SurfaceView implements SurfaceHol
         eglContext = null;
     }
 
-    private static class CyEGLThread extends Thread{
+     static class CyEGLThread extends Thread{
         private WeakReference<CyEGLSurfaceView> cyEGLSurfaceViewWeakReference;
-        private EglHelper eglHelper;
+        private EglHelper eglHelper = null;
         private boolean isCreate = false;
         private boolean isChange = false;
         private boolean isStart = false;
@@ -110,8 +114,8 @@ public abstract class CyEGLSurfaceView extends SurfaceView implements SurfaceHol
             super.run();
             isExit = false;
             isStart = false;
-            eglHelper = new EglHelper();
             object = new Object();
+            eglHelper = new EglHelper();
             eglHelper.initEgl(cyEGLSurfaceViewWeakReference.get().surface, cyEGLSurfaceViewWeakReference.get().eglContext);
 
             while (true){
@@ -138,20 +142,22 @@ public abstract class CyEGLSurfaceView extends SurfaceView implements SurfaceHol
                         throw  new RuntimeException("mRenderMode is wrong value");
                     }
                 }
-                onCreated();
+                onCreate();
                 onChanged(width,height);
                 onDraw();
                 isStart = true;
             }
         }
 
-        private void onCreated(){
+        private void onCreate(){
             if (isCreate && cyEGLSurfaceViewWeakReference.get().cyGLRender != null){
+                isCreate = false;
                 cyEGLSurfaceViewWeakReference.get().cyGLRender.onSurfaceCreated();
             }
         }
         private void onChanged(int width, int height){
             if (isChange && cyEGLSurfaceViewWeakReference.get().cyGLRender != null){
+                isChange = false;
                 cyEGLSurfaceViewWeakReference.get().cyGLRender.onSurfaceChanged(width, height);
             }
         }
