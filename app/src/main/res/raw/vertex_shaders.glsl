@@ -3,5 +3,5 @@ attribute vec2 f_Position;
 varying vec2 ft_Position;
 void main() {
     ft_Position = f_Position;
-    gl_Position = v_Position;
+    gl_Position = v_Position ;
 }

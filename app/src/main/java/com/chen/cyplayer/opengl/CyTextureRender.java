@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.opengl.Matrix;
 
 import com.chen.cyplayer.R;
 import com.chen.cyplayer.log.MyLog;
@@ -29,10 +30,10 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
     private FloatBuffer vertexBuffer;
 
     private float[] fragmentData = {
-            0f, 0f,
-            1f, 0f,
             0f, 1f,
-            1f, 1f
+            1f, 1f,
+            0f, 0f,
+            1f, 0f
     };
     private FloatBuffer fragmentBuffer;
 
@@ -47,6 +48,10 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
     private int imgTextureId;
 
     private FboRender fboRender;
+
+    private int umatrix;
+    private float[] matrix = new float[16];
+
     public CyTextureRender(Context context) {
         this.context = context;
         fboRender = new FboRender(context);
@@ -66,7 +71,7 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
     @Override
     public void onSurfaceCreated() {
         fboRender.onCreate();
-        String vertexSource = CyShaderUtil.getRawResource(context, R.raw.vertex_shaders);
+        String vertexSource = CyShaderUtil.getRawResource(context, R.raw.vertex_shaders_m);
         String fragmentSource = CyShaderUtil.getRawResource(context, R.raw.fragment_shader);
 
         program = CyShaderUtil.createProgram(vertexSource, fragmentSource);
@@ -74,6 +79,7 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
         vPosition = GLES20.glGetAttribLocation(program, "v_Position");
         fPosition = GLES20.glGetAttribLocation(program, "f_Position");
         sampler = GLES20.glGetUniformLocation(program, "sTexture");
+        umatrix = GLES20.glGetUniformLocation(program, "u_Matrix");
 
         int[] vbos = new int[1];
         GLES20.glGenBuffers(1,vbos, 0);
@@ -106,7 +112,7 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,  GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER , GLES20.GL_LINEAR);
 
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 720, 1280, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 2280, 1080, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
         GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, textureid, 0);
 
         if (GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE){
@@ -117,13 +123,21 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
-        imgTextureId = loadTexrute(R.drawable.test);
+        imgTextureId = loadTexrute(R.drawable.androids);
     }
 
     @Override
     public void onSurfaceChanged(int width, int height) {
         GLES20.glViewport(0, 0, width, height);
         fboRender.onChange(width, height);
+
+        if(width > height) {
+            Matrix.orthoM(matrix, 0, -width / ((height / 702f) * 526f),  width / ((height / 702f) * 526f), -1f, 1f, -1f, 1f);
+        } else {
+            Matrix.orthoM(matrix, 0, -1,  1, -height / ((width / 526f) * 702f), height / ((width / 526f) * 702f), -1f, 1f);
+        }
+
+        Matrix.rotateM(matrix,0, 180, 1, 0, 0);
     }
 
     @Override
@@ -133,7 +147,7 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
         GLES20.glClearColor(1f,0f, 0f, 1f);
 
         GLES20.glUseProgram(program);
-
+        GLES20.glUniformMatrix4fv(umatrix, 1, false, matrix, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, imgTextureId);
 
 
