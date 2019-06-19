@@ -52,6 +52,10 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
     private int umatrix;
     private float[] matrix = new float[16];
 
+    private OnRenderCreateListener onRenderCreateListener;
+
+    private int width;
+    private int height;
     public CyTextureRender(Context context) {
         this.context = context;
         fboRender = new FboRender(context);
@@ -66,6 +70,10 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
                 .asFloatBuffer()
                 .put(fragmentData);
         fragmentBuffer.position(0);
+    }
+
+    public void setOnRenderCreateListener(OnRenderCreateListener onRenderCreateListener) {
+        this.onRenderCreateListener = onRenderCreateListener;
     }
 
     @Override
@@ -112,7 +120,7 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,  GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER , GLES20.GL_LINEAR);
 
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 2280, 1080, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 1080, 2280, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
         GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, textureid, 0);
 
         if (GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE){
@@ -124,13 +132,21 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
         imgTextureId = loadTexrute(R.drawable.androids);
+        if (onRenderCreateListener != null){
+            onRenderCreateListener.create(textureid);
+        }
     }
 
     @Override
     public void onSurfaceChanged(int width, int height) {
-        GLES20.glViewport(0, 0, width, height);
-        fboRender.onChange(width, height);
+//        GLES20.glViewport(0, 0, width, height);
+//        fboRender.onChange(width, height);
 
+        this.width = width;
+        this.height = height;
+
+        width = 1080;
+        height = 2280;
         if(width > height) {
             Matrix.orthoM(matrix, 0, -width / ((height / 702f) * 526f),  width / ((height / 702f) * 526f), -1f, 1f, -1f, 1f);
         } else {
@@ -142,6 +158,7 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
 
     @Override
     public void onDrawFrame() {
+        GLES20.glViewport(0, 0, width, height);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glClearColor(1f,0f, 0f, 1f);
@@ -185,5 +202,9 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         return  textureIds[0];
+    }
+
+    public interface OnRenderCreateListener{
+        void create(int textureId);
     }
 }
