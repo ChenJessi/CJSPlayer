@@ -25,7 +25,13 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
         -1f, -1f,
         1f, -1f,
         -1f, 1f,
-        1f, 1f
+        1f, 1f,
+
+        -0.5f, -0.5f,
+        0.5f, -0.5f,
+        -0.5f, 0.5f,
+        0.5f, 0.5f
+
     };
     private FloatBuffer vertexBuffer;
 
@@ -46,6 +52,7 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
     private int vboId;
     private int fboId;
     private int imgTextureId;
+    private int imgTextureId2;
 
     private FboRender fboRender;
 
@@ -132,6 +139,7 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
         imgTextureId = loadTexrute(R.drawable.androids);
+        imgTextureId2 = loadTexrute(R.drawable.ghnl);
         if (onRenderCreateListener != null){
             onRenderCreateListener.create(textureid);
         }
@@ -165,20 +173,29 @@ public class CyTextureRender  implements CyEGLSurfaceView.CyGLRender{
 
         GLES20.glUseProgram(program);
         GLES20.glUniformMatrix4fv(umatrix, 1, false, matrix, 0);
+
+        //绘制第一张图片
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, imgTextureId);
-
-
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId);
-
         GLES20.glEnableVertexAttribArray(vPosition);
         GLES20.glVertexAttribPointer(vPosition, 2, GLES20.GL_FLOAT, false, 8,
                 0);
-
         GLES20.glEnableVertexAttribArray(fPosition);
         GLES20.glVertexAttribPointer(fPosition, 2, GLES20.GL_FLOAT, false, 8,
                 vertexData.length * 4);
-
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+
+        //绘制第二张图片
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, imgTextureId2);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId);
+        GLES20.glEnableVertexAttribArray(vPosition);
+        GLES20.glVertexAttribPointer(vPosition, 2, GLES20.GL_FLOAT, false, 8,
+                32);
+        GLES20.glEnableVertexAttribArray(fPosition);
+        GLES20.glVertexAttribPointer(fPosition, 2, GLES20.GL_FLOAT, false, 8,
+                vertexData.length * 4);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
