@@ -1,6 +1,8 @@
 package com.chen.cyplayer.camera;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.util.AttributeSet;
 
 import com.chen.cyplayer.opengl.CyEGLSurfaceView;
@@ -11,6 +13,9 @@ import com.chen.cyplayer.opengl.CyEGLSurfaceView;
  */
 public class CyCameraView extends CyEGLSurfaceView {
     private CyCameraRender render;
+    private CyCamera cyCamera;
+
+    private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     public CyCameraView(Context context) {
         this(context, null);
     }
@@ -21,7 +26,21 @@ public class CyCameraView extends CyEGLSurfaceView {
 
     public CyCameraView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        render = new CyCameraRender();
+        render = new CyCameraRender(context);
+        cyCamera = new CyCamera();
         setRender(render);
+
+        render.setOnSurfaceCreateListener(new CyCameraRender.OnSurfaceCreateListener() {
+            @Override
+            public void onSurfaceCreate(SurfaceTexture surfaceTexture) {
+                cyCamera.initCamera(surfaceTexture, cameraId);
+            }
+        });
+    }
+
+    public void onDestory(){
+        if (cyCamera != null){
+            cyCamera.stopPreview();
+        }
     }
 }

@@ -7,7 +7,7 @@
     tools:context=".Main2Activity">
 
 
-    <com.chen.cyplayer.CyGLTextureView
+    <com.chen.cyplayer.camera.CyCameraView
         android:id="@+id/surfaceView"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
