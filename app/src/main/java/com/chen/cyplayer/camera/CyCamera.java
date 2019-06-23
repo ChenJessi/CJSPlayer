@@ -1,11 +1,16 @@
 package com.chen.cyplayer.camera;
 
 
+import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.print.PrinterId;
+
+import com.chen.cyplayer.util.DisplayUtil;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Created by CHEN on 2019/6/21
@@ -15,15 +20,19 @@ public class CyCamera {
     private Camera camera;
     private SurfaceTexture surfaceTexture;
 
-    public void initCamera(SurfaceTexture surfaceTexture, int cameraId)
-    {
+    private int width;
+    private int height;
+
+    public CyCamera(Context context){
+        this.width = DisplayUtil.getScreenWidth(context);
+        this.height = DisplayUtil.getScreenHeight(context);
+    }
+    public void initCamera(SurfaceTexture surfaceTexture, int cameraId){
         this.surfaceTexture = surfaceTexture;
         setCameraParm(cameraId);
-
     }
 
-    private void setCameraParm(int cameraId)
-    {
+    private void setCameraParm(int cameraId) {
         try {
             camera = Camera.open(cameraId);
             camera.setPreviewTexture(surfaceTexture);
@@ -32,10 +41,11 @@ public class CyCamera {
             parameters.setFlashMode("off");
             parameters.setPreviewFormat(ImageFormat.NV21);
 
-            parameters.setPictureSize(parameters.getSupportedPictureSizes().get(0).width,
-                    parameters.getSupportedPictureSizes().get(0).height);
-            parameters.setPreviewSize(parameters.getSupportedPreviewSizes().get(0).width,
-                    parameters.getSupportedPreviewSizes().get(0).height);
+            Camera.Size size = getFitSize(parameters.getSupportedPictureSizes());
+            parameters.setPictureSize(size.width, size.height);
+
+            size = getFitSize(parameters.getSupportedPreviewSizes());
+            parameters.setPreviewSize(size.width, size.height);
 
             camera.setParameters(parameters);
             camera.startPreview();
@@ -45,23 +55,33 @@ public class CyCamera {
         }
     }
 
-    public void stopPreview()
-    {
-        if(camera != null)
-        {
-            camera.startPreview();
+    public void stopPreview() {
+        if(camera != null) {
+            camera.stopPreview();
             camera.release();
             camera = null;
         }
     }
 
-    public void changeCamera(int cameraId)
-    {
-        if(camera != null)
-        {
+    public void changeCamera(int cameraId) {
+        if(camera != null) {
             stopPreview();
         }
         setCameraParm(cameraId);
     }
 
+    private Camera.Size getFitSize(List<Camera.Size> sizes){
+        if (width < height){
+            int t = height;
+            height = width;
+            width = t;
+        }
+
+        for (Camera.Size size : sizes){
+            if (1.0f * size.width / size.height == 1.0f * width / height){
+                return size;
+            }
+        }
+        return sizes.get(0);
+    }
 }

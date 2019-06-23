@@ -4,11 +4,13 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 
 import com.chen.cyplayer.R;
 import com.chen.cyplayer.log.MyLog;
 import com.chen.cyplayer.opengl.CyEGLSurfaceView;
 import com.chen.cyplayer.opengl.CyShaderUtil;
+import com.chen.cyplayer.util.DisplayUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -49,17 +51,27 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
 
     private int camereTextureid;
 
+    private int umatrix;
+    private float[] matrix = new float[16];
+
+    private int screenWidth;
+    private int screenHeight;
+
+    private int width;
+    private int height;
 
     private int vboId;
     private int fboId;
 
     private SurfaceTexture surfaceTexture;
-
     private OnSurfaceCreateListener onSurfaceCreateListener;
 
     private CyCameraFboRender cyCameraFboRender;
     public CyCameraRender(Context context) {
         this.context = context;
+        screenWidth = DisplayUtil.getScreenWidth(context);
+        screenHeight = DisplayUtil.getScreenHeight(context);
+
         cyCameraFboRender = new CyCameraFboRender(context);
         vertexBuffer = ByteBuffer.allocateDirect(vertexData.length * 4)
                 .order(ByteOrder.nativeOrder())
@@ -87,6 +99,7 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
         program = CyShaderUtil.createProgram(vertexSource, fragmentSource);
         vPosition = GLES20.glGetAttribLocation(program, "v_Position");
         fPosition = GLES20.glGetAttribLocation(program, "f_Position");
+        umatrix = GLES20.glGetUniformLocation(program, "u_Matrix");
 
         //vbo
         int[] vbos = new int[1];
@@ -116,7 +129,7 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 1080, 2280, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, screenWidth, screenHeight, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
         GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, fbotextureid, 0);
         if (GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE){
             MyLog.d("fbo wrong");
@@ -149,8 +162,10 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
 
     @Override
     public void onSurfaceChanged(int width, int height) {
-        cyCameraFboRender.onChange(width, height);
-        GLES20.glViewport(0, 0, width, height);
+//        cyCameraFboRender.onChange(width, height);
+//        GLES20.glViewport(0, 0, width, height);
+        this.width = width;
+        this.height = height;
     }
 
     @Override
@@ -160,6 +175,10 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
         GLES20.glClearColor(1f, 0f, 0f, 1f);
 
         GLES20.glUseProgram(program);
+
+        GLES20.glViewport(0,0, screenWidth, screenHeight);
+        GLES20.glUniformMatrix4fv(umatrix, 1, false, matrix, 0);
+
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboId);
 
@@ -184,6 +203,13 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
 
     }
 
+    public void resetMatrix(){
+        Matrix.setIdentityM(matrix, 0);
+    }
+
+    public void setAngle(float angle , float x, float y, float z){
+        Matrix.rotateM(matrix, 0, angle, x, y, z);
+    }
     public interface OnSurfaceCreateListener{
         void onSurfaceCreate(SurfaceTexture surfaceTexture);
     }

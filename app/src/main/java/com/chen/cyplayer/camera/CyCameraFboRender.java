@@ -60,7 +60,7 @@ public class CyCameraFboRender {
     }
 
     public void onCreate(){
-        String vertexSource = CyShaderUtil.getRawResource(context, R.raw.vertex_shaders_c);
+        String vertexSource = CyShaderUtil.getRawResource(context, R.raw.vertex_shader_screen);
         String fragmentSource = CyShaderUtil.getRawResource(context, R.raw.fragment_shader_screen);
 
         program = CyShaderUtil.createProgram(vertexSource, fragmentSource);
@@ -104,6 +104,7 @@ public class CyCameraFboRender {
                 vertexData.length * 4);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
     }
