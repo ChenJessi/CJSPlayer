@@ -11,12 +11,13 @@ import com.chen.cyplayer.opengl.CyEGLSurfaceView;
 
 /**
  * @author Created by CHEN on 2019/6/21
- * @email 188669@163.com
+ * @email 188669@163.comgetTextureId
  */
 public class CyCameraView extends CyEGLSurfaceView {
     private CyCameraRender cyCameraRender;
     private CyCamera cyCamera;
 
+    private int textureId = -1;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
 
     public CyCameraView(Context context) {
@@ -35,8 +36,9 @@ public class CyCameraView extends CyEGLSurfaceView {
         previewAngle(context);
         cyCameraRender.setOnSurfaceCreateListener(new CyCameraRender.OnSurfaceCreateListener() {
             @Override
-            public void onSurfaceCreate(SurfaceTexture surfaceTexture) {
+            public void onSurfaceCreate(SurfaceTexture surfaceTexture ,int tid) {
                 cyCamera.initCamera(surfaceTexture, cameraId);
+                textureId = tid;
             }
         });
     }
@@ -78,7 +80,9 @@ public class CyCameraView extends CyEGLSurfaceView {
                 break;
         }
     }
-
+    public int getTextureId() {
+        return textureId;
+    }
     public void onDestory() {
         if (cyCamera != null) {
             cyCamera.stopPreview();

@@ -49,8 +49,10 @@ public class CyBaseMediaEncoder {
     public CyBaseMediaEncoder(Context context) {
 
     }
-
-    public void setRender(int mRenderMode) {
+    public void setRender(CyEGLSurfaceView.CyGLRender cyGLRender) {
+        this.cyGLRender = cyGLRender;
+    }
+    public void setRenderMode(int mRenderMode) {
         if(cyGLRender == null) {
             throw  new RuntimeException("must set render before");
         }
@@ -103,7 +105,7 @@ public class CyBaseMediaEncoder {
             videoBufferinfo = new MediaCodec.BufferInfo();
             videoFormat = MediaFormat.createVideoFormat(mimeType, width, height);
             videoFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-            videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height *4);
+            videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 4);
             videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
             videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
 
@@ -294,7 +296,7 @@ public class CyBaseMediaEncoder {
     }
 
 
-    private interface OnMediaInfoListener{
+    public interface OnMediaInfoListener{
         void onMediaTime(int times);
     }
 }

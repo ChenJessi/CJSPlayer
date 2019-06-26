@@ -153,9 +153,8 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
         surfaceTexture = new SurfaceTexture(camereTextureid);
         surfaceTexture.setOnFrameAvailableListener(this);
 
-        if(onSurfaceCreateListener != null)
-        {
-            onSurfaceCreateListener.onSurfaceCreate(surfaceTexture);
+        if(onSurfaceCreateListener != null) {
+            onSurfaceCreateListener.onSurfaceCreate(surfaceTexture , fbotextureid);
         }
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
     }
@@ -211,6 +210,6 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
         Matrix.rotateM(matrix, 0, angle, x, y, z);
     }
     public interface OnSurfaceCreateListener{
-        void onSurfaceCreate(SurfaceTexture surfaceTexture);
+        void onSurfaceCreate(SurfaceTexture surfaceTexture, int tid);
     }
 }
