@@ -1,12 +1,10 @@
-package com.chen.cyplayer.encodec;
+package com.chen.myapplication.encodec;
 
-import android.app.FragmentContainer;
 import android.content.Context;
 import android.opengl.GLES20;
 
-import com.chen.cyplayer.R;
-import com.chen.cyplayer.opengl.CyEGLSurfaceView;
-import com.chen.cyplayer.opengl.CyShaderUtil;
+
+import com.chen.myapplication.R;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -1,4 +1,4 @@
-package com.chen.cyplayer.encodec;
+package com.chen.myapplication.encodec;
 
 import android.content.Context;
 

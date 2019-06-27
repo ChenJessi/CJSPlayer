@@ -1,22 +1,18 @@
-package com.chen.cyplayer.encodec;
+package com.chen.myapplication.encodec;
 
 import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
-import android.print.PrinterId;
 import android.view.Surface;
 
-import com.chen.cyplayer.log.MyLog;
-import com.chen.cyplayer.opengl.CyEGLSurfaceView;
-import com.chen.cyplayer.opengl.EglHelper;
+import com.chen.myapplication.egl.EglHelper;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
-import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLContext;
 
 /**
@@ -260,7 +256,7 @@ public class CyBaseMediaEncoder {
                     videoEncodec.stop();
                     videoEncodec.release();
                     videoEncodec = null;
-                    MyLog.d("录制完成");
+
                     break;
                 }
 
