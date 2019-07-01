@@ -1,4 +1,4 @@
-package com.chen.myapplication.encodec;
+package com.chen.cyplayer.encodec;
 
 import android.content.Context;
 
@@ -8,7 +8,7 @@ import android.content.Context;
  */
 public class CyMediaEncodec extends CyBaseMediaEncoder {
     private CyEncodecRender cyEncodecRender;
-    public CyMediaEncodec(Context context ,int textureId) {
+    public CyMediaEncodec(Context context , int textureId) {
         super(context);
         cyEncodecRender = new CyEncodecRender(context, textureId);
         setRender(cyEncodecRender);

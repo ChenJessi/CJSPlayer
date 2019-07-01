@@ -1,13 +1,16 @@
-package com.chen.myapplication.encodec;
+package com.chen.cyplayer.encodec;
 
 import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.util.Log;
 import android.view.Surface;
 
-import com.chen.myapplication.egl.EglHelper;
+import com.chen.cyplayer.log.MyLog;
+import com.chen.cyplayer.opengl.CyEGLSurfaceView;
+import com.chen.cyplayer.opengl.EglHelper;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -97,6 +100,7 @@ public class CyBaseMediaEncoder {
     }
 
     private void initVideoEncodec(String mimeType, int width, int height) {
+
         try {
             videoBufferinfo = new MediaCodec.BufferInfo();
             videoFormat = MediaFormat.createVideoFormat(mimeType, width, height);
@@ -109,6 +113,7 @@ public class CyBaseMediaEncoder {
             videoEncodec.configure(videoFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
 
             surface = videoEncodec.createInputSurface();
+
         } catch (IOException e) {
             e.printStackTrace();
             videoEncodec = null;
@@ -193,12 +198,11 @@ public class CyBaseMediaEncoder {
                     encoder.get().cyGLRender.onDrawFrame();
                 }
                 eglHelper.swapBuffers();
-
             }
         }
 
         public void release(){
-            if (eglHelper != null){
+            if(eglHelper != null) {
                 eglHelper.destoryEgl();
                 eglHelper = null;
                 object = null;
@@ -248,37 +252,45 @@ public class CyBaseMediaEncoder {
             super.run();
             pts = 0;
             videoTrackIndex = -1;
-            isExit = false ;
+            isExit = false;
             videoEncodec.start();
 
             while (true){
-                if (isExit){
+                if(isExit) {
+
                     videoEncodec.stop();
                     videoEncodec.release();
                     videoEncodec = null;
 
+                    mediaMuxer.stop();
+                    mediaMuxer.release();
+                    mediaMuxer = null;
+
+                    MyLog.d("录制完成");
                     break;
                 }
 
                 int outputBufferIndex = videoEncodec.dequeueOutputBuffer(videoBufferinfo, 0);
                 if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                    videoTrackIndex = mediaMuxer.addTrack(videoFormat);
+                    videoTrackIndex = mediaMuxer.addTrack(videoEncodec.getOutputFormat());
                     mediaMuxer.start();
                 }else {
-                    while (outputBufferIndex >= 0){
-                        ByteBuffer outputBuffer = videoEncodec.getOutputBuffer(outputBufferIndex);
+                    while (outputBufferIndex >= 0) {
+                        ByteBuffer outputBuffer = videoEncodec.getOutputBuffers()[outputBufferIndex];
                         outputBuffer.position(videoBufferinfo.offset);
                         outputBuffer.limit(videoBufferinfo.offset + videoBufferinfo.size);
+                        //
 
-                        if (pts == 0) {
+                        if(pts == 0) {
                             pts = videoBufferinfo.presentationTimeUs;
                         }
                         videoBufferinfo.presentationTimeUs = videoBufferinfo.presentationTimeUs - pts;
 
                         mediaMuxer.writeSampleData(videoTrackIndex, outputBuffer, videoBufferinfo);
-                        if (encoder.get().onMediaInfoListener != null){
+                        if(encoder.get().onMediaInfoListener != null) {
                             encoder.get().onMediaInfoListener.onMediaTime((int) (videoBufferinfo.presentationTimeUs / 1000000));
                         }
+
                         videoEncodec.releaseOutputBuffer(outputBufferIndex, false);
                         outputBufferIndex = videoEncodec.dequeueOutputBuffer(videoBufferinfo, 0);
                     }

@@ -7,10 +7,10 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import com.chen.cyplayer.R;
-import com.chen.cyplayer.log.MyLog;
 import com.chen.cyplayer.opengl.CyEGLSurfaceView;
 import com.chen.cyplayer.opengl.CyShaderUtil;
 import com.chen.cyplayer.util.DisplayUtil;
+
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -132,9 +132,9 @@ public class CyCameraRender implements CyEGLSurfaceView.CyGLRender, SurfaceTextu
         GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, screenWidth, screenHeight, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
         GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, fbotextureid, 0);
         if (GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE){
-            MyLog.d("fbo wrong");
+
         }else {
-            MyLog.d("fbo success");
+
         }
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);

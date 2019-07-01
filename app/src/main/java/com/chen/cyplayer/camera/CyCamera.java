@@ -5,7 +5,7 @@ import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.print.PrinterId;
+
 
 import com.chen.cyplayer.util.DisplayUtil;
 
