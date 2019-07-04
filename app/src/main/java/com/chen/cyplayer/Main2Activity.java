@@ -28,31 +28,42 @@ public class Main2Activity extends AppCompatActivity {
 
         cyCameraView = findViewById(R.id.surfaceView);
         button = findViewById(R.id.button);
+        initView();
+
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (cyMediaEncodec == null) {
-                    MyLog.d("width : "+ DisplayUtil.getScreenWidth(Main2Activity.this) + "   height : "+DisplayUtil.getScreenHeight(Main2Activity.this));
-                    Toast.makeText(Main2Activity.this, "width : "+ DisplayUtil.getScreenWidth(Main2Activity.this), Toast.LENGTH_SHORT).show();
-                    cyMediaEncodec = new CyMediaEncodec(Main2Activity.this, cyCameraView.getTextureId());
-                    cyMediaEncodec.initEncodec(cyCameraView.getEglContext(),
-                            Environment.getExternalStorageDirectory().getAbsolutePath() + "/wl_live_pusher.mp4", MediaFormat.MIMETYPE_VIDEO_AVC, 720, 1280);
 
-                    cyMediaEncodec.setOnMediaInfoListener(new CyBaseMediaEncoder.OnMediaInfoListener() {
-                        @Override
-                        public void onMediaTime(int times) {
-                            Log.d("test", "time is : " + times);
-                        }
-                    });
-                    cyMediaEncodec.startRecord();
-                    button.setText("正在录制");
-                }else {
-                    cyMediaEncodec.stopRecord();
-                    button.setText("开始录制");
-                    cyMediaEncodec = null;
-                }
             }
         });
     }
 
+    private void initView(){
+
+
+
+    }
+
+    private void record(int samplerate, int channels){
+        if(cyMediaEncodec == null)
+        {
+            cyMediaEncodec = new CyMediaEncodec(Main2Activity.this, cyCameraView.getTextureId());
+            cyMediaEncodec.initEncodec(cyCameraView.getEglContext(),
+                    Environment.getExternalStorageDirectory().getAbsolutePath() + "/测试视频.mp4",720, 1280, samplerate, channels);
+            cyMediaEncodec.setOnMediaInfoListener(new CyBaseMediaEncoder.OnMediaInfoListener() {
+                @Override
+                public void onMediaTime(int times) {
+                    Log.d("chen188669", "time is : " + times);
+                }
+            });
+            cyMediaEncodec.startRecord();
+        }
+        else
+        {
+            cyMediaEncodec.stopRecord();
+            button.setText("开始录制");
+            cyMediaEncodec = null;
+        }
+    }
 }
