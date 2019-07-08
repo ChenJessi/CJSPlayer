@@ -2,10 +2,12 @@ package com.chen.cyplayer.opengl;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -18,30 +20,30 @@ import java.nio.ByteBuffer;
  * @email 188669@163.com
  */
 public class CyShaderUtil {
-    public static String getRawResource(Context context , int rawId){
+    public static String getRawResource(Context context, int rawId) {
         InputStream inputStream = context.getResources().openRawResource(rawId);
-        BufferedReader reader =new BufferedReader(new InputStreamReader(inputStream));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuffer sb = new StringBuffer();
         String line;
         try {
-            while ((line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 sb.append(line).append("\n");
             }
             reader.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-      return sb.toString();
+        return sb.toString();
     }
 
-    public static int loadShader(int shaderType, String source){
+    public static int loadShader(int shaderType, String source) {
         int shader = GLES20.glCreateShader(shaderType);
-        if (shader != 0){
+        if (shader != 0) {
             GLES20.glShaderSource(shader, source);
             GLES20.glCompileShader(shader);
             int[] compile = new int[1];
             GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compile, 0);
-            if (compile[0] != GLES20.GL_TRUE){
+            if (compile[0] != GLES20.GL_TRUE) {
                 Log.d("Shader", "shader compile error");
                 GLES20.glDeleteShader(shader);
                 shader = 0;
@@ -50,23 +52,23 @@ public class CyShaderUtil {
         return shader;
     }
 
-    public static int createProgram(String vertexSource , String fragmentSource){
-        int vertexShader  = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        if (vertexShader == 0){
+    public static int createProgram(String vertexSource, String fragmentSource) {
+        int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
+        if (vertexShader == 0) {
             return 0;
         }
-        int fragmentShader  = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
-        if (vertexShader == 0){
+        int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
+        if (vertexShader == 0) {
             return 0;
         }
         int program = GLES20.glCreateProgram();
-        if (program != 0){
+        if (program != 0) {
             GLES20.glAttachShader(program, vertexShader);
             GLES20.glAttachShader(program, fragmentShader);
             GLES20.glLinkProgram(program);
             int[] linsStatus = new int[1];
             GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linsStatus, 0);
-            if (linsStatus[0] != GLES20.GL_TRUE){
+            if (linsStatus[0] != GLES20.GL_TRUE) {
                 Log.d("Shader", "link program error");
                 GLES20.glDeleteProgram(program);
                 program = 0;
@@ -92,12 +94,11 @@ public class CyShaderUtil {
         Canvas canvas = new Canvas(bm);
 
         canvas.drawColor(Color.parseColor(bgColor));
-        canvas.drawText(text, padding, - top + padding, paint);
+        canvas.drawText(text, padding, -top + padding, paint);
         return bm;
     }
 
-    public static int loadBitmapTexture(Bitmap bitmap)
-    {
+    public static int loadBitmapTexture(Bitmap bitmap) {
         int[] textureIds = new int[1];
         GLES20.glGenTextures(1, textureIds, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureIds[0]);
@@ -115,4 +116,22 @@ public class CyShaderUtil {
         return textureIds[0];
     }
 
+    public static int loadTexrute(int src, Context context) {
+        int[] textureIds = new int[1];
+        GLES20.glGenTextures(1, textureIds, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureIds[0]);
+
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), src);
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        bitmap.recycle();
+        bitmap = null;
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        return textureIds[0];
+
+    }
 }
