@@ -35,8 +35,8 @@ public class FboRender {
     private int program;
     private int vPosition;
     private int fPosition;
-    private int textureid;
-    private int sampler;
+//    private int textureid;
+//    private int sampler;
 
     private int vboId;
 
@@ -63,7 +63,7 @@ public class FboRender {
 
         vPosition = GLES20.glGetAttribLocation(program, "v_Position");
         fPosition = GLES20.glGetAttribLocation(program, "f_Position");
-        sampler = GLES20.glGetUniformLocation(program, "sTexture");
+//        sampler = GLES20.glGetUniformLocation(program, "sTexture");
 
         int [] vbos = new int[1];
         GLES20.glGenBuffers(1, vbos, 0);
