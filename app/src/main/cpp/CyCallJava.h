@@ -3,7 +3,7 @@
 //
 #include <jni.h>
 #include <cstddef>
-#include "androidLog.h"
+#include "AndroidLog.h"
 #ifndef CYPLAYER_CYCALLJAVA_H
 #define CYPLAYER_CYCALLJAVA_H
 #define MAIN_THREAD 0

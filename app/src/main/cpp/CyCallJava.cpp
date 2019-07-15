@@ -3,7 +3,7 @@
 //
 
 #include "CyCallJava.h"
-#include "androidLog.h"
+#include "AndroidLog.h"
 
 CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
 

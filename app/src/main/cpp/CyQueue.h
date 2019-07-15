@@ -7,7 +7,7 @@
 
 #include "queue"
 #include "pthread.h"
-#include "androidLog.h"
+#include "AndroidLog.h"
 #include "CyPlaystatus.h"
 
 extern "C"{

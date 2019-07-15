@@ -3,7 +3,7 @@
 //
 
 #include "CyBufferQueue.h"
-#include "androidLog.h"
+#include "AndroidLog.h"
 
 CyBufferQueue::CyBufferQueue(CyPlaystatus *playstatus) {
  this->cyPlaystatus = playstatus;

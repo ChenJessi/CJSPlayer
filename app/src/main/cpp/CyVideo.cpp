@@ -64,7 +64,7 @@ void *playVideo(void *data) {
                 av_free(avPacket);
                 continue;
             }
-            avPacket == NULL;
+            avPacket = NULL;
 
         } else if (video->codectype == CODEC_YUV) {
             pthread_mutex_lock(&video->codecMutex);
@@ -78,6 +78,7 @@ void *playVideo(void *data) {
             }
 
             AVFrame *avFrame = av_frame_alloc();
+            
             if (avcodec_receive_frame(video->avCodecContext, avFrame) != NULL) {
                 av_frame_free(&avFrame);
                 av_free(avFrame);
