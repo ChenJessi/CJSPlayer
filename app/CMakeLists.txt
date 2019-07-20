@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
-
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNO_CRYPTO")
 include_directories(src/main/cpp/include)
 include_directories(src/main/cpp/soundtouch/include)
 include_directories(src/main/cpp/soundtouch/SoundTouch)
@@ -32,6 +32,12 @@ add_library( # Sets the name of the library.
         src/main/cpp/soundtouch/SoundTouch/InterpolateShannon.cpp
         src/main/cpp/soundtouch/SoundTouch/TDStretch.cpp
         src/main/cpp/soundtouch/SoundTouch/PeakFinder.cpp
+
+        src/main/cpp/librtmp/amf.c
+        src/main/cpp/librtmp/hashswf.c
+        src/main/cpp/librtmp/log.c
+        src/main/cpp/librtmp/parseurl.c
+        src/main/cpp/librtmp/rtmp.c
         )
 
 # Import ffmpeg part
