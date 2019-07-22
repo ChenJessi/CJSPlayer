@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.4.1)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNO_CRYPTO")
 include_directories(src/main/cpp/include)
+include_directories(src/main/cpp/librtmp)
+include_directories(src/main/cpp/push)
 include_directories(src/main/cpp/soundtouch/include)
 include_directories(src/main/cpp/soundtouch/SoundTouch)
 
@@ -17,6 +19,9 @@ add_library( # Sets the name of the library.
         src/main/cpp/CyPcmBean.cpp
         src/main/cpp/CyBufferQueue.cpp
         src/main/cpp/CyVideo.cpp
+
+        src/main/cpp/push/RtmpPush.cpp
+        src/main/cpp/push/CyPushQueue.cpp
 
         src/main/cpp/RecordBuffer.cpp
 

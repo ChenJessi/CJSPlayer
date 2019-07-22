@@ -331,3 +331,22 @@ Java_com_chen_cyplayer_RecordActivity_stopRecord(JNIEnv *env, jobject instance) 
     finish = true;
 
 }
+
+
+#include "push/RtmpPush.h"
+
+RtmpPush * rtmpPush = NULL;
+//
+//push rtmp 推流
+//
+ extern "C"
+JNIEXPORT void JNICALL
+Java_com_chen_cyplayer_push_CyPushVideo_initPush(JNIEnv *env, jobject instance, jstring pushUrl_) {
+    const char *pushUrl = env->GetStringUTFChars(pushUrl_, 0);
+
+    // TODO
+    rtmpPush = new RtmpPush(pushUrl);
+    rtmpPush->init();
+
+    env->ReleaseStringUTFChars(pushUrl_, pushUrl);
+}
