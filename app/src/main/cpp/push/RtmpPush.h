@@ -9,6 +9,8 @@
 #include <string.h>
 #include "pthread.h"
 #include "CyPushQueue.h"
+#include "CyCallJava.h"
+#include "../CyCallJava.h"
 
 extern "C"{
 #include "../librtmp/rtmp.h"
@@ -19,9 +21,10 @@ public:
     char *url = NULL;
     CyPushQueue *queue = NULL;
     pthread_t push_thread;
+    CyCallJava *callJava = NULL;
 
 public:
-    RtmpPush(const char *url);
+    RtmpPush(const char *url, CyCallJava *callJava);
     ~RtmpPush();
 
     void init();

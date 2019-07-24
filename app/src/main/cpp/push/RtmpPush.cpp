@@ -5,10 +5,11 @@
 #include "RtmpPush.h"
 
 
-RtmpPush::RtmpPush(const char *url) {
+RtmpPush::RtmpPush(const char *url, CyCallJava *callJava) {
     this->url = static_cast<char *>(malloc(512));
     strcpy(this->url, url);
     this->queue = new CyPushQueue();
+    this->callJava = callJava;
 }
 
 RtmpPush::~RtmpPush() {
@@ -19,6 +20,7 @@ RtmpPush::~RtmpPush() {
 
 void *callBackPush(void *data){
     RtmpPush *rtmpPush = static_cast<RtmpPush *>(data);
+
     rtmpPush->rtmp = RTMP_Alloc();
     RTMP_Init(rtmpPush->rtmp);
     rtmpPush->rtmp->Link.timeout = 10;
@@ -28,13 +30,17 @@ void *callBackPush(void *data){
 
     if (!RTMP_Connect(rtmpPush->rtmp, NULL)){
         LOGE("can not connect the url");
+        rtmpPush->callJava->onConnectFail("can not connect the url");
         goto end;
     }
     if(!RTMP_ConnectStream(rtmpPush->rtmp, 0)) {
         LOGE("can not connect the stream of service");
+        rtmpPush->callJava->onConnectFail("can not connect the stream of service");
         goto end;
     }
     LOGD("链接成功， 开始推流");
+    rtmpPush->callJava->onConnectsuccess();
+
     end:
     RTMP_Close(rtmpPush->rtmp);
     RTMP_Free(rtmpPush->rtmp);
@@ -43,5 +49,6 @@ void *callBackPush(void *data){
 }
 
 void RtmpPush::init() {
+    callJava->onConnectint(CHILD_THREAD);
     pthread_create(&push_thread, NULL, callBackPush, this);
 }

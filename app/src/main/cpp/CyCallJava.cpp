@@ -13,18 +13,18 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     this->jobj = env->NewGlobalRef(jobj);
 
     jclass jlz = jniEnv->GetObjectClass(jobj);
-    if (!jlz){
-        if (LOG_DEBUG){
+    if (!jlz) {
+        if (LOG_DEBUG) {
             LOGE("get jclass wrong!");
         }
-        return ;
+        return;
     }
-    jmid_prepared = env->GetMethodID(jlz,"onCallPrepared","()V");
-    jmid_load = env->GetMethodID(jlz,"onCallLoad","(Z)V");
-    jmid_timeInfo = env->GetMethodID(jlz,"onCallTimeInfo","(II)V");
-    jmid_error = env->GetMethodID(jlz,"onCallError","(ILjava/lang/String;)V");
-    jmid_complete = env->GetMethodID(jlz,"onCallComplete","()V");
-    jmid_valumeDB = env->GetMethodID(jlz,"onCallValumeDB","(I)V");
+    jmid_prepared = env->GetMethodID(jlz, "onCallPrepared", "()V");
+    jmid_load = env->GetMethodID(jlz, "onCallLoad", "(Z)V");
+    jmid_timeInfo = env->GetMethodID(jlz, "onCallTimeInfo", "(II)V");
+    jmid_error = env->GetMethodID(jlz, "onCallError", "(ILjava/lang/String;)V");
+    jmid_complete = env->GetMethodID(jlz, "onCallComplete", "()V");
+    jmid_valumeDB = env->GetMethodID(jlz, "onCallValumeDB", "(I)V");
     jmid_pcmtoaac = env->GetMethodID(jlz, "encodecPcmToAAc", "(I[B)V");
     jmid_pcminfo = env->GetMethodID(jlz, "onCallPcmInfo", "(I[B)V");
     jmid_pcmrate = env->GetMethodID(jlz, "onCallPcmRate", "(I)V");
@@ -32,68 +32,77 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     jmid_supportvideo = env->GetMethodID(jlz, "onCallIsSupportMediaCodec", "(Ljava/lang/String;)Z");
     jmid_initMediaCodec = env->GetMethodID(jlz, "initMediaCodec", "(Ljava/lang/String;II[B[B)V");
     jmid_decodeAVPacket = env->GetMethodID(jlz, "decodeAVPacket", "(I[B)V");
+
+    //push
+    jmid_connecting = jniEnv->GetMethodID(jlz, "onConnecting", "()V");
+    jmid_connectsuccess = jniEnv->GetMethodID(jlz, "onConnectSuccess", "()V");
+    jmid_connectfail = jniEnv->GetMethodID(jlz, "onConnectFial", "(Ljava/lang/String;)V");
 }
 
+CyCallJava::~CyCallJava() {
+    jniEnv->DeleteGlobalRef(jobj);
+    javaVM = NULL;
+    jniEnv = NULL;
+}
+
+
 void CyCallJava::onCallPrepared(int type) {
-    if (type == MAIN_THREAD){
-        jniEnv->CallVoidMethod(jobj,jmid_prepared);
-    } else if (type == CHILD_THREAD){
+    if (type == MAIN_THREAD) {
+        jniEnv->CallVoidMethod(jobj, jmid_prepared);
+    } else if (type == CHILD_THREAD) {
         JNIEnv *jniEnv;
-        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
             if (LOG_DEBUG) {
                 LOGE("get child thread jnienv worng!");
             }
             return;
         }
-        jniEnv->CallVoidMethod(jobj,jmid_prepared);
+        jniEnv->CallVoidMethod(jobj, jmid_prepared);
         javaVM->DetachCurrentThread();
     };
 }
 
 void CyCallJava::onCallLoad(int type, bool load) {
-    if (type == MAIN_THREAD){
-        jniEnv->CallVoidMethod(jobj,jmid_load);
-    } else if (type == CHILD_THREAD){
+    if (type == MAIN_THREAD) {
+        jniEnv->CallVoidMethod(jobj, jmid_load);
+    } else if (type == CHILD_THREAD) {
         JNIEnv *jniEnv;
-        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
             if (LOG_DEBUG) {
                 LOGE("call onCallLoad worng!");
             }
             return;
         }
-        jniEnv->CallVoidMethod(jobj,jmid_load,load);
+        jniEnv->CallVoidMethod(jobj, jmid_load, load);
         javaVM->DetachCurrentThread();
     };
 }
 
 void CyCallJava::onCallTimeInfo(int type, int currentTime, int totalTime) {
-    if (type == MAIN_THREAD){
-        jniEnv->CallVoidMethod(jobj,jmid_timeInfo);
-    } else if (type == CHILD_THREAD){
+    if (type == MAIN_THREAD) {
+        jniEnv->CallVoidMethod(jobj, jmid_timeInfo);
+    } else if (type == CHILD_THREAD) {
         JNIEnv *jniEnv;
-        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
             if (LOG_DEBUG) {
                 LOGE("call onCallTimeInfo worng!");
             }
             return;
         }
-        jniEnv->CallVoidMethod(jobj,jmid_timeInfo, currentTime, totalTime);
+        jniEnv->CallVoidMethod(jobj, jmid_timeInfo, currentTime, totalTime);
         javaVM->DetachCurrentThread();
     };
 }
 
-CyCallJava::~CyCallJava() {
-
-}
 
 void CyCallJava::onCallError(int type, int code, char *msg) {
-    if (type == MAIN_THREAD){
+    if (type == MAIN_THREAD) {
         jstring jmsg = jniEnv->NewStringUTF(msg);
         jniEnv->CallVoidMethod(jobj, jmid_error, code, jmsg);
         jniEnv->DeleteLocalRef(jmsg);
-    } else if (type == CHILD_THREAD){
+    } else if (type == CHILD_THREAD) {
         JNIEnv *jniEnv;
-        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
             if (LOG_DEBUG) {
                 LOGE("call onCallError worng!");
             }
@@ -108,39 +117,39 @@ void CyCallJava::onCallError(int type, int code, char *msg) {
 }
 
 void CyCallJava::onCallComplete(int type) {
-    if (type == MAIN_THREAD){
-        jniEnv->CallVoidMethod(jobj,jmid_complete);
-    } else if (type == CHILD_THREAD){
+    if (type == MAIN_THREAD) {
+        jniEnv->CallVoidMethod(jobj, jmid_complete);
+    } else if (type == CHILD_THREAD) {
         JNIEnv *jniEnv;
-        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
             if (LOG_DEBUG) {
                 LOGE("call onCallComplete worng!");
             }
             return;
         }
-        jniEnv->CallVoidMethod(jobj,jmid_complete);
+        jniEnv->CallVoidMethod(jobj, jmid_complete);
         javaVM->DetachCurrentThread();
     };
 }
 
 void CyCallJava::onCallValumeDB(int type, int db) {
-    if (type == MAIN_THREAD){
-        jniEnv->CallVoidMethod(jobj,jmid_valumeDB);
-    } else if (type == CHILD_THREAD){
+    if (type == MAIN_THREAD) {
+        jniEnv->CallVoidMethod(jobj, jmid_valumeDB);
+    } else if (type == CHILD_THREAD) {
         JNIEnv *jniEnv;
-        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
             if (LOG_DEBUG) {
                 LOGE("call onCallValumeDB worng!");
             }
             return;
         }
-        jniEnv->CallVoidMethod(jobj,jmid_valumeDB, db);
+        jniEnv->CallVoidMethod(jobj, jmid_valumeDB, db);
         javaVM->DetachCurrentThread();
     };
 }
 
 void CyCallJava::onCallPcmToAAC(int type, int size, void *buffer) {
-    if(type == MAIN_THREAD) {
+    if (type == MAIN_THREAD) {
         jbyteArray jbuffer = jniEnv->NewByteArray(size);
         jniEnv->SetByteArrayRegion(jbuffer, 0, size, static_cast<const jbyte *>(buffer));
 
@@ -148,11 +157,10 @@ void CyCallJava::onCallPcmToAAC(int type, int size, void *buffer) {
 
         jniEnv->DeleteLocalRef(jbuffer);
 
-    }
-    else if(type == CHILD_THREAD) {
+    } else if (type == CHILD_THREAD) {
         JNIEnv *jniEnv;
-        if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
-            if(LOG_DEBUG) {
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+            if (LOG_DEBUG) {
                 LOGE("call onCallPcmToAAC worng");
             }
             return;
@@ -170,8 +178,8 @@ void CyCallJava::onCallPcmToAAC(int type, int size, void *buffer) {
 
 void CyCallJava::onCallPcmInfo(int size, void *buffer) {
     JNIEnv *jniEnv;
-    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
-        if(LOG_DEBUG) {
+    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if (LOG_DEBUG) {
             LOGE("call onCallPcmInfo worng");
         }
         return;
@@ -188,8 +196,8 @@ void CyCallJava::onCallPcmInfo(int size, void *buffer) {
 
 void CyCallJava::onCallPcmRate(int samplerate) {
     JNIEnv *jniEnv;
-    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
-        if(LOG_DEBUG) {
+    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if (LOG_DEBUG) {
             LOGE("call onCallPcmRate worng");
         }
         return;
@@ -201,8 +209,8 @@ void CyCallJava::onCallPcmRate(int samplerate) {
 
 void CyCallJava::onCallRenderYUV(int width, int height, uint8_t *fy, uint8_t *fu, uint8_t *fv) {
     JNIEnv *jniEnv;
-    if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
-        if(LOG_DEBUG) {
+    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if (LOG_DEBUG) {
             LOGE("call onCallRenderYUV worng");
         }
         return;
@@ -232,7 +240,7 @@ bool CyCallJava::onCallSupportVideo(const char *ffcodename) {
     }
 
     jstring jname = jniEnv->NewStringUTF(ffcodename);
-    support = jniEnv->CallBooleanMethod(jobj,jmid_supportvideo,jname);
+    support = jniEnv->CallBooleanMethod(jobj, jmid_supportvideo, jname);
     jniEnv->DeleteLocalRef(jname);
     javaVM->DetachCurrentThread();
     return support;
@@ -241,8 +249,8 @@ bool CyCallJava::onCallSupportVideo(const char *ffcodename) {
 void CyCallJava::onCallInitMediaCodec(const char *mime, int width, int height, int csd0_size,
                                       int csd1_size, uint8_t *csd_0, uint8_t *csd_1) {
     JNIEnv *jniEnv;
-    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK){
-        if (LOG_DEBUG){
+    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if (LOG_DEBUG) {
             LOGE("call onCallInitMediaCodec worng")
         }
         return;
@@ -253,7 +261,7 @@ void CyCallJava::onCallInitMediaCodec(const char *mime, int width, int height, i
     jbyteArray csd1 = jniEnv->NewByteArray(csd1_size);
     jniEnv->SetByteArrayRegion(csd1, 0, csd1_size, reinterpret_cast<const jbyte *>(csd_1));
 
-    jniEnv->CallVoidMethod(jobj,jmid_initMediaCodec, jmime, width, height, csd0, csd1);
+    jniEnv->CallVoidMethod(jobj, jmid_initMediaCodec, jmime, width, height, csd0, csd1);
 
     jniEnv->DeleteLocalRef(jmime);
     jniEnv->DeleteLocalRef(csd0);
@@ -263,16 +271,52 @@ void CyCallJava::onCallInitMediaCodec(const char *mime, int width, int height, i
 
 void CyCallJava::onCallDecodeAVPacket(int datasize, uint8_t *packetdata) {
     JNIEnv *jniEnv;
-    if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
-        if (LOG_DEBUG){
+    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        if (LOG_DEBUG) {
             LOGE("call onCallDecodeAVPacket worng")
         }
         return;
     }
     jbyteArray jdata = jniEnv->NewByteArray(datasize);
     jniEnv->SetByteArrayRegion(jdata, 0, datasize, reinterpret_cast<const jbyte *>(packetdata));
-    jniEnv->CallVoidMethod(jobj, jmid_decodeAVPacket,datasize , jdata);
+    jniEnv->CallVoidMethod(jobj, jmid_decodeAVPacket, datasize, jdata);
     jniEnv->DeleteLocalRef(jdata);
+    javaVM->DetachCurrentThread();
+}
+
+void CyCallJava::onConnectint(int type) {
+    if (type == CHILD_THREAD) {
+        JNIEnv *jniEnv;
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+            return;
+        }
+        jniEnv->CallVoidMethod(jobj, jmid_connecting);
+        javaVM->DetachCurrentThread();
+    } else {
+        jniEnv->CallVoidMethod(jobj, jmid_connecting);
+    }
+}
+
+void CyCallJava::onConnectsuccess() {
+    JNIEnv *jniEnv;
+    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        return;
+    }
+    jniEnv->CallVoidMethod(jobj, jmid_connectsuccess);
+    javaVM->DetachCurrentThread();
+}
+
+void CyCallJava::onConnectFail(char *msg) {
+    JNIEnv *jniEnv;
+    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+        return;
+    }
+
+    jstring jmsg = jniEnv->NewStringUTF(msg);
+
+    jniEnv->CallVoidMethod(jobj, jmid_connectfail, jmsg);
+
+    jniEnv->DeleteLocalRef(jmsg);
     javaVM->DetachCurrentThread();
 }
 

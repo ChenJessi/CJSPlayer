@@ -63,7 +63,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
     return JNI_VERSION_1_4;
 };
-
+extern "C"
+JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved){
+    javaVM = NULL;
+}
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_chen_cyplayer_player_CyPlayer_n_1pause(JNIEnv *env, jobject instance) {
@@ -345,6 +348,7 @@ Java_com_chen_cyplayer_push_CyPushVideo_initPush(JNIEnv *env, jobject instance, 
     const char *pushUrl = env->GetStringUTFChars(pushUrl_, 0);
 
     // TODO
+    callJava = new CyCallJava(javaVM, env, &instance);
     rtmpPush = new RtmpPush(pushUrl);
     rtmpPush->init();
 

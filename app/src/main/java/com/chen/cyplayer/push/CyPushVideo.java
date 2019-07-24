@@ -11,10 +11,35 @@ public class CyPushVideo {
         System.loadLibrary("native-lib");
     }
 
-    public void initLivePush(String url)
-    {
-        if(!TextUtils.isEmpty(url))
-        {
+
+    private CyConnectListenr cyConnectListenr;
+
+
+    public void setCyConnectListenr(CyConnectListenr cyConnectListenr) {
+        this.cyConnectListenr = cyConnectListenr;
+    }
+
+    private void onConnecting() {
+        if (cyConnectListenr != null) {
+            cyConnectListenr.onConnecting();
+        }
+    }
+
+    private void onConnectSuccess() {
+        if (cyConnectListenr != null) {
+            cyConnectListenr.onConnectSuccess();
+        }
+    }
+
+    private void onConnectFial(String msg) {
+        if (cyConnectListenr != null) {
+            cyConnectListenr.onConnectFail(msg);
+        }
+    }
+
+
+    public void initLivePush(String url) {
+        if (!TextUtils.isEmpty(url)) {
             initPush(url);
         }
     }
