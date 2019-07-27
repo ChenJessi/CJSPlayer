@@ -13,7 +13,9 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     this->jobj = env->NewGlobalRef(jobj);
 
     jclass jlz = jniEnv->GetObjectClass(jobj);
+
     if (!jlz) {
+
         if (LOG_DEBUG) {
             LOGE("get jclass wrong!");
         }
@@ -33,10 +35,7 @@ CyCallJava::CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
     jmid_initMediaCodec = env->GetMethodID(jlz, "initMediaCodec", "(Ljava/lang/String;II[B[B)V");
     jmid_decodeAVPacket = env->GetMethodID(jlz, "decodeAVPacket", "(I[B)V");
 
-    //push
-    jmid_connecting = jniEnv->GetMethodID(jlz, "onConnecting", "()V");
-    jmid_connectsuccess = jniEnv->GetMethodID(jlz, "onConnectSuccess", "()V");
-    jmid_connectfail = jniEnv->GetMethodID(jlz, "onConnectFial", "(Ljava/lang/String;)V");
+
 }
 
 CyCallJava::~CyCallJava() {
@@ -284,41 +283,6 @@ void CyCallJava::onCallDecodeAVPacket(int datasize, uint8_t *packetdata) {
     javaVM->DetachCurrentThread();
 }
 
-void CyCallJava::onConnectint(int type) {
-    if (type == CHILD_THREAD) {
-        JNIEnv *jniEnv;
-        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
-            return;
-        }
-        jniEnv->CallVoidMethod(jobj, jmid_connecting);
-        javaVM->DetachCurrentThread();
-    } else {
-        jniEnv->CallVoidMethod(jobj, jmid_connecting);
-    }
-}
-
-void CyCallJava::onConnectsuccess() {
-    JNIEnv *jniEnv;
-    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
-        return;
-    }
-    jniEnv->CallVoidMethod(jobj, jmid_connectsuccess);
-    javaVM->DetachCurrentThread();
-}
-
-void CyCallJava::onConnectFail(char *msg) {
-    JNIEnv *jniEnv;
-    if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
-        return;
-    }
-
-    jstring jmsg = jniEnv->NewStringUTF(msg);
-
-    jniEnv->CallVoidMethod(jobj, jmid_connectfail, jmsg);
-
-    jniEnv->DeleteLocalRef(jmsg);
-    javaVM->DetachCurrentThread();
-}
 
 
 

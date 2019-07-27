@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string>
+
 #include "AndroidLog.h"
 #include "CyCallJava.h"
 #include "CyFFmpeg.h"
@@ -337,8 +338,10 @@ Java_com_chen_cyplayer_RecordActivity_stopRecord(JNIEnv *env, jobject instance) 
 
 
 #include "push/RtmpPush.h"
+#include "push/CyPushCallJava.h"
 
 RtmpPush * rtmpPush = NULL;
+CyPushCallJava *pushCallJava = NULL;
 //
 //push rtmp 推流
 //
@@ -348,9 +351,12 @@ Java_com_chen_cyplayer_push_CyPushVideo_initPush(JNIEnv *env, jobject instance, 
     const char *pushUrl = env->GetStringUTFChars(pushUrl_, 0);
 
     // TODO
-    callJava = new CyCallJava(javaVM, env, &instance);
-    rtmpPush = new RtmpPush(pushUrl);
-    rtmpPush->init();
+    LOGE("callJava 初始化");
+    pushCallJava = new CyPushCallJava(javaVM, env, &instance);
 
+    LOGE("callJava 初始化成功");
+    rtmpPush = new RtmpPush(pushUrl , pushCallJava);
+    rtmpPush->init();
+    LOGE("callJava 初始化成功  rtmpPush");
     env->ReleaseStringUTFChars(pushUrl_, pushUrl);
 }

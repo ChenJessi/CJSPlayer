@@ -5,7 +5,7 @@
 #include "RtmpPush.h"
 
 
-RtmpPush::RtmpPush(const char *url, CyCallJava *callJava) {
+RtmpPush::RtmpPush(const char *url, CyPushCallJava *callJava) {
     this->url = static_cast<char *>(malloc(512));
     strcpy(this->url, url);
     this->queue = new CyPushQueue();
@@ -19,6 +19,7 @@ RtmpPush::~RtmpPush() {
 }
 
 void *callBackPush(void *data){
+    LOGE("连接失败");
     RtmpPush *rtmpPush = static_cast<RtmpPush *>(data);
 
     rtmpPush->rtmp = RTMP_Alloc();
@@ -49,6 +50,6 @@ void *callBackPush(void *data){
 }
 
 void RtmpPush::init() {
-    callJava->onConnectint(CHILD_THREAD);
+    callJava->onConnectint(MAIN_THREAD);
     pthread_create(&push_thread, NULL, callBackPush, this);
 }

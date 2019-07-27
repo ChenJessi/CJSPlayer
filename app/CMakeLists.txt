@@ -22,6 +22,7 @@ add_library( # Sets the name of the library.
 
         src/main/cpp/push/RtmpPush.cpp
         src/main/cpp/push/CyPushQueue.cpp
+        src/main/cpp/push/CyPushCallJava.cpp
 
         src/main/cpp/RecordBuffer.cpp
 

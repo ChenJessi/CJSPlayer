@@ -32,10 +32,7 @@ public:
     jmethodID jmid_decodeAVPacket;
     jmethodID jmid_initMediaCodec;
 
-    //    push
-    jmethodID jmid_connecting;
-    jmethodID jmid_connectsuccess;
-    jmethodID jmid_connectfail;
+
 public:
     CyCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
     ~CyCallJava();
@@ -57,11 +54,6 @@ public:
     void onCallDecodeAVPacket(int datasize, uint8_t *data);
 
 
-    void onConnectint(int type);
-
-    void onConnectsuccess();
-
-    void onConnectFail(char *msg);
 };
 
 
