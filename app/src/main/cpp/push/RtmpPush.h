@@ -23,11 +23,17 @@ public:
     pthread_t push_thread;
     CyPushCallJava *callJava = NULL;
 
+    bool startPushing = false;
+    long startTime = 0;
 public:
     RtmpPush(const char *url, CyPushCallJava *callJava);
     ~RtmpPush();
 
     void init();
+
+    void pushSPSPPS(char *sps, int sps_len, char *pps, int pps_len);
+
+    void pushVideoData(char *data, int data_len, bool keyframe);
 };
 
 

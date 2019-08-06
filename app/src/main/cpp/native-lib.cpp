@@ -360,3 +360,32 @@ Java_com_chen_cyplayer_push_CyPushVideo_initPush(JNIEnv *env, jobject instance, 
     LOGE("callJava 初始化成功  rtmpPush");
     env->ReleaseStringUTFChars(pushUrl_, pushUrl);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_chen_cyplayer_push_CyPushVideo_pushSPSPPS(JNIEnv *env, jobject instance, jbyteArray sps_,
+                                                   jint sps_len, jbyteArray pps_, jint pps_len) {
+    jbyte *sps = env->GetByteArrayElements(sps_, NULL);
+    jbyte *pps = env->GetByteArrayElements(pps_, NULL);
+
+    // TODO
+    if (rtmpPush != NULL){
+        rtmpPush->pushSPSPPS(reinterpret_cast<char *>(sps), sps_len, reinterpret_cast<char *>(pps), pps_len);
+    }
+    env->ReleaseByteArrayElements(sps_, sps, 0);
+    env->ReleaseByteArrayElements(pps_, pps, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_chen_cyplayer_push_CyPushVideo_pushVideoData(JNIEnv *env, jobject instance,
+                                                      jbyteArray data_, jint data_len,
+                                                      jboolean keyframe) {
+    jbyte *data = env->GetByteArrayElements(data_, NULL);
+
+    // TODO
+    if(rtmpPush != NULL) {
+        rtmpPush->pushVideoData(reinterpret_cast<char *>(data), data_len, keyframe);
+    }
+    env->ReleaseByteArrayElements(data_, data, 0);
+}

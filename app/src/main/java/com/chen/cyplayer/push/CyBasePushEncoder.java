@@ -280,6 +280,8 @@ public abstract class CyBasePushEncoder {
         private long pts;
         private byte[] sps;
         private byte[] pps;
+        private boolean keyFrame = false;
+
 
         public VideoEncodecThread(WeakReference<CyBasePushEncoder> encoder) {
             this.encoder = encoder;
@@ -304,7 +306,7 @@ public abstract class CyBasePushEncoder {
                 }
 
                 int outputBufferIndex = videoEncodec.dequeueOutputBuffer(videoBufferinfo, 0);
-
+                keyFrame = false;
                 if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                     MyLog.d("INFO_OUTPUT_FORMAT_CHANGED");
 
@@ -335,8 +337,15 @@ public abstract class CyBasePushEncoder {
                         outputBuffer.get(data, 0, data.length);
                         MyLog.d("data:" + byteToHex(data));
 
+                        if (videoBufferinfo.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME){
+                            keyFrame = true;
+                            if (encoder.get().onMediaInfoListener != null){
+                                encoder.get().onMediaInfoListener.onSPSPPSInfo(sps, pps);
+                            }
+                        }
 
                         if (encoder.get().onMediaInfoListener != null) {
+                            encoder.get().onMediaInfoListener.onVideoInfo(data, keyFrame);
                             encoder.get().onMediaInfoListener.onMediaTime((int) (videoBufferinfo.presentationTimeUs / 1000000));
                         }
                         videoEncodec.releaseOutputBuffer(outputBufferIndex, false);
@@ -413,6 +422,10 @@ public abstract class CyBasePushEncoder {
 
     public interface OnMediaInfoListener {
         void onMediaTime(int times);
+
+        void onSPSPPSInfo(byte[] sps, byte[] pps);
+
+        void onVideoInfo(byte[] data, boolean keyframe);
     }
 
     private long getAudioPts(int size, int sampleRate) {
