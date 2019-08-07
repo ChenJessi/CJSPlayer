@@ -67,7 +67,7 @@ public class LivePushActivity extends AppCompatActivity {
     public void push(View view) {
         start = !start;
         if (start){
-            cyPushVideo.initLivePush("rtmp://send3a.douyu.com/live/6441662rRTGeeLKm?wsSecret=46c2d0b986fb1cbbd21454b300d217c8&wsTime=5d49866a&wsSeek=off&wm=0&tw=0&roirecognition=0");
+            cyPushVideo.initLivePush("rtmp://send3a.douyu.com/live/6441662rCTzoSAsu?wsSecret=e26f45105bc61f8d7329ebeda86c1cc7&wsTime=5d4ac28f&wsSeek=off&wm=0&tw=0&roirecognition=0");
         }else {
             if(cyPushEncodec != null)
             {
