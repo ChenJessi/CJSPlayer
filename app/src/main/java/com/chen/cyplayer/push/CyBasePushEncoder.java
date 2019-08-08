@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Surface;
 
 
+import com.chen.cyplayer.audiorecord.AudioRecordUitl;
 import com.chen.cyplayer.log.MyLog;
 import com.chen.cyplayer.opengl.CyEGLSurfaceView;
 import com.chen.cyplayer.opengl.EglHelper;
@@ -40,7 +41,7 @@ public abstract class CyBasePushEncoder {
     private CyEGLMediaThread cyEGLMediaThread;
     private VideoEncodecThread videoEncodecThread;
     private AudioEncodecThread audioEncodecThread;
-
+    private AudioRecordUitl audioRecordUitl;
 
     private CyEGLSurfaceView.CyGLRender cyGLRender;
 
@@ -69,11 +70,11 @@ public abstract class CyBasePushEncoder {
         this.onMediaInfoListener = onMediaInfoListener;
     }
 
-    public void initEncodec(EGLContext eglContext, int width, int height, int sampleRate, int channelCount) {
+    public void initEncodec(EGLContext eglContext, int width, int height) {
         this.width = width;
         this.height = height;
         this.eglContext = eglContext;
-        initMediaEncodec(width, height, sampleRate, channelCount);
+        initMediaEncodec(width, height, 44100, 2);
     }
 
     public void startRecord() {
@@ -88,12 +89,14 @@ public abstract class CyBasePushEncoder {
             cyEGLMediaThread.isChange = true;
             cyEGLMediaThread.start();
             videoEncodecThread.start();
-            //audioEncodecThread.start();
+            audioEncodecThread.start();
+            audioRecordUitl.startRecord();
         }
     }
 
     public void stopRecord() {
         if (cyEGLMediaThread != null && videoEncodecThread != null && audioEncodecThread != null) {
+            audioRecordUitl.stopRecord();
             videoEncodecThread.exit();
             audioEncodecThread.exit();
             cyEGLMediaThread.onDestory();
@@ -106,8 +109,19 @@ public abstract class CyBasePushEncoder {
     private void initMediaEncodec(int width, int height, int sampleRate, int channelCount) {
         initVideoEncodec(MediaFormat.MIMETYPE_VIDEO_AVC, width, height);
         initAudioEncodec(MediaFormat.MIMETYPE_AUDIO_AAC, sampleRate, channelCount);
+        initPCMRecord();
     }
-
+    private void initPCMRecord(){
+        audioRecordUitl = new AudioRecordUitl();
+        audioRecordUitl.setOnRecordListener(new AudioRecordUitl.OnRecordListener() {
+            @Override
+            public void recordByte(byte[] audioData, int readSize) {
+                if (audioRecordUitl.isStart()){
+                    putPCMData(audioData, readSize);
+                }
+            }
+        });
+    }
 
     private void initVideoEncodec(String mimeType, int width, int height) {
         try {
@@ -139,7 +153,7 @@ public abstract class CyBasePushEncoder {
             audioFormat = MediaFormat.createAudioFormat(mimeType, sampleRate, channelCount);
             audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, 96000);
             audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
-            audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 4096);
+            audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 4096 * 10);
 
             audioEncodec = MediaCodec.createEncoderByType(mimeType);
             audioEncodec.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
@@ -156,7 +170,7 @@ public abstract class CyBasePushEncoder {
         if (audioEncodecThread != null && !audioEncodecThread.isExit && buffer != null && size > 0) {
             int inputBufferindex = audioEncodec.dequeueInputBuffer(0);
             if (inputBufferindex >= 0) {
-                ByteBuffer byteBuffer = audioEncodec.getInputBuffers()[inputBufferindex];
+                ByteBuffer byteBuffer = audioEncodec.getInputBuffer(inputBufferindex);
                 byteBuffer.clear();
                 byteBuffer.put(buffer);
                 long pts = getAudioPts(size, sampleRate);
@@ -406,6 +420,13 @@ public abstract class CyBasePushEncoder {
                             pts = bufferInfo.presentationTimeUs;
                         }
                         bufferInfo.presentationTimeUs = bufferInfo.presentationTimeUs - pts;
+
+                        byte[] data = new byte[outputBuffer.remaining()];
+                        outputBuffer.get(data, 0, data.length);
+                        if (encoder.get().onMediaInfoListener != null){
+                            encoder.get().onMediaInfoListener.onAudioInfo(data);
+                        }
+
                         audioEncodec.releaseOutputBuffer(outputBufferIndex, false);
                         outputBufferIndex = audioEncodec.dequeueOutputBuffer(bufferInfo, 0);
                     }
@@ -426,6 +447,8 @@ public abstract class CyBasePushEncoder {
         void onSPSPPSInfo(byte[] sps, byte[] pps);
 
         void onVideoInfo(byte[] data, boolean keyframe);
+
+        void onAudioInfo(byte[] data);
     }
 
     private long getAudioPts(int size, int sampleRate) {

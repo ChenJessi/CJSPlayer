@@ -21,7 +21,7 @@ RtmpPush::~RtmpPush() {
 void *callBackPush(void *data){
     LOGE("连接失败");
     RtmpPush *rtmpPush = static_cast<RtmpPush *>(data);
-
+    rtmpPush->startPushing = false;
     rtmpPush->rtmp = RTMP_Alloc();
     RTMP_Init(rtmpPush->rtmp);
     rtmpPush->rtmp->Link.timeout = 10;
@@ -39,7 +39,6 @@ void *callBackPush(void *data){
         rtmpPush->callJava->onConnectFail("can not connect the stream of service");
         goto end;
     }
-    LOGD("链接成功， 开始推流");
     rtmpPush->callJava->onConnectsuccess();
     rtmpPush->startPushing = true;
     rtmpPush->startTime = RTMP_GetTime();
@@ -154,4 +153,30 @@ void RtmpPush::pushVideoData(char *data, int data_len, bool keyframe) {
 
     queue->putRtmpPacket(packet);
 
+}
+
+void RtmpPush::pushAudioData(char *data, int data_len) {
+    int bodysize = data_len + 2;
+    RTMPPacket *packet = static_cast<RTMPPacket *>(malloc(sizeof(RTMPPacket)));
+    RTMPPacket_Alloc(packet, bodysize);
+    RTMPPacket_Reset(packet);
+    char *body = packet->m_body;
+    body[0] = 0xAF;
+    body[1] = 0x01;
+    memcpy(&body[2], data, data_len);
+
+    packet->m_packetType = RTMP_PACKET_TYPE_AUDIO;
+    packet->m_nBodySize = bodysize;
+    packet->m_nTimeStamp = RTMP_GetTime() - startTime;
+    packet->m_hasAbsTimestamp = 0;
+    packet->m_nChannel = 0x04;
+    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
+    packet->m_nInfoField2 = rtmp->m_stream_id;
+    queue->putRtmpPacket(packet);
+}
+
+void RtmpPush::pushStop() {
+    startPushing = false;
+    queue->notifyQueue();
+    pthread_join(push_thread, NULL);
 }

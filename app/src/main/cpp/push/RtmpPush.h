@@ -34,6 +34,10 @@ public:
     void pushSPSPPS(char *sps, int sps_len, char *pps, int pps_len);
 
     void pushVideoData(char *data, int data_len, bool keyframe);
+
+    void pushAudioData(char *data, int data_len);
+
+    void pushStop();
 };
 
 

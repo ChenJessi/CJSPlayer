@@ -56,9 +56,27 @@ public class CyPushVideo {
         }
     }
 
+    public void pushAudioData(byte[] data){
+        if (data != null){
+            pushAudioData(data, data.length);
+        }
+    }
+
+    public void stopPush(){
+        pushStop();
+    }
+
+
+
+
+
     private native void initPush(String pushUrl);
 
     private native void pushSPSPPS(byte[] sps, int sps_len, byte[] pps, int pps_len);
 
     private native void pushVideoData(byte[] data, int data_len, boolean keyframe);
+
+    private native void pushAudioData(byte[] data, int data_len);
+
+    private native void pushStop();
 }

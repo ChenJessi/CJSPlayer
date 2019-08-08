@@ -35,7 +35,7 @@ public class LivePushActivity extends AppCompatActivity {
             public void onConnectSuccess() {
                 MyLog.d( "链接服务器成功，可以开始推流了");
                 cyPushEncodec = new CyPushEncodec(LivePushActivity.this, cyCameraView.getTextureId());
-                cyPushEncodec.initEncodec(cyCameraView.getEglContext(), 720 / 2, 1280 / 2, 44100, 2);
+                cyPushEncodec.initEncodec(cyCameraView.getEglContext(), 720 / 2, 1280 / 2);
                 cyPushEncodec.startRecord();
                 cyPushEncodec.setOnMediaInfoListener(new CyBasePushEncoder.OnMediaInfoListener() {
                     @Override
@@ -52,6 +52,11 @@ public class LivePushActivity extends AppCompatActivity {
                     public void onVideoInfo(byte[] data, boolean keyframe) {
                         cyPushVideo.pushVideoData(data, keyframe);
                     }
+
+                    @Override
+                    public void onAudioInfo(byte[] data) {
+                        cyPushVideo.pushAudioData(data);
+                    }
                 });
             }
 
@@ -67,11 +72,12 @@ public class LivePushActivity extends AppCompatActivity {
     public void push(View view) {
         start = !start;
         if (start){
-            cyPushVideo.initLivePush("rtmp://send3a.douyu.com/live/6441662rCTzoSAsu?wsSecret=e26f45105bc61f8d7329ebeda86c1cc7&wsTime=5d4ac28f&wsSeek=off&wm=0&tw=0&roirecognition=0");
+            cyPushVideo.initLivePush("rtmp://send3a.douyu.com/live/6441662rla0fH7Nt?wsSecret=63eef28689098b5568819014e7245fa9&wsTime=5d4c19ef&wsSeek=off&wm=0&tw=0&roirecognition=0");
         }else {
             if(cyPushEncodec != null)
             {
                 cyPushEncodec.stopRecord();
+                cyPushVideo.stopPush();
                 cyPushEncodec = null;
             }
         }
