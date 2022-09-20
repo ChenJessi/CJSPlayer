@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context=".TestActivity">
 
-    <com.chen.cyplayer.opengl.CyGLTextureView
+    <com.chen.cjsplayer.opengl.CyGLTextureView
         android:id="@+id/surfaceView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

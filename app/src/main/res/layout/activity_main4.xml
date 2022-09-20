@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".Main4Activity">
-    <com.chen.cyplayer.yuv.CyYuvView
+    <com.chen.cjsplayer.yuv.CyYuvView
         android:id="@+id/yuvview"
         android:layout_width="match_parent"
         android:layout_height="500dp" />

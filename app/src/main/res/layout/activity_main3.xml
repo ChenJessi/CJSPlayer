@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".Main3Activity">
 
-    <com.chen.cyplayer.imgvideo.CyImgVideoView
+    <com.chen.cjsplayer.imgvideo.CyImgVideoView
         android:id="@+id/imgvideoview"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_width="match_parent"

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".LivePushActivity">
-    <com.chen.cyplayer.camera.CyCameraView
+    <com.chen.cjsplayer.camera.CyCameraView
         android:id="@+id/cyCameraView"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_width="match_parent"
