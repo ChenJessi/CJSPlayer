@@ -1,6 +1,8 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+}
 android {
     compileSdkVersion 31
     defaultConfig {
@@ -12,7 +14,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags "-frtti -fexceptions"
+                //cppFlags "-frtti -fexceptions"
                 abiFilters "armeabi-v7a"
             }
         }
@@ -49,5 +51,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-alpha01'
 
     implementation 'ywl.ywl5320:libmusic:1.2.0'
-    implementation project(":cjsplayer")
+    //implementation project(":cjsplayer")
 }
