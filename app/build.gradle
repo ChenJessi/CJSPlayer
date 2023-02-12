@@ -4,28 +4,23 @@ plugins {
     id 'kotlin-kapt'
 }
 android {
-    compileSdkVersion 31
+    namespace 'com.chen.cyplayer'
+    compileSdk 33
     defaultConfig {
         applicationId "com.chen.cyplayer"
-        minSdkVersion 23
-        targetSdkVersion 31
+        minSdk 23
+        targetSdk 33
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                //cppFlags "-frtti -fexceptions"
-                abiFilters "armeabi-v7a"
-            }
-        }
-//        sourceSets {
-//            main {
-//                jniLibs.srcDirs = ['libs']
+//        externalNativeBuild {
+//            cmake {
+//                abiFilters "armeabi-v7a"
 //            }
 //        }
-        ndk{
-            abiFilters "armeabi-v7a"
-        }
+//        ndk{
+//            abiFilters "armeabi-v7a"
+//        }
     }
     buildTypes {
         release {
@@ -33,23 +28,48 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
+//    externalNativeBuild {
+//        cmake {
+//            path "CMakeLists.txt"
+//        }
+//    }
+    // 升级7.5.0 gradle后发现 run 调试，testOnly 一直为true，暂时没找到解决办法，强制解决
+    android.applicationVariants.all { variant ->
+        String variantName = variant.name
+        println("variantName: variantName : "+variantName)
+        if((variantName == "debug")){
+            println("variantName: variantName >>>> : "+variantName)
+            Task manifestTask = project.getTasks().findByName("processDebugManifest")
+            if((manifestTask != null)){
+                println("manifestTask is not null")
+                manifestTask.doLast{
+                    println("manifestTask doLast")
+                    def files = manifestTask.getOutputs().getFiles()
+                    for (File outfile : files){
+                        def filePath = outfile.absolutePath
+                        println("dexTask: input : "+outfile.name + "  filePath : "+filePath)
+                        def manifestPath = "$filePath/AndroidManifest.xml"
+                        def manifestContent = file(manifestPath).getText('UTF-8')
+                        manifestContent = manifestContent.replaceAll("android:testOnly=\"true\"", "android:testOnly=\"false\"")
+                        file(manifestPath).write(manifestContent, 'UTF-8')
+                    }
+                }
+            }
         }
     }
-
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'com.google.android.material:material:1.3.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.3.0-alpha01'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-alpha01'
 
-    implementation 'ywl.ywl5320:libmusic:1.2.0'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'com.google.android.material:material:1.5.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+
+    //implementation 'ywl.ywl5320:libmusic:1.2.0'
     //implementation project(":cjsplayer")
 }
