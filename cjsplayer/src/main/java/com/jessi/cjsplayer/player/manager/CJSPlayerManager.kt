@@ -1,12 +1,21 @@
 package com.jessi.cjsplayer.player.manager
 
-class CJSPlayerManager : IPlayerManager{
+internal class CJSPlayerManager : IPlayerManager{
 
-
+    init {
+        System.loadLibrary("cjsplayer-native-lib")
+    }
 
     override fun setUrl(url: String) {
         TODO("Not yet implemented")
     }
+
+
+
+
+
+
+
 
 
 }

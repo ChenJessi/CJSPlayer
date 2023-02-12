@@ -13,14 +13,14 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-//        externalNativeBuild {
-//            cmake {
-//                abiFilters "armeabi-v7a"
-//            }
-//        }
-//        ndk{
-//            abiFilters "armeabi-v7a"
-//        }
+        externalNativeBuild {
+            cmake {
+                abiFilters "armeabi-v7a","arm64-v8a"
+            }
+        }
+        ndk{
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
     }
     buildTypes {
         release {
@@ -42,7 +42,7 @@ android {
                     def files = manifestTask.getOutputs().getFiles()
                     for (File outfile : files){
                         def filePath = outfile.absolutePath
-                        println("dexTask: input : "+outfile.name + "  filePath : "+filePath)
+                        println("manifestTask: outfile : "+outfile.name + "  filePath : "+filePath)
                         def manifestPath = "$filePath/AndroidManifest.xml"
                         def manifestContent = file(manifestPath).getText('UTF-8')
                         manifestContent = manifestContent.replaceAll("android:testOnly=\"true\"", "android:testOnly=\"false\"")
@@ -65,5 +65,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
 
-    //implementation project(":cjsplayer")
+    implementation project(":cjsplayer")
 }
