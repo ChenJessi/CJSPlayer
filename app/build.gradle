@@ -4,10 +4,10 @@ plugins {
     id 'kotlin-kapt'
 }
 android {
-    namespace 'com.chen.cyplayer'
+    namespace 'com.chen.cjsplayer'
     compileSdk 33
     defaultConfig {
-        applicationId "com.chen.cyplayer"
+        applicationId "com.chen.cjsplayer"
         minSdk 23
         targetSdk 33
         versionCode 1
@@ -28,11 +28,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-//    externalNativeBuild {
-//        cmake {
-//            path "CMakeLists.txt"
-//        }
-//    }
     // 升级7.5.0 gradle后发现 run 调试，testOnly 一直为true，暂时没找到解决办法，强制解决
     android.applicationVariants.all { variant ->
         String variantName = variant.name
@@ -62,7 +57,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'com.google.android.material:material:1.5.0'
     testImplementation 'junit:junit:4.13.2'
@@ -70,6 +65,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
 
-    //implementation 'ywl.ywl5320:libmusic:1.2.0'
     //implementation project(":cjsplayer")
 }
