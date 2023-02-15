@@ -10,7 +10,7 @@ include_directories(${FFMPEG}/include)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${FFMPEG}/libs/${CMAKE_ANDROID_ARCH_ABI}")
 
 
-file(GLOB resource *.cpp *.h player/*.cpp player/*.h)
+file(GLOB resource *.cpp *.h */*.cpp */*.h)
 
 add_library(
         cjsplayer-native-lib

@@ -6,16 +6,32 @@
 #define CJSPLAYER_CJSPLAYER_H
 
 #include <cstring>
-using namespace std;
+#include "pthread.h"
 
+#include "../codec/AudioChannel.h"
+#include "../codec/VideoChannel.h"
+extern "C"{
+    #include "libavformat/avformat.h"
+};
 class CJSPlayer {
 
 public:
     CJSPlayer(const char *data_source);
     ~CJSPlayer();
 
+    void prepare();
+
+    void prepare_();
+
 private:
-    const char *data_source = nullptr;
+    char *data_source = nullptr;
+    pthread_t pid_prepare = 0;
+
+    pthread_mutex_t init_mutex;
+
+    AVFormatContext *avFormatContext = nullptr;
+
+    int getCodecContext(AVCodecParameters *codecPar, AVCodecContext **avCodecContext);
 };
 
 

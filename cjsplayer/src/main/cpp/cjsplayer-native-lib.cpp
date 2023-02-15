@@ -12,6 +12,7 @@ Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_prepareNative(JNIEnv *e
     const char *data_source = env->GetStringUTFChars(source,0);
 
     auto player = new CJSPlayer(data_source);
+    player->prepare();
     env->ReleaseStringUTFChars(source, data_source);
 
 }
