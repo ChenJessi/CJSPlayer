@@ -28,6 +28,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    viewBinding {
+        enabled = true
+    }
+
     // 升级7.5.0 gradle后发现 run 调试，testOnly 一直为true，暂时没找到解决办法，强制解决
     android.applicationVariants.all { variant ->
         String variantName = variant.name

@@ -5,7 +5,6 @@
 #ifndef CJSPLAYER_VIDEOCHANNEL_H
 #define CJSPLAYER_VIDEOCHANNEL_H
 
-
 class VideoChannel {
 
 };

@@ -2,11 +2,15 @@ package com.jessi.cjsplayer.player
 
 import com.jessi.cjsplayer.player.base.IPlayerManager
 import com.jessi.cjsplayer.player.base.OnPreparedListener
+import com.jessi.cjsplayer.player.manager.CJSPlayerManager
 
 class CJSPlayer : IPlayerManager{
 
-    var playerManager : IPlayerManager? = null
+    private var playerManager : IPlayerManager? = null
 
+    init {
+        playerManager = CJSPlayerManager()
+    }
     override fun setDataSource(source: String) {
         playerManager?.setDataSource(source)
     }

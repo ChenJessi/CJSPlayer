@@ -10,7 +10,7 @@ include_directories(${FFMPEG}/include)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${FFMPEG}/libs/${CMAKE_ANDROID_ARCH_ABI}")
 
 
-file(GLOB resource *.cpp *.h */*.cpp */*.h)
+file(GLOB resource  *.cpp *.h */*.cpp */*.h)
 
 add_library(
         cjsplayer-native-lib
@@ -23,12 +23,18 @@ target_link_libraries(
         cjsplayer-native-lib
 
         #-Wl, --start-group
-        avformat avcodec avformat avfilter avutil swresample swscale
+        avformat
+        avcodec
+        avfilter
+        avutil
+        swresample
+        swscale
         #-Wl, --end-group
 
-        android
         OpenSLES
         z
+        android
         log
 )
-message("message >>>>>>>>>>>>")
+
+message("message >>>>>>>>>>>> ${FFMPEG}  ${CMAKE_ANDROID_ARCH_ABI}  ")

@@ -7,7 +7,17 @@ import com.jessi.cjsplayer.player.base.OnPreparedListener
 internal class CJSPlayerManager : IPlayerManager, CJSBasePlayerManager() {
 
     init {
+
+
         System.loadLibrary("cjsplayer-native-lib")
+        System.loadLibrary("avformat");
+        System.loadLibrary("avcodec");
+        System.loadLibrary("avdevice");
+        System.loadLibrary("avfilter");
+        System.loadLibrary("avutil");
+        System.loadLibrary("postproc");
+        System.loadLibrary("swresample");
+        System.loadLibrary("swscale");
     }
 
     override fun setDataSource(source : String) {

@@ -3,12 +3,13 @@
 //
 
 #include "CJSPlayer.h"
+#include "../utils/JNICallbackHelper.h"
 
-CJSPlayer::CJSPlayer(const char *data_source) {
+CJSPlayer::CJSPlayer(const char *data_source, JNICallbackHelper *pHelper) {
 
     this->data_source = new char[strlen(data_source + 1)];
     strcpy(this->data_source, data_source);
-
+    this->helper = pHelper;
     pthread_mutex_init(&init_mutex, nullptr);
 }
 
@@ -16,6 +17,10 @@ CJSPlayer::~CJSPlayer() {
     if(data_source){
         delete data_source;
         data_source = nullptr;
+    }
+    if(helper){
+        delete helper;
+        helper = nullptr;
     }
     pthread_mutex_destroy(&init_mutex);
 
@@ -51,6 +56,7 @@ void CJSPlayer::prepare_() {
 
     if(result){
         pthread_mutex_unlock(&init_mutex);
+        LOGD("打开媒体文件失败")
         return;
     }
 
@@ -78,12 +84,17 @@ void CJSPlayer::prepare_() {
             return;
         }
         if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_AUDIO){
-            auto audioChannel = new AudioChannel();
+            audio_channel = new AudioChannel();
         }
         else if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO){
-            auto videoChannel = new VideoChannel();
+            video_channel = new VideoChannel();
         }
-
+    }
+    /**
+     * 判断是否有音频or视频流信息
+     */
+    if(!audio_channel && !video_channel){
+        return;
     }
 
     pthread_mutex_unlock(&init_mutex);
@@ -110,5 +121,6 @@ int CJSPlayer::getCodecContext(AVCodecParameters *codecPar, AVCodecContext **avC
     if(result){
         return -1;
     }
+    helper->onPrepared();
     return 0;
 }
