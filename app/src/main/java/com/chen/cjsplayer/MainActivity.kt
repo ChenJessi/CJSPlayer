@@ -2,6 +2,7 @@ package com.chen.cjsplayer
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.chen.cjsplayer.databinding.ActivityMainBinding
 import com.jessi.cjsplayer.player.CJSPlayer
@@ -16,8 +17,9 @@ class MainActivity : AppCompatActivity() {
 
         val player = CJSPlayer()
         player.setOnPreparedListener {
-            Toast.makeText(this, "准备完成", Toast.LENGTH_SHORT).show()
+            Log.d("TAG", "onCreate: 准备一下")
         }
+        player.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
         binding.btnPlay.setOnClickListener {
             player.prepare()
         }

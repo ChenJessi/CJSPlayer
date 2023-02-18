@@ -8,6 +8,7 @@ JNICallbackHelper::JNICallbackHelper(_JavaVM *vm, _JNIEnv *env, jobject pJob) {
     this->vm = vm;
     this->env = env;
     this->job = env->NewGlobalRef(pJob);
+    initCallback();
 }
 
 JNICallbackHelper::~JNICallbackHelper() {
@@ -23,6 +24,19 @@ void JNICallbackHelper::initCallback() {
     jmd_prepared = env->GetMethodID(clazz, "onPrepared", "()V");
 }
 
-void JNICallbackHelper::onPrepared() {
+void JNICallbackHelper::onPrepared(int thread_mode) {
+
+    if(thread_mode == THREAD_MAIN){
+        env->CallVoidMethod(job, jmd_prepared);
+    }
+    else if(thread_mode == THREAD_CHILD){
+        JNIEnv * env_child = nullptr;
+        vm->AttachCurrentThread(&env_child, 0);
+        env_child->CallVoidMethod(job, jmd_prepared);
+        vm->DetachCurrentThread();
+    }
+}
+
+void JNICallbackHelper::onError(int thread_mode) {
 
 }

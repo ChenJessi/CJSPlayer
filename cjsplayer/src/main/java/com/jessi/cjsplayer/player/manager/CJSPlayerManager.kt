@@ -1,23 +1,16 @@
 package com.jessi.cjsplayer.player.manager
 
+import android.util.Log
 import com.jessi.cjsplayer.player.base.CJSBasePlayerManager
 import com.jessi.cjsplayer.player.base.IPlayerManager
 import com.jessi.cjsplayer.player.base.OnPreparedListener
+import kotlin.math.log
 
+private const val TAG = "CJSPlayerManager"
 internal class CJSPlayerManager : IPlayerManager, CJSBasePlayerManager() {
 
     init {
-
-
         System.loadLibrary("cjsplayer-native-lib")
-        System.loadLibrary("avformat");
-        System.loadLibrary("avcodec");
-        System.loadLibrary("avdevice");
-        System.loadLibrary("avfilter");
-        System.loadLibrary("avutil");
-        System.loadLibrary("postproc");
-        System.loadLibrary("swresample");
-        System.loadLibrary("swscale");
     }
 
     override fun setDataSource(source : String) {
@@ -29,15 +22,15 @@ internal class CJSPlayerManager : IPlayerManager, CJSBasePlayerManager() {
     }
 
     override fun start() {
-        TODO("Not yet implemented")
+
     }
 
     override fun stop() {
-        TODO("Not yet implemented")
+
     }
 
     override fun release() {
-        TODO("Not yet implemented")
+
     }
 
     override fun setOnPreparedListener(onPreparedListener : OnPreparedListener) {

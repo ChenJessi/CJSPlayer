@@ -12,7 +12,7 @@
 #include "../codec/VideoChannel.h"
 #include "../utils/AndroidLog.hpp"
 #include "../utils/JNICallbackHelper.h"
-
+#include "../utils/utils.h"
 extern "C"{
     #include "libavformat/avformat.h"
 };

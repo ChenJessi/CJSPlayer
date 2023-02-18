@@ -7,7 +7,7 @@
 
 
 #include <jni.h>
-
+#include "../utils/utils.h"
 class JNICallbackHelper {
 
 public:
@@ -15,7 +15,8 @@ public:
     ~JNICallbackHelper();
 
 
-    void onPrepared();
+    void onPrepared(int thread_mode);
+    void onError(int thread_mode);
 private:
     JavaVM *vm = nullptr;
     JNIEnv *env = nullptr;

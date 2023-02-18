@@ -20,19 +20,19 @@ class CJSPlayer : IPlayerManager{
     }
 
     override fun start() {
-        TODO("Not yet implemented")
+        playerManager?.start()
     }
 
     override fun stop() {
-        TODO("Not yet implemented")
+        playerManager?.stop()
     }
 
     override fun release() {
-        TODO("Not yet implemented")
+        playerManager?.release()
     }
 
     override fun setOnPreparedListener(onPreparedListener: OnPreparedListener) {
-        TODO("Not yet implemented")
+        playerManager?.setOnPreparedListener(onPreparedListener)
     }
 
 

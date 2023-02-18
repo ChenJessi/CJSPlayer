@@ -15,6 +15,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
+                cppFlags ""
                 abiFilters "armeabi-v7a","arm64-v8a"
             }
         }
@@ -33,6 +34,11 @@ android {
         enabled = true
     }
 
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
     // 升级7.5.0 gradle后发现 run 调试，testOnly 一直为true，暂时没找到解决办法，强制解决
     android.applicationVariants.all { variant ->
         String variantName = variant.name
