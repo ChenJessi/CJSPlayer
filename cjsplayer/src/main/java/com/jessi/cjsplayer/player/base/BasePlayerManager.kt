@@ -1,6 +1,7 @@
 package com.jessi.cjsplayer.player.base
 
 typealias OnPreparedListener = (()->Unit)?
+typealias OnErrorListener = ((String)->Unit)?
 abstract class CJSBasePlayerManager {
 
 
@@ -10,4 +11,8 @@ abstract class CJSBasePlayerManager {
     // 准备回调
     @JvmField
     var onPreparedListener : OnPreparedListener = null
+    // 失败回调
+    @JvmField
+    var onErrorListener : OnErrorListener = null
+
 }

@@ -6,12 +6,12 @@
 //
 
 
-JavaVM *vm = 0;
+JavaVM *vm = nullptr;
 jint JNI_OnLoad(JavaVM * vm, void * args){
     ::vm = vm;
     return JNI_VERSION_1_6;
 }
-
+CJSPlayer *player = nullptr;
 
 
 extern "C"
@@ -21,19 +21,18 @@ Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_prepareNative(JNIEnv *e
     const char *data_source = env->GetStringUTFChars(source,0);
 
     auto *helper = new JNICallbackHelper(vm, env, job);
-    auto player = new CJSPlayer(data_source, helper);
+    player = new CJSPlayer(data_source, helper);
     player->prepare();
     env->ReleaseStringUTFChars(source, data_source);
 
 }
 
-
-
-
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_startNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement startNative()
+    if(player){
+        player->start();
+    }
 }
 extern "C"
 JNIEXPORT void JNICALL

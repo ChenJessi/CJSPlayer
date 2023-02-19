@@ -17,7 +17,11 @@ class MainActivity : AppCompatActivity() {
 
         val player = CJSPlayer()
         player.setOnPreparedListener {
-            Log.d("TAG", "onCreate: 准备一下")
+            Log.d("TAG", "OnPrepared: 准备完成")
+            player.start()
+        }
+        player.setOnErrorListener {
+            Log.d("TAG", "OnError code: $it")
         }
         player.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
         binding.btnPlay.setOnClickListener {

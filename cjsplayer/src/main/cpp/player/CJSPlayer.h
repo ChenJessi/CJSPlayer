@@ -23,8 +23,10 @@ public:
     ~CJSPlayer();
 
     void prepare();
-
     void prepare_();
+
+    void start();
+
 
 private:
     char *data_source = nullptr;
@@ -39,6 +41,7 @@ private:
 
     AudioChannel *audio_channel = nullptr;
     VideoChannel *video_channel = nullptr;
+
 };
 
 

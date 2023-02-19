@@ -9,4 +9,6 @@ interface IPlayerManager {
     fun stop()
     fun release()
     fun setOnPreparedListener(onPreparedListener : OnPreparedListener)
+
+    fun setOnErrorListener(onErrorListener: OnErrorListener);
 }

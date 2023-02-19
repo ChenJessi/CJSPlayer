@@ -57,8 +57,8 @@ void CJSPlayer::prepare_() {
     av_dict_free(&dictionary);
 
     if(result){
-        LOGE("打开媒体文件失败 : %s", data_source);
-        helper->onError(THREAD_CHILD);
+        LOGE("open url fail : %s", data_source);
+        helper->onError(THREAD_CHILD,  CODE_OPEN_URL_FAIL);
         pthread_mutex_unlock(&init_mutex);
         return;
     }
@@ -69,7 +69,7 @@ void CJSPlayer::prepare_() {
     result = avformat_find_stream_info(avFormatContext, nullptr);
     if(result){
         LOGE("can not find streams from : %s", data_source)
-        helper->onError(THREAD_CHILD);
+        helper->onError(THREAD_CHILD, CODE_FIND_STREAMS_FAIL);
         pthread_mutex_unlock(&init_mutex);
         return;
     }
@@ -85,7 +85,6 @@ void CJSPlayer::prepare_() {
         result = getCodecContext(parameters, &avCodecContext);
         if(result || !avCodecContext){
             LOGE("get AVCodecContext fail")
-            helper->onError(THREAD_CHILD);
             pthread_mutex_unlock(&init_mutex);
             return;
         }
@@ -101,8 +100,8 @@ void CJSPlayer::prepare_() {
      */
 
     if(!audio_channel && !video_channel){
-        LOGE("未找到音视频流")
-        helper->onError(THREAD_CHILD);
+        LOGE("not media!")
+        helper->onError(THREAD_CHILD, CODE_NOT_MEDIA);
         pthread_mutex_unlock(&init_mutex);
         return;
     }
@@ -114,19 +113,22 @@ void CJSPlayer::prepare_() {
 int CJSPlayer::getCodecContext(AVCodecParameters *codecPar, AVCodecContext **avCodecContext) {
     AVCodec * codec = avcodec_find_decoder(codecPar->codec_id);
     if(codec == nullptr){
-        LOGE("can not find decoder!")
+        LOGE("find decoder fail!")
+        helper->onError(THREAD_CHILD, CODE_FIND_DECODER_FAIL);
         return -1;
     }
     // 创建解码器上下文
     *avCodecContext = avcodec_alloc_context3(codec);
     if(*avCodecContext == nullptr){
-        LOGE("can not alloc new AVCodecContext")
+        LOGE("alloc new AVCodecContext fail")
+        helper->onError(THREAD_CHILD, CODE_ALLOC_NEW_CODEC_CONTEXT_FAIL);
         return -1;
     }
     // 将解码器参数复制到解码器上下文中
     int result = avcodec_parameters_to_context(*avCodecContext, codecPar);
     if(result){
-        LOGE("can not fill AVCodecContext!");
+        LOGE("fill AVCodecContext fail!");
+        helper->onError(THREAD_CHILD, CODE_FILL_CODEC_CONTEXT_FAIL);
         return -1;
     }
 
@@ -134,7 +136,12 @@ int CJSPlayer::getCodecContext(AVCodecParameters *codecPar, AVCodecContext **avC
     result = avcodec_open2(*avCodecContext, codec, nullptr);
     if(result){
         LOGE("open codec fail");
+        helper->onError(THREAD_CHILD, CODE_OPEN_CODEC_FAIL);
         return -1;
     }
     return 0;
+}
+
+void CJSPlayer::start() {
+
 }

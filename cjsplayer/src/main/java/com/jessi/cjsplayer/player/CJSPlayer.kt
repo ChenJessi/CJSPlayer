@@ -1,6 +1,7 @@
 package com.jessi.cjsplayer.player
 
 import com.jessi.cjsplayer.player.base.IPlayerManager
+import com.jessi.cjsplayer.player.base.OnErrorListener
 import com.jessi.cjsplayer.player.base.OnPreparedListener
 import com.jessi.cjsplayer.player.manager.CJSPlayerManager
 
@@ -33,6 +34,10 @@ class CJSPlayer : IPlayerManager{
 
     override fun setOnPreparedListener(onPreparedListener: OnPreparedListener) {
         playerManager?.setOnPreparedListener(onPreparedListener)
+    }
+
+    override fun setOnErrorListener(onErrorListener: OnErrorListener) {
+        playerManager?.setOnErrorListener(onErrorListener)
     }
 
 

@@ -16,7 +16,7 @@ public:
 
 
     void onPrepared(int thread_mode);
-    void onError(int thread_mode);
+    void onError(int thread_mode, int code);
 private:
     JavaVM *vm = nullptr;
     JNIEnv *env = nullptr;
@@ -25,6 +25,7 @@ private:
     void initCallback();
 
     jmethodID jmd_prepared = nullptr;
+    jmethodID jmd_error = nullptr;
 };
 
 
