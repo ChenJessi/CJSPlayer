@@ -3,3 +3,20 @@
 //
 
 #include "VideoChannel.h"
+
+VideoChannel::VideoChannel(int stream_index, AVCodecContext *codecContext) : BaseChannel(
+        stream_index, codecContext) {
+
+}
+
+VideoChannel::~VideoChannel() {
+
+}
+
+void VideoChannel::start() {
+
+}
+
+void VideoChannel::stop() {
+
+}

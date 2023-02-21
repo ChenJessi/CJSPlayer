@@ -26,12 +26,14 @@ public:
     void prepare_();
 
     void start();
+    void start_();
 
 
 private:
     char *data_source = nullptr;
     JNICallbackHelper *helper = nullptr;
     pthread_t pid_prepare = 0;
+    pthread_t pid_start = 0;
 
     pthread_mutex_t init_mutex;
 
@@ -41,6 +43,8 @@ private:
 
     AudioChannel *audio_channel = nullptr;
     VideoChannel *video_channel = nullptr;
+
+    int isPlaying = 0;
 
 };
 

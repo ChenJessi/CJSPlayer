@@ -27,7 +27,6 @@ CJSPlayer::~CJSPlayer() {
 }
 
 void* task_prepare(void * args){
-    //avformat_open_input()
 
     auto *player = static_cast<CJSPlayer *>(args);
     player->prepare_();
@@ -45,7 +44,6 @@ void CJSPlayer::prepare_() {
     LOGD("prepare_ url %s", data_source)
     pthread_mutex_lock(&init_mutex);
 
-    avformat_network_init();
     avFormatContext = avformat_alloc_context();
     /**
      * 打开媒体地址
@@ -89,10 +87,10 @@ void CJSPlayer::prepare_() {
             return;
         }
         if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_AUDIO){
-            audio_channel = new AudioChannel();
+            audio_channel = new AudioChannel(i, avCodecContext);
         }
         else if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO){
-            video_channel = new VideoChannel();
+            video_channel = new VideoChannel(i, avCodecContext);
         }
     }
     /**
@@ -142,6 +140,46 @@ int CJSPlayer::getCodecContext(AVCodecParameters *codecPar, AVCodecContext **avC
     return 0;
 }
 
-void CJSPlayer::start() {
 
+
+void* task_start(void *args){
+    auto player = static_cast<CJSPlayer *>(args);
+    player->start_();
+
+    return 0;
+}
+
+// 获取 音频 视频的压缩数据包(AVPacket*)并丢入队列
+void CJSPlayer::start_(){
+
+    while (isPlaying){
+
+        AVPacket *packet = av_packet_alloc();
+        int ret = av_read_frame(avFormatContext, packet);
+        if(!ret){
+            if(video_channel && video_channel->stream_index == packet->stream_index){
+                video_channel->packets.insertToQueue(packet);
+            }
+            else if(video_channel){
+
+            }
+
+        }
+        else if(ret == AVERROR_EOF){
+
+        }
+        else {
+            break;
+        }
+    }
+    isPlaying = 0;
+    if(video_channel){
+        video_channel->stop();
+    }
+}
+
+void CJSPlayer::start() {
+    isPlaying = 1;
+
+    pthread_create(&pid_start, 0, task_start, this);
 }

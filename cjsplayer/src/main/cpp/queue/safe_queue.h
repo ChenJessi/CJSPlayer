@@ -70,6 +70,9 @@ public:
         if(!queue_data.empty()){
             // 去出数据包并删除队列里的数据
             value = queue_data.front();
+            if(releaseCallback){
+                releaseCallback(&value);
+            }
             queue_data.pop();
             ret = 1;
         }

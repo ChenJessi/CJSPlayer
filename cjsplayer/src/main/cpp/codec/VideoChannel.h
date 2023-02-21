@@ -5,7 +5,16 @@
 #ifndef CJSPLAYER_VIDEOCHANNEL_H
 #define CJSPLAYER_VIDEOCHANNEL_H
 
-class VideoChannel {
+#include "BaseChannel.h"
+
+class VideoChannel : public BaseChannel{
+public:
+    VideoChannel(int stream_index, AVCodecContext *codecContext);
+    ~VideoChannel();
+
+
+    void start();
+    void stop();
 
 };
 
