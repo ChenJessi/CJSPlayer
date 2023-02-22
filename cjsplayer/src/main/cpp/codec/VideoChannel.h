@@ -7,6 +7,7 @@
 
 #include "BaseChannel.h"
 
+
 class VideoChannel : public BaseChannel{
 public:
     VideoChannel(int stream_index, AVCodecContext *codecContext);
@@ -15,6 +16,13 @@ public:
 
     void start();
     void stop();
+
+    void video_decode();
+private:
+    bool isPlaying = false;
+
+    pthread_t pid_video_decode;
+
 
 };
 
