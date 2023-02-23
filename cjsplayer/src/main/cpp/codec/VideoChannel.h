@@ -7,6 +7,10 @@
 
 #include "BaseChannel.h"
 
+extern "C"{
+#include "libswscale/swscale.h"
+#include "libavutil/imgutils.h"
+};
 
 class VideoChannel : public BaseChannel{
 public:
@@ -18,10 +22,12 @@ public:
     void stop();
 
     void video_decode();
+    void video_play();
 private:
     bool isPlaying = false;
 
     pthread_t pid_video_decode;
+    pthread_t pid_video_play;
 
 
 };

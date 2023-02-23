@@ -21,6 +21,12 @@ void* task_video_decode(void * args){
     return nullptr;
 }
 
+void* task_video_play(void * args){
+    auto channel = static_cast<VideoChannel *>(args);
+    channel->video_play();
+    return nullptr;
+}
+
 
 
 void VideoChannel::start() {
@@ -29,6 +35,8 @@ void VideoChannel::start() {
 
     // 视频解码线程：取出数据队列的压缩包，解码之后放回原始数据包队列
     pthread_create(&pid_video_decode, nullptr, task_video_decode, this);
+    // 播放线程：从原始数据包中读取数据
+    pthread_create(&pid_video_play, nullptr, task_video_play, this);
 }
 
 void VideoChannel::stop() {
@@ -75,5 +83,70 @@ void VideoChannel::video_decode() {
         frames.insertToQueue(frame);
     }
     releaseAVPacket(&packet);
+}
+
+// 从缓冲队列获取到原始数据包（AVFrame*）进行播放
+void VideoChannel::video_play() {
+
+    AVFrame* avFrame = nullptr;
+    uint8_t *dst_data[4]; // ARGB 4位
+    int dst_linesize[4]; //ARGB
+
+    //给 dst_data 申请内存
+    av_image_alloc(dst_data, dst_linesize,
+                   codecContext->width, codecContext->height, AV_PIX_FMT_RGBA, 1);
+
+    SwsContext *sws_ctx = sws_getContext(
+            // 输入信息
+            codecContext->width,
+            codecContext->height,
+            codecContext->pix_fmt, // 获取 mp4 视频的像素格式 AV_PIX_FMT_YUV420P
+
+            // 输出信息 宽，高，格式
+            codecContext->width,
+            codecContext->height,
+            AV_PIX_FMT_RGBA,
+            SWS_BILINEAR, // 转换算法，选 SWS_BILINEAR适中一点的
+            nullptr, nullptr, nullptr);
+
+
+    while (isPlaying){
+        int ret = frames.getQueueAndDel(avFrame);
+
+        if(!isPlaying){
+            // 停止播放
+            break;
+        }
+
+        if(!ret){
+            // 没获取到数据，继续等待
+            continue;
+        }
+
+        // 将获取到到原始数据 YUV 格式转为 RGBA
+        sws_scale(sws_ctx,
+                //输入 yuv 数据
+                  avFrame->data, // 每行的数据
+                  avFrame->linesize,    // 行大小
+                  0,  avFrame->height,
+
+                // 输出 数据
+                  dst_data,
+                  dst_linesize
+                  );
+
+
+
+
+        // 使用完之后要释放
+        releaseAVFrame(&avFrame);
+    }
+
+    // 释放
+    releaseAVFrame(&avFrame);
+    isPlaying = false;
+    av_free(&dst_data[0]);
+    sws_freeContext(sws_ctx);
+
 }
 
