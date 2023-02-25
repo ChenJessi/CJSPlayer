@@ -91,6 +91,7 @@ void CJSPlayer::prepare_() {
         }
         else if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO){
             video_channel = new VideoChannel(i, avCodecContext);
+            video_channel->setRenderCallback(renderCallback)
         }
     }
     /**
@@ -166,9 +167,10 @@ void CJSPlayer::start_(){
 
         }
         else if(ret == AVERROR_EOF){
-
+            // 数据读取完了
         }
         else {
+            // av_read_frame 出现错误，结束循环
             break;
         }
     }
@@ -181,5 +183,15 @@ void CJSPlayer::start_(){
 void CJSPlayer::start() {
     isPlaying = 1;
 
+    // 开始播放
+    if(video_channel){
+        video_channel->start();
+    }
+
+    // 获取音频和视频的数据压缩包，丢入队列
     pthread_create(&pid_start, 0, task_start, this);
+}
+
+void CJSPlayer::setRenderCallback(RenderCallback callback) {
+    this->renderCallback = callback;
 }

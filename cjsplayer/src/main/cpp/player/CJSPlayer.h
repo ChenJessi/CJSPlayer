@@ -28,7 +28,7 @@ public:
     void start();
     void start_();
 
-
+    void setRenderCallback(RenderCallback renderCallback);
 private:
     char *data_source = nullptr;
     JNICallbackHelper *helper = nullptr;
@@ -45,6 +45,8 @@ private:
     VideoChannel *video_channel = nullptr;
 
     int isPlaying = 0;
+
+    RenderCallback renderCallback;
 
 };
 

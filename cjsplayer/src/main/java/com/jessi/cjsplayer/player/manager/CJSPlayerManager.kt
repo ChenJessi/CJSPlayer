@@ -1,6 +1,9 @@
 package com.jessi.cjsplayer.player.manager
 
 import android.util.Log
+import android.view.Surface
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import com.jessi.cjsplayer.player.base.CJSBasePlayerManager
 import com.jessi.cjsplayer.player.base.IPlayerManager
 import com.jessi.cjsplayer.player.base.OnErrorListener
@@ -23,11 +26,13 @@ private const val CODE_OPEN_CODEC_FAIL  = 106
 // 没有音视频媒体信息
 private const val CODE_NOT_MEDIA  = 107
 
-internal class CJSPlayerManager : IPlayerManager, CJSBasePlayerManager() {
+internal class CJSPlayerManager : IPlayerManager, CJSBasePlayerManager() , SurfaceHolder.Callback{
 
     init {
         System.loadLibrary("cjsplayer-native-lib")
     }
+
+    private var surfaceHolder : SurfaceHolder? = null
 
     override fun setDataSource(source : String) {
         this.dataSource = source
@@ -75,9 +80,33 @@ internal class CJSPlayerManager : IPlayerManager, CJSBasePlayerManager() {
         onErrorListener?.invoke(errorMsg)
     }
 
+
+
+    fun setSurfaceView(surfaceView: SurfaceView){
+        // 重新设置之后清除上一次的
+        surfaceHolder?.removeCallback(this)
+
+        surfaceHolder = surfaceView.holder
+        surfaceHolder?.addCallback(this)
+    }
+    override fun surfaceCreated(holder: SurfaceHolder) {
+
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        setSurfaceNative(holder.surface)
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+
+    }
+
+
+
     private external fun prepareNative(source :String)
     private external fun startNative()
     private external fun stopNative()
     private external fun releaseNative()
 
+    private external fun setSurfaceNative(surface: Surface);
 }

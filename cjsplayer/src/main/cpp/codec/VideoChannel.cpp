@@ -35,7 +35,7 @@ void VideoChannel::start() {
 
     // 视频解码线程：取出数据队列的压缩包，解码之后放回原始数据包队列
     pthread_create(&pid_video_decode, nullptr, task_video_decode, this);
-    // 播放线程：从原始数据包中读取数据
+    // 播放线程：从原始数据包中读取数据 并进行格式转化，播放
     pthread_create(&pid_video_play, nullptr, task_video_play, this);
 }
 
@@ -69,7 +69,6 @@ void VideoChannel::video_decode() {
         }
 
         // 从ffmpeg 数据缓冲区获取原始包
-
         AVFrame *frame = av_frame_alloc();
         ret = avcodec_receive_frame(codecContext, frame);
         if(ret == AVERROR(EAGAIN)){
@@ -77,6 +76,7 @@ void VideoChannel::video_decode() {
             continue;
         }
         else if(ret != 0){
+            // 出现错误
             break;
         }
 
@@ -91,6 +91,8 @@ void VideoChannel::video_play() {
     AVFrame* avFrame = nullptr;
     uint8_t *dst_data[4]; // ARGB 4位
     int dst_linesize[4]; //ARGB
+
+    // ffmpeg 原始数据 AVFrame 是 YUV 格式数据，Android屏幕是ARGB格式，需要转化
 
     //给 dst_data 申请内存
     av_image_alloc(dst_data, dst_linesize,
@@ -136,17 +138,21 @@ void VideoChannel::video_play() {
                   );
 
 
-
-
+        // 渲染
+        //  将数据回调出去
+        renderCallback(dst_data[0], codecContext->width, codecContext->height, dst_linesize[0]);
         // 使用完之后要释放
         releaseAVFrame(&avFrame);
     }
-
     // 释放
     releaseAVFrame(&avFrame);
     isPlaying = false;
     av_free(&dst_data[0]);
     sws_freeContext(sws_ctx);
 
+}
+
+void VideoChannel::setRenderCallback(RenderCallback callback) {
+    this->renderCallback = callback;
 }
 

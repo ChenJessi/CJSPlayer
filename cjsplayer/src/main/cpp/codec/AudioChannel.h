@@ -11,6 +11,10 @@ class AudioChannel : public BaseChannel{
 public:
     AudioChannel(int stream_index, AVCodecContext *codecContext);
     ~AudioChannel();
+
+
+    void start();
+    void stop();
 };
 
 #endif //CJSPLAYER_AUDIOCHANNEL_H

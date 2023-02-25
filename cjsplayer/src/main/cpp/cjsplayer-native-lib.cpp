@@ -37,10 +37,18 @@ Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_startNative(JNIEnv *env
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_stopNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement stopNative()
+
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_releaseNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement releaseNative()
+
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_setSurfaceNative(JNIEnv *env, jobject thiz,
+                                                                          jobject surface) {
+
 }

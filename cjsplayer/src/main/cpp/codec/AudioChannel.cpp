@@ -16,3 +16,11 @@ AudioChannel::AudioChannel(int stream_index, AVCodecContext *codecContext) : Bas
 AudioChannel::~AudioChannel() {
 
 }
+
+void AudioChannel::start() {
+
+}
+
+void AudioChannel::stop() {
+
+}
