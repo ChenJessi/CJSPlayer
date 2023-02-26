@@ -6,7 +6,7 @@
 #define CJSPLAYER_VIDEOCHANNEL_H
 
 #include "BaseChannel.h"
-
+#include "../utils/AndroidLog.hpp"
 extern "C"{
 #include "libswscale/swscale.h"
 #include "libavutil/imgutils.h"

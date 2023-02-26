@@ -4,6 +4,7 @@
 
 #include "CJSPlayer.h"
 #include "../utils/JNICallbackHelper.h"
+#include "../utils/AndroidLog.hpp"
 
 CJSPlayer::CJSPlayer(const char *data_source, JNICallbackHelper *pHelper) {
 
@@ -43,7 +44,6 @@ void CJSPlayer::prepare_() {
     // 准备工作
     LOGD("prepare_ url %s", data_source)
     pthread_mutex_lock(&init_mutex);
-
     avFormatContext = avformat_alloc_context();
     /**
      * 打开媒体地址
@@ -91,7 +91,7 @@ void CJSPlayer::prepare_() {
         }
         else if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO){
             video_channel = new VideoChannel(i, avCodecContext);
-            video_channel->setRenderCallback(renderCallback)
+            video_channel->setRenderCallback(renderCallback);
         }
     }
     /**
@@ -147,7 +147,7 @@ void* task_start(void *args){
     auto player = static_cast<CJSPlayer *>(args);
     player->start_();
 
-    return 0;
+    return nullptr;
 }
 
 // 获取 音频 视频的压缩数据包(AVPacket*)并丢入队列
@@ -161,7 +161,7 @@ void CJSPlayer::start_(){
             if(video_channel && video_channel->stream_index == packet->stream_index){
                 video_channel->packets.insertToQueue(packet);
             }
-            else if(video_channel){
+            else if(audio_channel){
 
             }
 
@@ -181,6 +181,7 @@ void CJSPlayer::start_(){
 }
 
 void CJSPlayer::start() {
+    LOGD("start")
     isPlaying = 1;
 
     // 开始播放

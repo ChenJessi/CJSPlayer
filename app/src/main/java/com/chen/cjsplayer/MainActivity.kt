@@ -16,6 +16,7 @@ class MainActivity : AppCompatActivity() {
 
 
         val player = CJSPlayer()
+        player.setSurfaceView(binding.surfaceView)
         player.setOnPreparedListener {
             Log.d("TAG", "OnPrepared: 准备完成")
             player.start()
@@ -28,5 +29,6 @@ class MainActivity : AppCompatActivity() {
             player.prepare()
         }
     }
+
 
 }

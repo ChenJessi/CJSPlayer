@@ -43,7 +43,7 @@ internal class CJSPlayerManager : IPlayerManager, CJSBasePlayerManager() , Surfa
     }
 
     override fun start() {
-
+        startNative()
     }
 
     override fun stop() {

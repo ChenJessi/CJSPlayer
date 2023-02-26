@@ -32,7 +32,9 @@ void* task_video_play(void * args){
 void VideoChannel::start() {
 
     isPlaying = true;
-
+    // 缓冲队列开始工作
+    packets.setWork(1);
+    frames.setWork(1);
     // 视频解码线程：取出数据队列的压缩包，解码之后放回原始数据包队列
     pthread_create(&pid_video_decode, nullptr, task_video_decode, this);
     // 播放线程：从原始数据包中读取数据 并进行格式转化，播放
@@ -52,7 +54,7 @@ void VideoChannel::video_decode() {
         if(!isPlaying){
             break;
         }
-
+        LOGD("video_decode packets size %d", packets.size());
         // 没读取懂啊数据
         if(!ret){
             continue;
@@ -71,12 +73,21 @@ void VideoChannel::video_decode() {
         // 从ffmpeg 数据缓冲区获取原始包
         AVFrame *frame = av_frame_alloc();
         ret = avcodec_receive_frame(codecContext, frame);
+        LOGD("video_decode avcodec_receive_frame %d", ret);
         if(ret == AVERROR(EAGAIN)){
             // B帧，参考前面的帧成功，参考后面的帧失败，继续读取下一帧
             continue;
         }
         else if(ret != 0){
             // 出现错误
+            if(ret == AVERROR(EINVAL)){
+                LOGD("video_decode AVERROR(EINVAL)");
+            }
+            else if(ret == AVERROR_EOF){
+                LOGD("video_decode AVERROR_EOF");
+            }
+
+            LOGD("video_decode avcodec_receive_frame 1111 %d", ret);
             break;
         }
 
@@ -87,7 +98,7 @@ void VideoChannel::video_decode() {
 
 // 从缓冲队列获取到原始数据包（AVFrame*）进行播放
 void VideoChannel::video_play() {
-
+    LOGD("video_play")
     AVFrame* avFrame = nullptr;
     uint8_t *dst_data[4]; // ARGB 4位
     int dst_linesize[4]; //ARGB
