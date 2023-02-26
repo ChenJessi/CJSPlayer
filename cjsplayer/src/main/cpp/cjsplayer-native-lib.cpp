@@ -48,8 +48,8 @@ void renderFrame(uint8_t* src_data, int width, int height, int src_lineSize){
 
     // 开始渲染
     auto dst_data = static_cast<uint8_t *>(window_buffer.bits);
-    
-    int dst_linesize = window_buffer.stride;
+    // rgba8888 32位4字节
+    int dst_linesize = window_buffer.stride * 4;
     for (int i = 0; i < window_buffer.height; ++i) {
         //填充数据, 将 视频数据 拷贝到 ANativeWindow  每次填充一行
         // ANativeWindow_Buffer 采用64字节对齐算法，所以 内存大小需要被64位整除，否则会花屏

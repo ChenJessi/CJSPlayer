@@ -54,7 +54,6 @@ void VideoChannel::video_decode() {
         if(!isPlaying){
             break;
         }
-        LOGD("video_decode packets size %d", packets.size());
         // 没读取懂啊数据
         if(!ret){
             continue;
@@ -73,21 +72,12 @@ void VideoChannel::video_decode() {
         // 从ffmpeg 数据缓冲区获取原始包
         AVFrame *frame = av_frame_alloc();
         ret = avcodec_receive_frame(codecContext, frame);
-        LOGD("video_decode avcodec_receive_frame %d", ret);
         if(ret == AVERROR(EAGAIN)){
             // B帧，参考前面的帧成功，参考后面的帧失败，继续读取下一帧
             continue;
         }
         else if(ret != 0){
             // 出现错误
-            if(ret == AVERROR(EINVAL)){
-                LOGD("video_decode AVERROR(EINVAL)");
-            }
-            else if(ret == AVERROR_EOF){
-                LOGD("video_decode AVERROR_EOF");
-            }
-
-            LOGD("video_decode avcodec_receive_frame 1111 %d", ret);
             break;
         }
 
