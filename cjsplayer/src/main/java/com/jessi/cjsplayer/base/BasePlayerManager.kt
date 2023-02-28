@@ -1,7 +1,6 @@
-package com.jessi.cjsplayer.player.base
+package com.jessi.cjsplayer.base
 
-typealias OnPreparedListener = (()->Unit)?
-typealias OnErrorListener = ((String)->Unit)?
+
 abstract class CJSBasePlayerManager {
 
 

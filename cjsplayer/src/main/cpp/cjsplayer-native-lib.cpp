@@ -66,7 +66,7 @@ void renderFrame(uint8_t* src_data, int width, int height, int src_lineSize){
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_prepareNative(JNIEnv *env, jobject job,
+Java_com_jessi_cjsplayer_manager_CJSPlayerManager_prepareNative(JNIEnv *env, jobject job,
                                                                        jstring source) {
     const char *data_source = env->GetStringUTFChars(source,0);
 
@@ -80,26 +80,26 @@ Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_prepareNative(JNIEnv *e
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_startNative(JNIEnv *env, jobject thiz) {
+Java_com_jessi_cjsplayer_manager_CJSPlayerManager_startNative(JNIEnv *env, jobject thiz) {
     if(player){
         player->start();
     }
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_stopNative(JNIEnv *env, jobject thiz) {
+Java_com_jessi_cjsplayer_manager_CJSPlayerManager_stopNative(JNIEnv *env, jobject thiz) {
 
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_releaseNative(JNIEnv *env, jobject thiz) {
+Java_com_jessi_cjsplayer_manager_CJSPlayerManager_releaseNative(JNIEnv *env, jobject thiz) {
 
 }
 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jessi_cjsplayer_player_manager_CJSPlayerManager_setSurfaceNative(JNIEnv *env, jobject thiz,
+Java_com_jessi_cjsplayer_manager_CJSPlayerManager_setSurfaceNative(JNIEnv *env, jobject thiz,
                                                                           jobject surface) {
     pthread_mutex_lock(&mutex);
     if(window){

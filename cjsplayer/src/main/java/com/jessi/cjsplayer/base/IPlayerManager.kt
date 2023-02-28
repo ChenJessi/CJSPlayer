@@ -1,5 +1,9 @@
-package com.jessi.cjsplayer.player.base
+package com.jessi.cjsplayer.base
 
+import android.media.MediaPlayer
+
+typealias OnPreparedListener = (()->Unit)?
+typealias OnErrorListener = ((String)->Unit)?
 interface IPlayerManager {
 
     fun setDataSource(source : String)

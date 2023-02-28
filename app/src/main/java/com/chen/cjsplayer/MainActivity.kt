@@ -3,10 +3,8 @@ package com.chen.cjsplayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import com.chen.cjsplayer.databinding.ActivityMainBinding
-import com.jessi.cjsplayer.player.CJSPlayer
-import kotlin.math.max
+import com.jessi.cjsplayer.CJSPlayer
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

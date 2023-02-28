@@ -1,17 +1,18 @@
-package com.jessi.cjsplayer.player
+package com.jessi.cjsplayer
 
 import android.view.SurfaceView
-import com.jessi.cjsplayer.player.base.IPlayerManager
-import com.jessi.cjsplayer.player.base.OnErrorListener
-import com.jessi.cjsplayer.player.base.OnPreparedListener
-import com.jessi.cjsplayer.player.manager.CJSPlayerManager
+import com.jessi.cjsplayer.base.IPlayerManager
+import com.jessi.cjsplayer.base.OnErrorListener
+import com.jessi.cjsplayer.base.OnPreparedListener
+import com.jessi.cjsplayer.manager.CJSPlayerManager
+import com.jessi.cjsplayer.player.PlayerFactory
 
-class CJSPlayer : IPlayerManager{
+class CJSPlayer : IPlayerManager {
 
     private var playerManager : IPlayerManager? = null
 
     init {
-        playerManager = CJSPlayerManager()
+        playerManager = PlayerFactory.getPlayerManager()
     }
 
     // 为了便于调试临时增加 setSurfaceView 方法
@@ -47,6 +48,8 @@ class CJSPlayer : IPlayerManager{
     override fun setOnErrorListener(onErrorListener: OnErrorListener) {
         playerManager?.setOnErrorListener(onErrorListener)
     }
+
+
 
 
 }

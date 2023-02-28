@@ -1,14 +1,12 @@
-package com.jessi.cjsplayer.player.manager
+package com.jessi.cjsplayer.manager
 
-import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.jessi.cjsplayer.player.base.CJSBasePlayerManager
-import com.jessi.cjsplayer.player.base.IPlayerManager
-import com.jessi.cjsplayer.player.base.OnErrorListener
-import com.jessi.cjsplayer.player.base.OnPreparedListener
-import kotlin.math.log
+import com.jessi.cjsplayer.base.CJSBasePlayerManager
+import com.jessi.cjsplayer.base.IPlayerManager
+import com.jessi.cjsplayer.base.OnErrorListener
+import com.jessi.cjsplayer.base.OnPreparedListener
 
 private const val TAG = "CJSPlayerManager"
 // 打开媒体url 失败
@@ -26,7 +24,7 @@ private const val CODE_OPEN_CODEC_FAIL  = 106
 // 没有音视频媒体信息
 private const val CODE_NOT_MEDIA  = 107
 
-internal class CJSPlayerManager : IPlayerManager, CJSBasePlayerManager() , SurfaceHolder.Callback{
+internal class CJSPlayerManager : CJSBasePlayerManager(), IPlayerManager , SurfaceHolder.Callback{
 
     init {
         System.loadLibrary("cjsplayer-native-lib")
