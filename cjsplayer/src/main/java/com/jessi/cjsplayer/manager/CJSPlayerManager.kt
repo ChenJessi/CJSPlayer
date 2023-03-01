@@ -80,7 +80,7 @@ internal class CJSPlayerManager : CJSBasePlayerManager(), IPlayerManager , Surfa
 
 
 
-    fun setSurfaceView(surfaceView: SurfaceView){
+    override fun setSurfaceView(surfaceView: SurfaceView){
         // 重新设置之后清除上一次的
         surfaceHolder?.removeCallback(this)
 

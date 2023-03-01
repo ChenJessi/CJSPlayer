@@ -161,10 +161,9 @@ void CJSPlayer::start_(){
             if(video_channel && video_channel->stream_index == packet->stream_index){
                 video_channel->packets.insertToQueue(packet);
             }
-            else if(audio_channel){
-
+            else if(audio_channel && audio_channel->stream_index == packet->stream_index){
+                audio_channel->packets.insertToQueue(packet);
             }
-
         }
         else if(ret == AVERROR_EOF){
             // 数据读取完了
@@ -178,6 +177,9 @@ void CJSPlayer::start_(){
     if(video_channel){
         video_channel->stop();
     }
+    if(audio_channel){
+        audio_channel->stop();
+    }
 }
 
 void CJSPlayer::start() {
@@ -187,6 +189,10 @@ void CJSPlayer::start() {
     // 开始播放
     if(video_channel){
         video_channel->start();
+    }
+
+    if(audio_channel){
+        audio_channel->start();
     }
 
     // 获取音频和视频的数据压缩包，丢入队列

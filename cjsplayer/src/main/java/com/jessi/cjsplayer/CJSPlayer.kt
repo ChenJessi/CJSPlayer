@@ -15,9 +15,9 @@ class CJSPlayer : IPlayerManager {
         playerManager = PlayerFactory.getPlayerManager()
     }
 
-    // 为了便于调试临时增加 setSurfaceView 方法
-    fun setSurfaceView(surfaceView: SurfaceView){
-        (playerManager as? CJSPlayerManager)?.setSurfaceView(surfaceView)
+
+    override fun setSurfaceView(surfaceView: SurfaceView){
+        playerManager?.setSurfaceView(surfaceView)
     }
 
 

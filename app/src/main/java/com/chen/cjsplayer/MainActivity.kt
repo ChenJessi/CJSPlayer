@@ -13,18 +13,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
-        val player = CJSPlayer()
-        player.setSurfaceView(binding.surfaceView)
-        player.setOnPreparedListener {
+        binding.videoView.setOnPreparedListener {
             Log.d("TAG", "OnPrepared: 准备完成")
-            player.start()
+            binding.videoView.start()
         }
-        player.setOnErrorListener {
+        binding.videoView.setOnErrorListener {
             Log.d("TAG", "OnError code: $it")
         }
-        player.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
+        binding.videoView.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
         binding.btnPlay.setOnClickListener {
-            player.prepare()
+            binding.videoView.prepare()
         }
     }
 

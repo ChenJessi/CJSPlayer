@@ -15,6 +15,14 @@ public:
 
     void start();
     void stop();
+
+    void audio_decode();
+    void audio_play();
+private:
+    bool isPlaying = false;
+
+    pthread_t pid_audio_decode;
+    pthread_t pid_audio_play;
 };
 
 #endif //CJSPLAYER_AUDIOCHANNEL_H
