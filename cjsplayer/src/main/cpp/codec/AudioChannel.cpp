@@ -51,10 +51,44 @@ void AudioChannel::start() {
 void AudioChannel::stop() {
 
 }
-
+/**
+ *  取出数据压缩包，解码为原始包 AVFrame*
+ */
 void AudioChannel::audio_decode() {
+    AVPacket *packet = nullptr;
 
+    while (isPlaying){
+        int ret = packets.getQueueAndDel(packet);
+        if(!isPlaying){
+            break;
+        }
 
+        if(!ret){
+            // 获取失败之后继续获取
+            continue;
+        }
+
+        // 将压缩包发送到缓冲区，再从缓冲区获取到原始包
+        ret = avcodec_send_packet(codecContext, packet);
+
+        releaseAVPacket(&packet);
+
+        if(ret){
+            break;
+        }
+
+        // 从缓冲区获取原始包
+        AVFrame *frame = av_frame_alloc();
+        ret = avcodec_receive_frame(codecContext, frame);
+        if (ret == AVERROR(EAGAIN)) {
+            continue; // 有可能音频帧，也会获取失败，重新拿一次
+        } else if (ret != 0) {
+            break; // 错误了
+        }
+        // 音频到原始数据 pcm
+        frames.insertToQueue(frame);
+    }
+    releaseAVPacket(&packet);
 
 }
 
