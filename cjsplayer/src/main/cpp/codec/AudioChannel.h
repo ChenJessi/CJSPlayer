@@ -11,6 +11,11 @@
 #include <SLES/OpenSLES_Android.h>
 #include "../utils/AndroidLog.hpp"
 
+extern "C"{
+#include "libswresample/swresample.h" //    音频冲采样
+};
+
+
 class AudioChannel : public BaseChannel{
 
 public:
@@ -23,11 +28,31 @@ public:
 
     void audio_decode();
     void audio_play();
+
+    int getPCM();
+
+    // 缓冲区
+    uint8_t *out_buffers = nullptr;
 private:
     bool isPlaying = false;
 
     pthread_t pid_audio_decode;
     pthread_t pid_audio_play;
+
+
+    // 输出的通道数
+    int out_channels = 2;
+    // 样本大小
+    int out_sample_size = 0;
+    // 采样率
+    int out_sample_rate = 0;
+    // 缓冲区大小
+    int out_buffers_size = 0;
+
+    // 冲采样上下文
+    SwrContext *swr_ctx = nullptr;
+
+
 
     // 引擎
     SLObjectItf engineObject = nullptr;
@@ -39,6 +64,10 @@ private:
     SLEnvironmentalReverbItf outputMixEnvironmentalReverb = nullptr;
     // 播放器
     SLObjectItf bqPlayerObject = nullptr;
+    // 播放器接口
+    SLPlayItf bqPlayerPlay = nullptr;
+    // 播放器队列接口
+    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = nullptr;
 };
 
 #endif //CJSPLAYER_AUDIOCHANNEL_H

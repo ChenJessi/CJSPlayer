@@ -9,6 +9,33 @@
 AudioChannel::AudioChannel(int stream_index, AVCodecContext *codecContext) : BaseChannel(
         stream_index, codecContext) {
 
+    // 一些初始化工作
+    // AV_CH_LAYOUT_STEREO 双声道类型，前左声道 前右声道
+    out_channels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
+    // 样本大小 16bit == 2字节
+    out_sample_size = av_get_bytes_per_sample(AVSampleFormat::AV_SAMPLE_FMT_S16);
+    // 采样率
+    out_sample_rate = 44100;
+
+    out_buffers_size = out_sample_rate * out_sample_size * out_channels;
+    out_buffers = static_cast<uint8_t *>(malloc(out_buffers_size));
+
+    // 音频冲采样上下文
+    swr_ctx = swr_alloc_set_opts(nullptr,
+                                 // 输出参数
+                                 AV_CH_LAYOUT_STEREO, // 声道布局类型，双声道
+                                 AV_SAMPLE_FMT_S16, // 采样类型 16bit
+                                 out_sample_rate, // 采样率
+
+                                 // 输入参数
+                                 codecContext->channel_layout,
+                                 codecContext->sample_fmt,
+                                 codecContext->sample_rate,
+                                 0, nullptr
+                                 );
+
+    swr_init(swr_ctx);
+
 }
 
 
@@ -88,6 +115,31 @@ void AudioChannel::audio_decode() {
 
 }
 
+
+
+
+
+/**
+ * 播放回调函数
+ * @param bp
+ * @param args
+ */
+void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bp,
+                       void *args){
+
+    auto channel = static_cast<AudioChannel*>(args);
+
+    int pcm_size = channel->getPCM();
+
+    // 添加数据到缓冲区
+    (*bp)->Enqueue(bp,
+                   channel->out_buffers,   // pcm 缓冲数据
+                   pcm_size // pcm 数据对应的大小
+                   );
+
+}
+
+
 /**
  * 从队列取出音频原始数据pcm，通过 OpenSLES 进行播放
  */
@@ -96,7 +148,7 @@ void AudioChannel::audio_play() {
     SLresult result;
 
     /**
-     * 创建引擎对象并获取接口
+     * 1 创建引擎对象并获取接口
      */
     // 创建引擎对象
     result = slCreateEngine(&engineObject, 0, nullptr, 0, nullptr, nullptr);
@@ -127,7 +179,7 @@ void AudioChannel::audio_play() {
     LOGI("创建引擎接口成功");
 
     /**
-     * 创建混音器
+     * 2 创建混音器
      */
 
     // 创建混音器
@@ -162,15 +214,13 @@ void AudioChannel::audio_play() {
 
 
     /**
-     *  创建播放器
+     *  3 创建播放器
      */
     // 创建buffer缓冲类型队列
     // 缓冲期类型， 缓冲区数队列大小
     SLDataLocator_AndroidSimpleBufferQueue buffer_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
 
-    /**
-     *
-     */
+
     SLDataFormat_PCM format_pcm = {
             SL_DATAFORMAT_PCM, // 数据格式 pcm
             2, // 声道数
@@ -224,8 +274,47 @@ void AudioChannel::audio_play() {
 
     LOGD("创建播放器 CreateAudioPlayer success!");
 
+    // 获取播放器接口
+    result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerPlay);
+    if(SL_RESULT_SUCCESS != result){
+        LOGE("获取播放器接口失败")
+        return;
+    }
+
+    LOGD("创建播放器 success!");
 
 
+    /**
+     * 4 设置回调函数
+     */
+     // 获取播放器队列接口
+    result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_BUFFERQUEUE, &bqPlayerBufferQueue);
+    if(SL_RESULT_SUCCESS != result){
+        LOGE("获取播放队列失败");
+        return;
+    }
 
+    // 设置回调 void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
+    (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, bqPlayerCallback, this);
+
+    /**
+     * 5 设置播放器状态为播放状态
+     */
+    (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
+
+
+    /**
+     *  6 手动激活回调函数
+     */
+     bqPlayerCallback(bqPlayerBufferQueue, this);
 
 }
+
+/**
+ * 计算pcm数据大小
+ * @return 
+ */
+int AudioChannel::getPCM() {
+    return 0;
+}
+
