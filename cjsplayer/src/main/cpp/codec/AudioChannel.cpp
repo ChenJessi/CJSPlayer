@@ -312,9 +312,56 @@ void AudioChannel::audio_play() {
 
 /**
  * 计算pcm数据大小
- * @return 
+ * @return
  */
 int AudioChannel::getPCM() {
-    return 0;
+
+    int pcm_data_size = 0;
+
+    // 获取 pcm 数据
+    AVFrame *frame = nullptr;
+    if(isPlaying){
+        int ret = frames.getQueueAndDel(frame);
+
+        if(!ret){
+            return 0;
+        }
+
+        /**
+         * 开始重采样
+         */
+        // 计算重采样之后的样本数
+        // 比如：来源：10个48000   ---->  目标:44100  11个44100
+        int dst_nb_samples = av_rescale_rnd(
+                // 获取下一个输入样本相对于下一个输出样本将经历的延迟
+                swr_get_delay(swr_ctx, frame->sample_rate) + frame->nb_samples,
+                // 输出采样率
+                out_sample_rate,
+                // 输入采样率
+                frame->sample_rate,
+                AV_ROUND_UP  // 取上，比如10个装不完就取11个
+                );
+
+        // 重采样
+        // return 返回的结果：每个通道输出的样本数(注意：是转换后的)
+        int samples_per_channel = swr_convert(
+                swr_ctx,
+                // 输出配置
+                &out_buffers,// 重采样后的数据buffer
+                dst_nb_samples, // 重采样之后的样本数
+
+                // 输入信息参数
+                (const uint8_t **)(frame->data), // 没有重采样的pcm数据
+                frame->nb_samples // 输入pcm 数据的样本数
+                );
+
+        // 由于 out_buffers 和 dst_nb_samples 无法对应，需要重新计算
+        // pcm数据大小 = 单通道样本数 * 样本大小(采样位深) * 通道数
+        pcm_data_size = samples_per_channel * out_sample_size * out_channels;
+
+    }
+
+
+    return pcm_data_size;
 }
 
