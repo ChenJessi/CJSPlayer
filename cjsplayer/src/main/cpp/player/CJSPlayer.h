@@ -15,6 +15,7 @@
 #include "../utils/utils.h"
 extern "C"{
     #include "libavformat/avformat.h"
+    #include "libavutil/time.h"
 };
 class CJSPlayer {
 

@@ -154,6 +154,16 @@ void* task_start(void *args){
 void CJSPlayer::start_(){
 
     while (isPlaying){
+        // 控制队列大小，以达到优化内存的目的
+        if(video_channel && video_channel->packets.size() > 100){
+            av_usleep(10 * 1000); // 睡眠10毫秒
+            continue;
+        }
+        if(audio_channel && audio_channel->packets.size() > 100){
+            av_usleep(10 * 1000);
+            continue;
+        }
+
 
         AVPacket *packet = av_packet_alloc();
         int ret = av_read_frame(avFormatContext, packet);
@@ -167,6 +177,11 @@ void CJSPlayer::start_(){
         }
         else if(ret == AVERROR_EOF){
             // 数据读取完了
+            // 读取完并且播放完成之后 退出
+            if(video_channel && video_channel->packets.empty() && audio_channel && audio_channel->packets.empty()){
+                // 播放完成之后再退出
+                break;
+            }
         }
         else {
             // av_read_frame 出现错误，结束循环

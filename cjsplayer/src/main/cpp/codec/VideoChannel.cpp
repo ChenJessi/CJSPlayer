@@ -50,6 +50,12 @@ void VideoChannel::video_decode() {
     AVPacket *packet = nullptr;
 
     while (isPlaying){
+        // 控制 frames 队列大小 控制内存
+        if(isPlaying && frames.size() > 100){
+            av_usleep(10 * 1000);
+            continue;
+        }
+
         int ret = packets.getQueueAndDel(packet);
         if(!isPlaying){
             break;
