@@ -81,7 +81,14 @@ void AudioChannel::audio_decode() {
     AVPacket *packet = nullptr;
 
     while (isPlaying) {
+
+        if(isPlaying && frames.size() > 100){
+            av_usleep(10 * 1000);
+            continue;
+        }
+
         int ret = packets.getQueueAndDel(packet);
+
         if (!isPlaying) {
             break;
         }
@@ -91,10 +98,10 @@ void AudioChannel::audio_decode() {
             continue;
         }
 
+
+
         // 将压缩包发送到缓冲区，再从缓冲区获取到原始包
         ret = avcodec_send_packet(codecContext, packet);
-
-        releaseAVPacket(&packet);
 
         if (ret) {
             break;
@@ -106,12 +113,22 @@ void AudioChannel::audio_decode() {
         if (ret == AVERROR(EAGAIN)) {
             continue; // 有可能音频帧，也会获取失败，重新拿一次
         } else if (ret != 0) {
+            if(frame){
+                av_frame_unref(frame);
+                releaseAVFrame(&frame);
+            }
             break; // 错误了
         }
         // 音频到原始数据 pcm
         frames.insertToQueue(frame);
+
+        av_packet_unref(packet);
+        releaseAVPacket(&packet);
     }
-    releaseAVPacket(&packet);
+    if(packet){
+        av_packet_unref(packet);
+        releaseAVPacket(&packet);
+    }
 
 }
 
@@ -324,6 +341,8 @@ int AudioChannel::getPCM() {
         int ret = frames.getQueueAndDel(frame);
 
         if(!ret){
+            av_frame_unref(frame);
+            releaseAVFrame(&frame);
             return 0;
         }
 
@@ -361,7 +380,8 @@ int AudioChannel::getPCM() {
 
     }
 
-
+    av_frame_unref(frame);
+    releaseAVFrame(&frame);
     return pcm_data_size;
 }
 

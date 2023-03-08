@@ -27,7 +27,7 @@ void JNICallbackHelper::initCallback() {
 }
 
 void JNICallbackHelper::onPrepared(int thread_mode) {
-
+    LOGE("onError %d ", thread_mode)
     if(thread_mode == THREAD_MAIN){
         env->CallVoidMethod(job, jmd_prepared);
     }
@@ -40,6 +40,7 @@ void JNICallbackHelper::onPrepared(int thread_mode) {
 }
 
 void JNICallbackHelper::onError(int thread_mode, int code) {
+    LOGE("onError %d %d", thread_mode, code)
     if(thread_mode == THREAD_MAIN){
         env->CallVoidMethod(job, jmd_error, code);
     }

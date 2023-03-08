@@ -13,6 +13,7 @@
 
 extern "C"{
 #include "libswresample/swresample.h" //    音频冲采样
+#include "libavutil/avutil.h"
 };
 
 

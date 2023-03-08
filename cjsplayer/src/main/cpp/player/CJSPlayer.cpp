@@ -32,12 +32,12 @@ void* task_prepare(void * args){
     auto *player = static_cast<CJSPlayer *>(args);
     player->prepare_();
 
-    return 0;
+    return nullptr;
 }
 
 
 void CJSPlayer::prepare() {
-    pthread_create(&pid_prepare, 0, task_prepare, this);
+    pthread_create(&pid_prepare, nullptr, task_prepare, this);
 }
 
 void CJSPlayer::prepare_() {
@@ -164,7 +164,6 @@ void CJSPlayer::start_(){
             continue;
         }
 
-
         AVPacket *packet = av_packet_alloc();
         int ret = av_read_frame(avFormatContext, packet);
         if(!ret){
@@ -211,7 +210,7 @@ void CJSPlayer::start() {
     }
 
     // 获取音频和视频的数据压缩包，丢入队列
-    pthread_create(&pid_start, 0, task_start, this);
+    pthread_create(&pid_start, nullptr, task_start, this);
 }
 
 void CJSPlayer::setRenderCallback(RenderCallback callback) {

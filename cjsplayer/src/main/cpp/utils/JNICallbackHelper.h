@@ -8,6 +8,7 @@
 
 #include <jni.h>
 #include "../utils/utils.h"
+#include "AndroidLog.hpp"
 class JNICallbackHelper {
 
 public:
