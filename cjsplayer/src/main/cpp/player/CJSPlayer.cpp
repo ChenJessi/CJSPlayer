@@ -152,7 +152,7 @@ void* task_start(void *args){
 
 // 获取 音频 视频的压缩数据包(AVPacket*)并丢入队列
 void CJSPlayer::start_(){
-
+    pthread_mutex_lock(&init_mutex);
     while (isPlaying){
         // 控制队列大小，以达到优化内存的目的
         if(video_channel && video_channel->packets.size() > 100){
@@ -194,6 +194,7 @@ void CJSPlayer::start_(){
     if(audio_channel){
         audio_channel->stop();
     }
+    pthread_mutex_unlock(&init_mutex);
 }
 
 void CJSPlayer::start() {

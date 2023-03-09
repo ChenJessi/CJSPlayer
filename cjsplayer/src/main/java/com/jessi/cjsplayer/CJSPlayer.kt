@@ -4,7 +4,6 @@ import android.view.SurfaceView
 import com.jessi.cjsplayer.base.IPlayerManager
 import com.jessi.cjsplayer.base.OnErrorListener
 import com.jessi.cjsplayer.base.OnPreparedListener
-import com.jessi.cjsplayer.manager.CJSPlayerManager
 import com.jessi.cjsplayer.player.PlayerFactory
 
 class CJSPlayer : IPlayerManager {
