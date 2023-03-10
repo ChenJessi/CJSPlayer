@@ -6,8 +6,8 @@
 // channel
 
 
-AudioChannel::AudioChannel(int stream_index, AVCodecContext *codecContext) : BaseChannel(
-        stream_index, codecContext) {
+AudioChannel::AudioChannel(int stream_index, AVCodecContext *codecContext, AVRational time_base) : BaseChannel(
+        stream_index, codecContext, time_base) {
 
     // 一些初始化工作
     // AV_CH_LAYOUT_STEREO 双声道类型，前左声道 前右声道
@@ -377,6 +377,9 @@ int AudioChannel::getPCM() {
         // 由于 out_buffers 和 dst_nb_samples 无法对应，需要重新计算
         // pcm数据大小 = 单通道样本数 * 样本大小(采样位深) * 通道数
         pcm_data_size = samples_per_channel * out_sample_size * out_channels;
+
+        // 音频播放的时间戳
+        audio_time = frame->best_effort_timestamp * av_q2d(time_base);
 
     }
 

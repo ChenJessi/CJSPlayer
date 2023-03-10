@@ -15,7 +15,7 @@ class SafeQueue {
 
 private:
     typedef void(*ReleaseCallback)(T*);
-
+    typedef void(*SyncCallback)(queue<T>&);
 private:
     queue<T> queue_data;
     // 互斥锁
@@ -26,6 +26,7 @@ private:
     int isWork = 0;
 
     ReleaseCallback releaseCallback = nullptr;
+    SyncCallback syncCallback = nullptr;
 public:
     SafeQueue(){
         pthread_mutex_init(&mutex,0);
@@ -125,6 +126,22 @@ public:
         this->releaseCallback = callback;
     }
 
+    /**
+     * 音视频同步逻辑的回调
+     * @param callback
+     */
+    void setSyncCallback(SyncCallback callback){
+        this->syncCallback = callback;
+    }
+
+    /**
+     * 处理音视频同步的问题
+     */
+    void sync(){
+        pthread_mutex_lock(&mutex);
+        syncCallback(queue_data);
+        pthread_mutex_unlock(&mutex);
+    }
 
 };
 

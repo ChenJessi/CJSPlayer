@@ -20,7 +20,7 @@ extern "C"{
 class AudioChannel : public BaseChannel{
 
 public:
-    AudioChannel(int stream_index, AVCodecContext *codecContext);
+    AudioChannel(int stream_index, AVCodecContext *codecContext, AVRational time_base);
     ~AudioChannel();
 
 
@@ -34,6 +34,9 @@ public:
 
     // 缓冲区
     uint8_t *out_buffers = nullptr;
+
+    // 音频播放的时间戳
+    double audio_time = 0;
 private:
     bool isPlaying = false;
 

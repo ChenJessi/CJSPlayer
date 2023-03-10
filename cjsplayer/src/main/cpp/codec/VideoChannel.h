@@ -7,6 +7,7 @@
 
 #include "BaseChannel.h"
 #include "../utils/AndroidLog.hpp"
+#include "AudioChannel.h"
 extern "C"{
 #include "libswscale/swscale.h"
 #include "libavutil/imgutils.h"
@@ -19,7 +20,7 @@ typedef void(*RenderCallback)(uint8_t *, int, int, int);
 
 class VideoChannel : public BaseChannel{
 public:
-    VideoChannel(int stream_index, AVCodecContext *codecContext);
+    VideoChannel(int stream_index, AVCodecContext *codecContext, AVRational time_base, int fps);
     ~VideoChannel();
 
 
@@ -30,6 +31,8 @@ public:
     void video_play();
 
     void setRenderCallback(RenderCallback renderCallback);
+
+    void setAudioChannel(AudioChannel *audio_channel);
 private:
     bool isPlaying = false;
 
@@ -37,8 +40,9 @@ private:
     pthread_t pid_video_play;
 
     RenderCallback renderCallback;
+    AudioChannel *audioChannel = nullptr;
 
-
+    int fps = 0;
 
 };
 

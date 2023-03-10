@@ -86,11 +86,21 @@ void CJSPlayer::prepare_() {
             pthread_mutex_unlock(&init_mutex);
             return;
         }
+        AVRational time_base = stream->time_base;
         if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_AUDIO){
-            audio_channel = new AudioChannel(i, avCodecContext);
+            audio_channel = new AudioChannel(i, avCodecContext, time_base);
         }
         else if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO){
-            video_channel = new VideoChannel(i, avCodecContext);
+
+            // 特殊类型，虽然是视频格式，但是只有一帧封面
+            if(stream->disposition & AV_DISPOSITION_ATTACHED_PIC){
+                continue;
+            }
+            // 获取到视频 fps
+            AVRational fps_rational = stream->avg_frame_rate;
+
+            double fps = av_q2d(fps_rational);
+            video_channel = new VideoChannel(i, avCodecContext, time_base, (int)fps);
             video_channel->setRenderCallback(renderCallback);
         }
     }
@@ -203,6 +213,7 @@ void CJSPlayer::start() {
 
     // 开始播放
     if(video_channel){
+        video_channel->setAudioChannel(audio_channel);
         video_channel->start();
     }
 

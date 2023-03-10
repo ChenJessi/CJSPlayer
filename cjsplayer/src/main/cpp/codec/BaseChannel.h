@@ -18,9 +18,10 @@ class BaseChannel {
 
 public:
 
-    BaseChannel(int stream_index, AVCodecContext *codecContext)
+    BaseChannel(int stream_index, AVCodecContext *codecContext,AVRational time_base)
         : stream_index(stream_index),
-          codecContext(codecContext){
+          codecContext(codecContext),
+          time_base(time_base){
         packets.setReleaseCallback(releaseAVPacket);
         frames.setReleaseCallback(releaseAVFrame);
     };
@@ -39,7 +40,9 @@ public:
     bool isPlaying = false;
     AVCodecContext *codecContext = nullptr;
 
-
+    // 时间基 音视频时间单位，用来做音视频同步
+    // 以音频作为主时钟
+    AVRational time_base;
     static void releaseAVPacket(AVPacket **packet){
         if(packet){
             av_packet_free(packet);
