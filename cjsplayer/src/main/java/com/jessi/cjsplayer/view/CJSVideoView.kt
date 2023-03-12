@@ -3,13 +3,14 @@ package com.jessi.cjsplayer.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.SurfaceView
-import com.jessi.cjsplayer.CJSPlayer
+import com.jessi.cjsplayer.player.CJSPlayer
 import com.jessi.cjsplayer.base.IPlayerManager
 import com.jessi.cjsplayer.base.OnErrorListener
 import com.jessi.cjsplayer.base.OnPreparedListener
+import com.jessi.cjsplayer.base.OnProgressListener
 
 
-class CJSVideoView @JvmOverloads constructor(
+open class CJSVideoView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : SurfaceView(context, attrs), IPlayerManager {
 
@@ -23,7 +24,7 @@ class CJSVideoView @JvmOverloads constructor(
         cjsPlayer?.setDataSource(source)
     }
 
-    override fun setSurfaceView(surfaceView: SurfaceView) {
+    final override fun setSurfaceView(surfaceView: SurfaceView) {
         cjsPlayer?.setSurfaceView(surfaceView)
     }
 
@@ -43,11 +44,23 @@ class CJSVideoView @JvmOverloads constructor(
         cjsPlayer?.release()
     }
 
+    override fun getDuration(): Int {
+        return cjsPlayer?.getDuration() ?: 0
+    }
+
+    override fun seek(secs: Int) {
+        cjsPlayer?.seek(secs)
+    }
+
     override fun setOnPreparedListener(onPreparedListener: OnPreparedListener) {
         cjsPlayer?.setOnPreparedListener(onPreparedListener)
     }
 
     override fun setOnErrorListener(onErrorListener: OnErrorListener) {
         cjsPlayer?.setOnErrorListener(onErrorListener)
+    }
+
+    override fun setOnProgressListen(onProgressListener: OnProgressListener) {
+        cjsPlayer?.setOnProgressListen(onProgressListener)
     }
 }

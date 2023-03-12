@@ -72,6 +72,8 @@ void CJSPlayer::prepare_() {
         return;
     }
 
+    //获取总时长
+    this->duration = avFormatContext->duration / AV_TIME_BASE;
     /**
      * 获取音视频流
      */
@@ -92,7 +94,7 @@ void CJSPlayer::prepare_() {
         }
         else if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO){
 
-            // 特殊类型，虽然是视频格式，但是只有一帧封面
+            // 特殊类型视频流，虽然是视频格式，但是只有一帧封面
             if(stream->disposition & AV_DISPOSITION_ATTACHED_PIC){
                 continue;
             }
@@ -227,4 +229,12 @@ void CJSPlayer::start() {
 
 void CJSPlayer::setRenderCallback(RenderCallback callback) {
     this->renderCallback = callback;
+}
+
+int CJSPlayer::getDuration() {
+    return duration;
+}
+
+void CJSPlayer::seek(int secs) {
+
 }

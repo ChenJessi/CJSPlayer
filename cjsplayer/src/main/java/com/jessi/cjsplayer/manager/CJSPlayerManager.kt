@@ -3,10 +3,7 @@ package com.jessi.cjsplayer.manager
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.jessi.cjsplayer.base.CJSBasePlayerManager
-import com.jessi.cjsplayer.base.IPlayerManager
-import com.jessi.cjsplayer.base.OnErrorListener
-import com.jessi.cjsplayer.base.OnPreparedListener
+import com.jessi.cjsplayer.base.*
 
 private const val TAG = "CJSPlayerManager"
 // 打开媒体url 失败
@@ -45,11 +42,19 @@ internal class CJSPlayerManager : CJSBasePlayerManager(), IPlayerManager , Surfa
     }
 
     override fun stop() {
-
+        stopNative()
     }
 
     override fun release() {
+        releaseNative()
+    }
 
+    override fun getDuration(): Int {
+        return getDurationNative()
+    }
+
+    override fun seek(secs: Int) {
+        seekNative(secs)
     }
 
     override fun setOnPreparedListener(onPreparedListener : OnPreparedListener) {
@@ -58,6 +63,10 @@ internal class CJSPlayerManager : CJSBasePlayerManager(), IPlayerManager , Surfa
 
     override fun setOnErrorListener(onErrorListener: OnErrorListener) {
         this.onErrorListener = onErrorListener
+    }
+
+    override fun setOnProgressListen(onProgressListener: OnProgressListener) {
+        this.onProgressListener = onProgressListener
     }
 
 
@@ -106,5 +115,9 @@ internal class CJSPlayerManager : CJSBasePlayerManager(), IPlayerManager , Surfa
     private external fun stopNative()
     private external fun releaseNative()
 
-    private external fun setSurfaceNative(surface: Surface);
+    private external fun setSurfaceNative(surface: Surface)
+
+    private external fun getDurationNative() : Int
+
+    private external fun seekNative(secs : Int)
 }

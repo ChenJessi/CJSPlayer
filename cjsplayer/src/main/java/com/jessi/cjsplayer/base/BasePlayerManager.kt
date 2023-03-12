@@ -14,4 +14,7 @@ abstract class CJSBasePlayerManager {
     @JvmField
     var onErrorListener : OnErrorListener = null
 
+    @JvmField
+    var onProgressListener : OnProgressListener = null
+
 }

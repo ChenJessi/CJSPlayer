@@ -30,6 +30,10 @@ public:
     void start_();
 
     void setRenderCallback(RenderCallback renderCallback);
+
+
+    int getDuration();
+    void seek(int secs);
 private:
     char *data_source = nullptr;
     JNICallbackHelper *helper = nullptr;
@@ -49,6 +53,7 @@ private:
 
     RenderCallback renderCallback;
 
+    int duration  = 0;
 };
 
 

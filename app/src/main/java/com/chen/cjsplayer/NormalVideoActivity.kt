@@ -12,16 +12,17 @@ class NormalVideoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
-        binding.videoView.setOnPreparedListener {
-            Log.d("TAG", "OnPrepared: 准备完成")
-            binding.videoView.start()
+        binding.videoPlayer.setOnPreparedListener {
+            Log.d("TAG", "OnPrepared: 准备完成 视频总时长 : ${binding.videoPlayer.getDuration()}")
+            binding.videoPlayer.start()
         }
-        binding.videoView.setOnErrorListener {
+        binding.videoPlayer.setOnErrorListener {
             Log.d("TAG", "OnError code: $it")
         }
-        binding.videoView.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
+        //binding.videoView.setDataSource("https://media.w3.org/2010/05/sintel/trailer.mp4")
+        binding.videoPlayer.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
         binding.btnPlay.setOnClickListener {
-            binding.videoView.prepare()
+            binding.videoPlayer.prepare()
         }
     }
 }

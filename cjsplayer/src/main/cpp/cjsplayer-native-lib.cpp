@@ -111,3 +111,23 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_setSurfaceNative(JNIEnv *env, 
     window = ANativeWindow_fromSurface(env, surface);
     pthread_mutex_unlock(&mutex);
 }
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_jessi_cjsplayer_manager_CJSPlayerManager_getDurationNative(JNIEnv *env, jobject thiz) {
+
+    if(player){
+        return player->getDuration();
+    }
+    return 0;
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_manager_CJSPlayerManager_seekNative(JNIEnv *env, jobject thiz, jint secs) {
+    if(player){
+        player->seek(secs);
+    }
+}
