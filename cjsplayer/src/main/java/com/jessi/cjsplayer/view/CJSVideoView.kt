@@ -3,6 +3,8 @@ package com.jessi.cjsplayer.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.SurfaceView
+import android.widget.FrameLayout
+import androidx.core.view.updateLayoutParams
 import com.jessi.cjsplayer.player.CJSPlayer
 import com.jessi.cjsplayer.base.IPlayerManager
 import com.jessi.cjsplayer.base.OnErrorListener
@@ -12,12 +14,22 @@ import com.jessi.cjsplayer.base.OnProgressListener
 
 open class CJSVideoView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
-) : SurfaceView(context, attrs), IPlayerManager {
+) : FrameLayout(context, attrs), IPlayerManager {
 
     private var cjsPlayer : CJSPlayer? = null
+    private var surfaceView :SurfaceView? = null
     init {
         cjsPlayer = CJSPlayer()
-        setSurfaceView(this)
+        surfaceView = SurfaceView(context, attrs)
+        surfaceView?.let {
+            addView(surfaceView)
+            setSurfaceView(it)
+        }
+        surfaceView?.updateLayoutParams<FrameLayout.LayoutParams> {
+            this.width = android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            this.height = android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        }
+
     }
 
     override fun setDataSource(source: String) {
