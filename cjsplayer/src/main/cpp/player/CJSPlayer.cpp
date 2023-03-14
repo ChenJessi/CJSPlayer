@@ -91,6 +91,9 @@ void CJSPlayer::prepare_() {
         AVRational time_base = stream->time_base;
         if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_AUDIO){
             audio_channel = new AudioChannel(i, avCodecContext, time_base);
+            if(duration != 0){
+                audio_channel->setJNICallbackHelper(helper);
+            }
         }
         else if(parameters->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO){
 
@@ -104,6 +107,9 @@ void CJSPlayer::prepare_() {
             double fps = av_q2d(fps_rational);
             video_channel = new VideoChannel(i, avCodecContext, time_base, (int)fps);
             video_channel->setRenderCallback(renderCallback);
+            if(duration != 0){
+                video_channel->setJNICallbackHelper(helper);
+            }
         }
     }
     /**

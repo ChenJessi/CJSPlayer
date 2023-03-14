@@ -21,6 +21,8 @@ private const val CODE_OPEN_CODEC_FAIL  = 106
 // 没有音视频媒体信息
 private const val CODE_NOT_MEDIA  = 107
 
+
+
 internal class CJSPlayerManager : CJSBasePlayerManager(), IPlayerManager , SurfaceHolder.Callback{
 
     init {
@@ -65,14 +67,21 @@ internal class CJSPlayerManager : CJSBasePlayerManager(), IPlayerManager , Surfa
         this.onErrorListener = onErrorListener
     }
 
-    override fun setOnProgressListen(onProgressListener: OnProgressListener) {
+    override fun setOnProgressListener(onProgressListener: OnProgressListener) {
         this.onProgressListener = onProgressListener
+    }
+
+    override fun setCJSMediaPlayerListener(mediaPlayerListener: CJSMediaPlayerListener) {
+        this.mediaPlayerListener = mediaPlayerListener
     }
 
 
     private fun onPrepared(){
+        mediaPlayerListener?.onPrepared()
         onPreparedListener?.invoke()
     }
+
+
     private fun onError(code :Int){
         val errorMsg = when(code){
             CODE_OPEN_URL_FAIL -> "CODE_OPEN_URL_FAIL"
@@ -87,6 +96,10 @@ internal class CJSPlayerManager : CJSBasePlayerManager(), IPlayerManager , Surfa
         onErrorListener?.invoke(errorMsg)
     }
 
+    private fun onProgress(time : Int){
+        mediaPlayerListener?.onBufferingUpdate(time)
+        onProgressListener?.invoke(time)
+    }
 
 
     override fun setSurfaceView(surfaceView: SurfaceView){

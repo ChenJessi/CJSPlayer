@@ -17,4 +17,9 @@ abstract class CJSBasePlayerManager {
     @JvmField
     var onProgressListener : OnProgressListener = null
 
+
+    @JvmField
+    internal var mediaPlayerListener : CJSMediaPlayerListener? = null
+
+
 }

@@ -18,6 +18,7 @@ public:
 
     void onPrepared(int thread_mode);
     void onError(int thread_mode, int code);
+    void onProgress(int thread_mode, int time);
 private:
     JavaVM *vm = nullptr;
     JNIEnv *env = nullptr;
@@ -27,6 +28,7 @@ private:
 
     jmethodID jmd_prepared = nullptr;
     jmethodID jmd_error = nullptr;
+    jmethodID jmd_progress = nullptr;
 };
 
 

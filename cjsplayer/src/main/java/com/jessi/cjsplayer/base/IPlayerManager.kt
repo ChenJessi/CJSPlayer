@@ -24,5 +24,8 @@ interface IPlayerManager {
 
     fun setOnErrorListener(onErrorListener: OnErrorListener)
 
-    fun setOnProgressListen(onProgressListener: OnProgressListener)
+    fun setOnProgressListener(onProgressListener: OnProgressListener)
+
+
+    fun setCJSMediaPlayerListener(mediaPlayerListener : CJSMediaPlayerListener)
 }

@@ -10,6 +10,7 @@ extern "C"{
 #include <libavutil/time.h>
 };
 
+#include "../utils/JNICallbackHelper.h"
 #include "../queue/safe_queue.h"
 
 
@@ -55,6 +56,11 @@ public:
             av_frame_free(frame);
             *frame = nullptr;
         }
+    }
+
+    JNICallbackHelper *jniCallbackHelper = nullptr;
+    void setJNICallbackHelper(JNICallbackHelper *helper){
+        jniCallbackHelper = helper;
     }
 };
 

@@ -1,10 +1,7 @@
 package com.jessi.cjsplayer.player
 
 import android.view.SurfaceView
-import com.jessi.cjsplayer.base.IPlayerManager
-import com.jessi.cjsplayer.base.OnErrorListener
-import com.jessi.cjsplayer.base.OnPreparedListener
-import com.jessi.cjsplayer.base.OnProgressListener
+import com.jessi.cjsplayer.base.*
 
 class CJSPlayer : IPlayerManager {
 
@@ -56,8 +53,12 @@ class CJSPlayer : IPlayerManager {
         playerManager?.setOnErrorListener(onErrorListener)
     }
 
-    override fun setOnProgressListen(onProgressListener: OnProgressListener) {
-        playerManager?.setOnProgressListen(onProgressListener)
+    override fun setOnProgressListener(onProgressListener: OnProgressListener) {
+        playerManager?.setOnProgressListener(onProgressListener)
+    }
+
+    override fun setCJSMediaPlayerListener(mediaPlayerListener: CJSMediaPlayerListener) {
+        playerManager?.setCJSMediaPlayerListener(mediaPlayerListener)
     }
 
 

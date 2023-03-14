@@ -380,7 +380,9 @@ int AudioChannel::getPCM() {
 
         // 音频播放的时间戳
         audio_time = frame->best_effort_timestamp * av_q2d(time_base);
-
+        if(jniCallbackHelper){
+            jniCallbackHelper->onProgress(THREAD_CHILD, audio_time);
+        }
     }
 
     av_frame_unref(frame);
