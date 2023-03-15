@@ -12,6 +12,7 @@ CJSPlayer::CJSPlayer(const char *data_source, JNICallbackHelper *pHelper) {
     strcpy(this->data_source, data_source);
     this->helper = pHelper;
     pthread_mutex_init(&init_mutex, nullptr);
+    pthread_mutex_init(&seek_mutex, nullptr);
 }
 
 CJSPlayer::~CJSPlayer() {
@@ -24,6 +25,7 @@ CJSPlayer::~CJSPlayer() {
         helper = nullptr;
     }
     pthread_mutex_destroy(&init_mutex);
+    pthread_mutex_destroy(&seek_mutex);
 
 }
 
@@ -242,5 +244,56 @@ int CJSPlayer::getDuration() {
 }
 
 void CJSPlayer::seek(int secs) {
+
+
+    if(secs < 0 || secs > duration){
+        return;
+    }
+    if(!audio_channel && !audio_channel){
+        return;
+    }
+
+    if(!avFormatContext){
+        return;
+    }
+
+    pthread_mutex_lock(&seek_mutex);
+    /**
+     * 1.formatContext
+     * 2.-1 代表默认情况，FFmpeg自动选择 音频 还是 视频 做 seek，  模糊：0视频  1音频
+     * 3. AVSEEK_FLAG_ANY（老实） 直接精准到 拖动的位置，问题：如果不是关键帧，B帧 可能会造成 花屏情况
+     *    AVSEEK_FLAG_BACKWARD（则优  8的位置 B帧 ， 找附件的关键帧 6，如果找不到他也会花屏）
+     *    AVSEEK_FLAG_FRAME 找关键帧（非常不准确，可能会跳的太多），一般不会直接用，但是会配合用
+     *    AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_FRAME
+     */
+    int result = av_seek_frame(avFormatContext, -1, secs * AV_TIME_BASE, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_FRAME);
+    //avformat_seek_file(avFormatContext, -1 , INT64_MIN, secs * AV_TIME_BASE, INT64_MAX, 0);
+    if(result < 0){
+        // seek 失败
+        return;
+    }
+
+    if(audio_channel){
+        audio_channel->packets.setWork(0);  // 队列不工作
+        audio_channel->frames.setWork(0);  // 队列不工作
+        audio_channel->packets.clear();
+        audio_channel->frames.clear();
+        audio_channel->packets.setWork(1); // 队列继续工作
+        audio_channel->frames.setWork(1);  // 队列继续工作
+    }
+
+    if (video_channel) {
+        video_channel->packets.setWork(0);  // 队列不工作
+        video_channel->frames.setWork(0);  // 队列不工作
+        video_channel->packets.clear();
+        video_channel->frames.clear();
+        video_channel->packets.setWork(1); // 队列继续工作
+        video_channel->frames.setWork(1);  // 队列继续工作
+    }
+
+    pthread_mutex_unlock(&seek_mutex);
+}
+
+void CJSPlayer::stop() {
 
 }

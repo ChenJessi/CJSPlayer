@@ -89,6 +89,9 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_manager_CJSPlayerManager_stopNative(JNIEnv *env, jobject thiz) {
 
+    if(player){
+        player->stop();
+    }
 }
 extern "C"
 JNIEXPORT void JNICALL
