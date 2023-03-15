@@ -34,6 +34,7 @@ public:
 
     int getDuration();
     void seek(int secs);
+    void stop();
 private:
     char *data_source = nullptr;
     JNICallbackHelper *helper = nullptr;
@@ -41,6 +42,7 @@ private:
     pthread_t pid_start = 0;
 
     pthread_mutex_t init_mutex;
+    pthread_mutex_t seek_mutex;
 
     AVFormatContext *avFormatContext = nullptr;
 

@@ -3,6 +3,7 @@ package com.jessi.cjsplayer.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import android.widget.SeekBar
 import android.widget.TextView
 import com.chen.cjsplayer.secondToString
 import com.jessi.cjsplayer.R
@@ -12,6 +13,7 @@ open class NormalCJSVideoPlayer @JvmOverloads constructor(
 ): CJSVideoView(context, attrs) {
 
     private val tvTime : TextView by lazy { findViewById(R.id.tvTime) }
+    private val seekBar : SeekBar by lazy { findViewById(R.id.seekBar) }
 
     private var duration = 0
     init {
@@ -30,7 +32,20 @@ open class NormalCJSVideoPlayer @JvmOverloads constructor(
 
     private fun initViewListener(){
 
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
 
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+               val time = this@NormalCJSVideoPlayer.seekBar.progress
+               seek(time)
+            }
+        })
     }
 
 
@@ -38,6 +53,7 @@ open class NormalCJSVideoPlayer @JvmOverloads constructor(
         super.onPrepared()
         post {
             duration = getDuration()
+            seekBar.max = duration
             tvTime.text = if(duration >= 3600){
                 "00:00:00/${duration.secondToString()}"
             }else {
