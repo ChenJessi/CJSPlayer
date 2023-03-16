@@ -34,7 +34,13 @@ open class NormalCJSVideoPlayer @JvmOverloads constructor(
 
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-
+                if (fromUser){
+                    tvTime.text = if(duration >= 3600){
+                        "${progress.secondToString()}/${duration.secondToString()}"
+                    }else {
+                        "${progress.secondToString()}/${duration.secondToString()}"
+                    }
+                }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
