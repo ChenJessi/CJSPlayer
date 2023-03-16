@@ -12,6 +12,7 @@ class NormalVideoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
+        
         binding.videoPlayer.setOnPreparedListener {
             Log.d("TAG", "OnPrepared: 准备完成 视频总时长 : ${binding.videoPlayer.getDuration()}")
             binding.videoPlayer.start()
