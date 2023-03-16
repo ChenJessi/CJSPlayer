@@ -27,6 +27,5 @@ class NormalVideoActivity : AppCompatActivity() {
         binding.btnPlay.setOnClickListener {
             binding.videoPlayer.prepare()
         }
-
     }
 }
