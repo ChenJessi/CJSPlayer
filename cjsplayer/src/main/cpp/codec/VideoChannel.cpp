@@ -45,7 +45,7 @@ VideoChannel::VideoChannel(int stream_index, AVCodecContext *codecContext, AVRat
 }
 
 VideoChannel::~VideoChannel() {
-
+    DELETE(audioChannel);
 }
 
 
@@ -75,7 +75,16 @@ void VideoChannel::start() {
 }
 
 void VideoChannel::stop() {
+    isPlaying = false;
+    pthread_join(pid_video_decode, nullptr);
+    pthread_join(pid_video_play, nullptr);
+    // 停止队列工作
+    packets.setWork(0);
+    frames.setWork(0);
 
+    // 清空队列
+    packets.clear();
+    frames.clear();
 }
 
 // 把队列里面的压缩包(AVPacket*)取出来，然后解码成（AVFrame*）原始包
@@ -197,7 +206,6 @@ void VideoChannel::video_play() {
         double video_time = frame->best_effort_timestamp * av_q2d(time_base);
         double audio_time = audioChannel->audio_time;
         double time_diff = video_time - audio_time;
-        LOGD("video_play time_diff %lf", time_diff)
         if(time_diff > 0){
             // 视频时间 > 音频时间，视频需要等待
             if(time_diff > 1){

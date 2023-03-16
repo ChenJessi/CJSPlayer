@@ -96,7 +96,20 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_stopNative(JNIEnv *env, jobjec
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_manager_CJSPlayerManager_releaseNative(JNIEnv *env, jobject thiz) {
+    pthread_mutex_lock(&mutex);
+    if(window){
+        ANativeWindow_release(window);
+        window = nullptr;
+    }
+    pthread_mutex_unlock(&mutex);
 
+    if(player){
+        delete player;
+        player = nullptr;
+    }
+
+    DELETE(vm)
+    DELETE(env)
 }
 
 

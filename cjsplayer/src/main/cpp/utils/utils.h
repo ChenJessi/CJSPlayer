@@ -25,4 +25,6 @@
 #define CODE_NOT_MEDIA 107
 
 
+
+#define DELETE(obj) if(obj){delete obj; obj = nullptr;}
 #endif //CJSPLAYER_UTILS_H

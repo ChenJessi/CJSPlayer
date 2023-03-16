@@ -40,7 +40,14 @@ AudioChannel::AudioChannel(int stream_index, AVCodecContext *codecContext, AVRat
 
 
 AudioChannel::~AudioChannel() {
-
+    if (swr_ctx) {
+        swr_free(&swr_ctx);
+        swr_ctx = nullptr;
+    }
+    if (out_buffers) {
+        free(out_buffers);
+        out_buffers = nullptr;
+    }
 }
 
 
@@ -72,7 +79,47 @@ void AudioChannel::start() {
 
 void AudioChannel::stop() {
 
+    isPlaying = false;
+
+    pthread_join(pid_audio_decode, nullptr);
+    pthread_join(pid_audio_play, nullptr);
+
+    //缓冲队列停止工作
+    packets.setWork(0);
+    frames.setWork(0);
+
+    if (bqPlayerPlay) {
+        (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_STOPPED);
+        bqPlayerPlay = nullptr;
+    }
+
+    if (bqPlayerBufferQueue) {
+        (*bqPlayerBufferQueue)->Clear(bqPlayerBufferQueue);
+        bqPlayerBufferQueue = nullptr;
+    }
+
+    if (bqPlayerObject) {
+        (*bqPlayerObject)->Destroy(bqPlayerObject);
+        bqPlayerObject = nullptr;
+    }
+
+    if (outputMixObject) {
+        (*outputMixObject)->Destroy(outputMixObject);
+        outputMixObject = nullptr;
+    }
+
+    if (engineObject) {
+        (*engineObject)->Destroy(engineObject);
+        engineObject = nullptr;
+        engineInterface = nullptr;
+    }
+
+    packets.clear();
+    frames.clear();
+
+
 }
+
 
 /**
  *  取出数据压缩包，解码为原始包 AVFrame*

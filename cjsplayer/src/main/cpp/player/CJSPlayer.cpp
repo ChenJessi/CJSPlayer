@@ -58,7 +58,10 @@ void CJSPlayer::prepare_() {
 
     if(result){
         LOGE("open url fail : %s", data_source);
-        helper->onError(THREAD_CHILD,  CODE_OPEN_URL_FAIL);
+        if(helper){
+            helper->onError(THREAD_CHILD, CODE_OPEN_URL_FAIL);
+        }
+        avformat_close_input(&avFormatContext);
         pthread_mutex_unlock(&init_mutex);
         return;
     }
@@ -69,7 +72,10 @@ void CJSPlayer::prepare_() {
     result = avformat_find_stream_info(avFormatContext, nullptr);
     if(result){
         LOGE("can not find streams from : %s", data_source)
-        helper->onError(THREAD_CHILD, CODE_FIND_STREAMS_FAIL);
+        if(helper){
+            helper->onError(THREAD_CHILD, CODE_FIND_STREAMS_FAIL);
+        }
+        avformat_close_input(&avFormatContext);
         pthread_mutex_unlock(&init_mutex);
         return;
     }
@@ -79,14 +85,18 @@ void CJSPlayer::prepare_() {
     /**
      * 获取音视频流
      */
+    AVCodecContext *avCodecContext = nullptr;
     for (int i = 0; i < avFormatContext->nb_streams; ++i) {
         AVStream *stream = avFormatContext->streams[i];
         AVCodecParameters *parameters = stream->codecpar;
 
-        AVCodecContext *avCodecContext = nullptr;
         result = getCodecContext(parameters, &avCodecContext);
         if(result || !avCodecContext){
             LOGE("get AVCodecContext fail")
+
+            avcodec_free_context(&avCodecContext);
+            avformat_close_input(&avFormatContext);
+
             pthread_mutex_unlock(&init_mutex);
             return;
         }
@@ -120,12 +130,19 @@ void CJSPlayer::prepare_() {
 
     if(!audio_channel && !video_channel){
         LOGE("not media!")
-        helper->onError(THREAD_CHILD, CODE_NOT_MEDIA);
+        if (helper){
+            helper->onError(THREAD_CHILD, CODE_NOT_MEDIA);
+        }
+
+        avformat_close_input(&avFormatContext);
+        avFormatContext = nullptr;
+        avcodec_free_context(&avCodecContext);
         pthread_mutex_unlock(&init_mutex);
         return;
     }
-
-    helper->onPrepared(THREAD_CHILD);
+    if (helper){
+        helper->onPrepared(THREAD_CHILD);
+    }
     pthread_mutex_unlock(&init_mutex);
 }
 
@@ -133,21 +150,27 @@ int CJSPlayer::getCodecContext(AVCodecParameters *codecPar, AVCodecContext **avC
     AVCodec * codec = avcodec_find_decoder(codecPar->codec_id);
     if(codec == nullptr){
         LOGE("find decoder fail!")
-        helper->onError(THREAD_CHILD, CODE_FIND_DECODER_FAIL);
+        if (helper){
+            helper->onError(THREAD_CHILD, CODE_FIND_DECODER_FAIL);
+        }
         return -1;
     }
     // 创建解码器上下文
     *avCodecContext = avcodec_alloc_context3(codec);
     if(*avCodecContext == nullptr){
         LOGE("alloc new AVCodecContext fail")
-        helper->onError(THREAD_CHILD, CODE_ALLOC_NEW_CODEC_CONTEXT_FAIL);
+        if (helper){
+            helper->onError(THREAD_CHILD, CODE_ALLOC_NEW_CODEC_CONTEXT_FAIL);
+        }
         return -1;
     }
     // 将解码器参数复制到解码器上下文中
     int result = avcodec_parameters_to_context(*avCodecContext, codecPar);
     if(result){
         LOGE("fill AVCodecContext fail!");
-        helper->onError(THREAD_CHILD, CODE_FILL_CODEC_CONTEXT_FAIL);
+        if (helper){
+            helper->onError(THREAD_CHILD, CODE_FILL_CODEC_CONTEXT_FAIL);
+        }
         return -1;
     }
 
@@ -155,7 +178,9 @@ int CJSPlayer::getCodecContext(AVCodecParameters *codecPar, AVCodecContext **avC
     result = avcodec_open2(*avCodecContext, codec, nullptr);
     if(result){
         LOGE("open codec fail");
-        helper->onError(THREAD_CHILD, CODE_OPEN_CODEC_FAIL);
+        if (helper){
+            helper->onError(THREAD_CHILD, CODE_OPEN_CODEC_FAIL);
+        }
         return -1;
     }
     return 0;
@@ -294,6 +319,48 @@ void CJSPlayer::seek(int secs) {
     pthread_mutex_unlock(&seek_mutex);
 }
 
+
+
+void *task_stop(void *args) {
+    auto player = static_cast<CJSPlayer *>(args);
+    player->stop_(player);
+    return nullptr;
+}
+
+
 void CJSPlayer::stop() {
+    LOGD("CJSPlayer stop")
+    if (helper){
+        delete helper;
+        helper = nullptr;
+    }
+    if(audio_channel && audio_channel->jniCallbackHelper){
+        delete audio_channel->jniCallbackHelper;
+        audio_channel->jniCallbackHelper = nullptr;
+    }
+    if (video_channel && video_channel->jniCallbackHelper){
+        delete video_channel->jniCallbackHelper;
+        video_channel->jniCallbackHelper = nullptr;
+    }
+
+
+    pthread_create(&pid_stop, nullptr, task_stop, this);
+
+}
+
+void CJSPlayer::stop_(CJSPlayer *player) {
+
+    isPlaying = false;
+    pthread_join(pid_prepare, nullptr);
+    pthread_join(pid_start, nullptr);
+
+    if (avFormatContext){
+        avformat_close_input(&avFormatContext);
+        avFormatContext = nullptr;
+    }
+
+    DELETE(audio_channel);
+    DELETE(video_channel);
+    DELETE(player)
 
 }

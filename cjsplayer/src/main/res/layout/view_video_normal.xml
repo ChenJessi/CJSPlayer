@@ -20,7 +20,7 @@
         android:textSize="12sp"
         android:textColor="#FFFFFF"
         android:layout_marginStart="20dp"
-        android:text="00：00/00：00"
+        android:text="00:00/00:00"
         app:layout_constraintTop_toTopOf="@id/viewBottomBg"
         app:layout_constraintBottom_toBottomOf="@id/viewBottomBg"
         app:layout_constraintStart_toStartOf="parent"/>

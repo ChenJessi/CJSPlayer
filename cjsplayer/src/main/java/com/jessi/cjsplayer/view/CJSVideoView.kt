@@ -48,7 +48,7 @@ open class CJSVideoView @JvmOverloads constructor(
     }
 
     override fun stop() {
-        cjsPlayer?.start()
+        cjsPlayer?.stop()
     }
 
     override fun release() {

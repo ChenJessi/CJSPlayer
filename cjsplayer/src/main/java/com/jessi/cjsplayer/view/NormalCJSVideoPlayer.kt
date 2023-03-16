@@ -16,6 +16,8 @@ open class NormalCJSVideoPlayer @JvmOverloads constructor(
     private val seekBar : SeekBar by lazy { findViewById(R.id.seekBar) }
 
     private var duration = 0
+
+    private var isTouch = false;
     init {
         initInflate()
         initViewListener()
@@ -35,19 +37,22 @@ open class NormalCJSVideoPlayer @JvmOverloads constructor(
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser){
-                    tvTime.text = if(duration >= 3600){
-                        "${progress.secondToString()}/${duration.secondToString()}"
-                    }else {
-                        "${progress.secondToString()}/${duration.secondToString()}"
+                    post {
+                        tvTime.text = if(duration >= 3600){
+                            "${progress.secondToString()}/${duration.secondToString()}"
+                        }else {
+                            "${progress.secondToString()}/${duration.secondToString()}"
+                        }
                     }
                 }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
+                isTouch = true
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                isTouch = false
                val time = this@NormalCJSVideoPlayer.seekBar.progress
                seek(time)
             }
@@ -70,10 +75,13 @@ open class NormalCJSVideoPlayer @JvmOverloads constructor(
 
     override fun onBufferingUpdate(time: Int) {
         super.onBufferingUpdate(time)
-        post {
-            duration = if (duration == 0) getDuration() else duration
-            val strProgress = "${time.secondToString()}/${duration.secondToString()}"
-            tvTime.text = strProgress
+        if (!isTouch){
+            post {
+                duration = if (duration == 0) getDuration() else duration
+                val strProgress = "${time.secondToString()}/${duration.secondToString()}"
+                tvTime.text = strProgress
+                seekBar.progress = time
+            }
         }
     }
 

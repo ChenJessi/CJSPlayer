@@ -35,11 +35,13 @@ public:
     int getDuration();
     void seek(int secs);
     void stop();
+    void stop_(CJSPlayer *player);
 private:
     char *data_source = nullptr;
     JNICallbackHelper *helper = nullptr;
     pthread_t pid_prepare = 0;
     pthread_t pid_start = 0;
+    pthread_t pid_stop = 0;
 
     pthread_mutex_t init_mutex;
     pthread_mutex_t seek_mutex;
