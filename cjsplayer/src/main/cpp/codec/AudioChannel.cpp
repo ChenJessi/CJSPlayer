@@ -79,11 +79,12 @@ void AudioChannel::start() {
 
 void AudioChannel::stop() {
 
-    isPlaying = false;
+
 
     pthread_join(pid_audio_decode, nullptr);
     pthread_join(pid_audio_play, nullptr);
 
+    isPlaying = false;
     //缓冲队列停止工作
     packets.setWork(0);
     frames.setWork(0);
