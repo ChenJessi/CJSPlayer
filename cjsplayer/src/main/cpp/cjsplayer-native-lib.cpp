@@ -27,7 +27,6 @@ ANativeWindow *window = nullptr;
  */
 void renderFrame(uint8_t* src_data, int width, int height, int src_lineSize){
     pthread_mutex_lock(&mutex);
-
     if (!window){
         pthread_mutex_unlock(&mutex);
     }
@@ -96,7 +95,9 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_stopNative(JNIEnv *env, jobjec
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_manager_CJSPlayerManager_releaseNative(JNIEnv *env, jobject thiz) {
+    return;
     pthread_mutex_lock(&mutex);
+    LOGE("native-lib releaseNative")
     if(window){
         ANativeWindow_release(window);
         window = nullptr;

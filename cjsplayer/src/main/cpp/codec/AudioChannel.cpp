@@ -40,6 +40,7 @@ AudioChannel::AudioChannel(int stream_index, AVCodecContext *codecContext, AVRat
 
 
 AudioChannel::~AudioChannel() {
+    LOGE("AudioChannel 析构函数");
     if (swr_ctx) {
         swr_free(&swr_ctx);
         swr_ctx = nullptr;
@@ -79,12 +80,12 @@ void AudioChannel::start() {
 
 void AudioChannel::stop() {
 
-
+    isPlaying = false;
 
     pthread_join(pid_audio_decode, nullptr);
     pthread_join(pid_audio_play, nullptr);
 
-    isPlaying = false;
+
     //缓冲队列停止工作
     packets.setWork(0);
     frames.setWork(0);
@@ -118,7 +119,6 @@ void AudioChannel::stop() {
     packets.clear();
     frames.clear();
 
-
 }
 
 
@@ -130,6 +130,10 @@ void AudioChannel::audio_decode() {
 
     while (isPlaying) {
 
+        if (!isPlaying) {
+            break;
+        }
+
         if(isPlaying && frames.size() > 100){
             av_usleep(10 * 1000);
             continue;
@@ -137,9 +141,7 @@ void AudioChannel::audio_decode() {
 
         int ret = packets.getQueueAndDel(packet);
 
-        if (!isPlaying) {
-            break;
-        }
+
 
         if (!ret) {
             // 获取失败之后继续获取

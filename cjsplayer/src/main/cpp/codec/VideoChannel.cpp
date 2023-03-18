@@ -45,7 +45,7 @@ VideoChannel::VideoChannel(int stream_index, AVCodecContext *codecContext, AVRat
 }
 
 VideoChannel::~VideoChannel() {
-    DELETE(audioChannel);
+    audioChannel = nullptr;
 }
 
 
@@ -75,12 +75,11 @@ void VideoChannel::start() {
 }
 
 void VideoChannel::stop() {
-
+    isPlaying = false;
 
     pthread_join(pid_video_decode, nullptr);
     pthread_join(pid_video_play, nullptr);
 
-    isPlaying = false;
     // 停止队列工作
     packets.setWork(0);
     frames.setWork(0);
@@ -96,25 +95,29 @@ void VideoChannel::video_decode() {
 
     while (isPlaying) {
         // 控制 frames 队列大小 控制内存
+        if (!isPlaying) {
+            break;
+        }
+
         if (isPlaying && frames.size() > 100) {
             av_usleep(10 * 1000);
             continue;
         }
 
         int ret = packets.getQueueAndDel(packet);
-        if (!isPlaying) {
-            break;
-        }
-        // 没读取懂啊数据
+
+        // 没读取到数据
         if (!ret) {
             continue;
         }
+
 
         // 将数据包发送到缓冲区，再从缓冲区获取到原始包
         ret = avcodec_send_packet(codecContext, packet);
 
         if (ret) {
             // 数据包发送失败，直接结束循环
+            releaseAVPacket(&packet);
             break;
         }
 
@@ -127,7 +130,7 @@ void VideoChannel::video_decode() {
         } else if (ret != 0) {
             // 出现错误
             if (frame) {
-                av_frame_unref(frame);
+                av_frame_free(&frame);
                 releaseAVFrame(&frame);
             }
             break;
@@ -135,11 +138,11 @@ void VideoChannel::video_decode() {
 
         frames.insertToQueue(frame);
 
-        av_packet_unref(packet);
+        av_packet_free(&packet);
         releaseAVPacket(&packet);
     }
     if (packet) {
-        av_packet_unref(packet);
+        av_packet_free(&packet);
         releaseAVPacket(&packet);
     }
 
@@ -147,7 +150,6 @@ void VideoChannel::video_decode() {
 
 // 从缓冲队列获取到原始数据包（AVFrame*）进行播放
 void VideoChannel::video_play() {
-    LOGD("video_play")
     AVFrame *frame = nullptr;
     uint8_t *dst_data[4]; // ARGB 4位
     int dst_linesize[4]; //ARGB
@@ -173,16 +175,16 @@ void VideoChannel::video_play() {
 
 
     while (isPlaying) {
-        int ret = frames.getQueueAndDel(frame);
 
-        if (!isPlaying) {
-            // 停止播放
-            break;
-        }
+        int ret = frames.getQueueAndDel(frame);
 
         if (!ret) {
             // 没获取到数据，继续等待
             continue;
+        }
+        if (!isPlaying) {
+            av_frame_free(&frame);
+            break;
         }
 
         // 将获取到到原始数据 YUV 格式转为 RGBA
@@ -232,25 +234,23 @@ void VideoChannel::video_play() {
             // 音视频完全同步
         }
 
-
-
         // 渲染
         //  将数据回调出去
         renderCallback(dst_data[0], codecContext->width, codecContext->height, dst_linesize[0]);
         // 使用完之后要释放
-        av_frame_unref(frame);
+        av_frame_free(&frame);
         releaseAVFrame(&frame);
     }
+
     // 释放
     if (frame) {
-        av_frame_unref(frame);
+        av_frame_free(&frame);
         releaseAVFrame(&frame);
     }
 
     isPlaying = false;
-    av_free(&dst_data[0]);
+    av_freep(&dst_data[0]);
     sws_freeContext(sws_ctx);
-
 }
 
 void VideoChannel::setRenderCallback(RenderCallback callback) {

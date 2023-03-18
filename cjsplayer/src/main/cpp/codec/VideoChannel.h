@@ -33,6 +33,7 @@ public:
     void setRenderCallback(RenderCallback renderCallback);
 
     void setAudioChannel(AudioChannel *audio_channel);
+    AudioChannel *audioChannel = nullptr;
 private:
     bool isPlaying = false;
 
@@ -40,7 +41,7 @@ private:
     pthread_t pid_video_play;
 
     RenderCallback renderCallback;
-    AudioChannel *audioChannel = nullptr;
+
 
     int fps = 0;
 

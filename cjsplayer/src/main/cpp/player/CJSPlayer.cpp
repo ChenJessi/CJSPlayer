@@ -16,6 +16,7 @@ CJSPlayer::CJSPlayer(const char *data_source, JNICallbackHelper *pHelper) {
 }
 
 CJSPlayer::~CJSPlayer() {
+    LOGE("CJSPlayer 析构函数")
     if(data_source){
         delete data_source;
         data_source = nullptr;
@@ -233,12 +234,14 @@ void CJSPlayer::start_(){
         }
     }
     isPlaying = 0;
-    if(video_channel){
-        video_channel->stop();
-    }
     if(audio_channel){
         audio_channel->stop();
     }
+
+    if(video_channel){
+        video_channel->stop();
+    }
+
     pthread_mutex_unlock(&init_mutex);
 }
 
@@ -270,7 +273,7 @@ int CJSPlayer::getDuration() {
 
 void CJSPlayer::seek(int secs) {
 
-
+    LOGE("seek %d", secs)
     if(secs < 0 || secs > duration){
         return;
     }
@@ -331,24 +334,30 @@ void *task_stop(void *args) {
 void CJSPlayer::stop() {
     LOGD("CJSPlayer stop")
 
+    LOGD("CJSPlayer stop  %d, %d, %d", helper, audio_channel->jniCallbackHelper, video_channel->jniCallbackHelper)
 
     if (helper){
-        // delete helper;
+        delete helper;
         helper = nullptr;
     }
 
     if(audio_channel && audio_channel->jniCallbackHelper){
-        // delete audio_channel->jniCallbackHelper;
         audio_channel->jniCallbackHelper = nullptr;
     }
     if (video_channel && video_channel->jniCallbackHelper){
-        //delete video_channel->jniCallbackHelper;
         video_channel->jniCallbackHelper = nullptr;
     }
 
-
     pthread_create(&pid_stop, nullptr, task_stop, this);
 
+    pthread_join(pid_stop, nullptr);
+    if (avFormatContext){
+        avformat_close_input(&avFormatContext);
+        avFormatContext = nullptr;
+    }
+
+    DELETE(audio_channel)
+    DELETE(video_channel)
 }
 
 void CJSPlayer::stop_(CJSPlayer *player) {
@@ -356,14 +365,5 @@ void CJSPlayer::stop_(CJSPlayer *player) {
     isPlaying = false;
     pthread_join(pid_prepare, nullptr);
     pthread_join(pid_start, nullptr);
-
-    if (avFormatContext){
-        avformat_close_input(&avFormatContext);
-        avFormatContext = nullptr;
-    }
-
-    DELETE(audio_channel);
-    DELETE(video_channel);
-    DELETE(player)
 
 }

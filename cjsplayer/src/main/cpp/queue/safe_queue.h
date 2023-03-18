@@ -29,12 +29,13 @@ private:
     SyncCallback syncCallback = nullptr;
 public:
     SafeQueue(){
-        pthread_mutex_init(&mutex,0);
         pthread_cond_init(&cond, 0);
+        pthread_mutex_init(&mutex,0);
     };
     ~SafeQueue(){
-        pthread_mutex_destroy(&mutex);
+        LOGE("SafeQueue 析构函数");
         pthread_cond_destroy(&cond);
+        pthread_mutex_destroy(&mutex);
     };
     /**
      * 入队数据包 [AVPacket* 压缩包][AVFrame * 原始包]
@@ -105,6 +106,7 @@ public:
 
     // 清空队列
     void clear(){
+        LOGE("SafeQueue clear 清空队列");
         pthread_mutex_lock(&mutex);
 
         unsigned int size = queue_data.size();

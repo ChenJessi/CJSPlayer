@@ -76,6 +76,9 @@ open class NormalCJSVideoPlayer @JvmOverloads constructor(
     override fun onBufferingUpdate(time: Int) {
         super.onBufferingUpdate(time)
         if (!isTouch){
+            if(seekBar.progress == time){
+                return
+            }
             post {
                 duration = if (duration == 0) getDuration() else duration
                 val strProgress = "${time.secondToString()}/${duration.secondToString()}"
