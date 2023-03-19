@@ -26,8 +26,8 @@ class NormalVideoActivity : AppCompatActivity() {
         binding.videoPlayer.setOnProgressListener {
             //Log.d("TAG", "OnProgress time: $it")
         }
-        //binding.videoView.setDataSource("https://media.w3.org/2010/05/sintel/trailer.mp4")
-        binding.videoPlayer.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
+        binding.videoPlayer.setDataSource("https://media.w3.org/2010/05/sintel/trailer.mp4")
+        //binding.videoPlayer.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
         binding.btnPlay.setOnClickListener {
             Log.d("TAG", "OnClick: isPlaying  $isPlaying")
             if (isPlaying) {
@@ -41,5 +41,11 @@ class NormalVideoActivity : AppCompatActivity() {
             }
 
         }
+
+        binding.btnRelease.setOnClickListener {
+            binding.videoPlayer.release()
+        }
+
+
     }
 }

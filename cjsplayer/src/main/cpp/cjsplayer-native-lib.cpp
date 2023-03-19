@@ -26,6 +26,7 @@ ANativeWindow *window = nullptr;
  * 进行渲染工作
  */
 void renderFrame(uint8_t* src_data, int width, int height, int src_lineSize){
+    LOGE("renderFrame")
     pthread_mutex_lock(&mutex);
     if (!window){
         pthread_mutex_unlock(&mutex);
@@ -95,9 +96,10 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_stopNative(JNIEnv *env, jobjec
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_manager_CJSPlayerManager_releaseNative(JNIEnv *env, jobject thiz) {
-    return;
+
+    LOGE("releaseNative")
     pthread_mutex_lock(&mutex);
-    LOGE("native-lib releaseNative")
+    LOGE("releaseNative mutex")
     if(window){
         ANativeWindow_release(window);
         window = nullptr;
@@ -110,14 +112,15 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_releaseNative(JNIEnv *env, job
     }
 
     DELETE(vm)
-    DELETE(env)
+    DELETE(window)
 }
 
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_manager_CJSPlayerManager_setSurfaceNative(JNIEnv *env, jobject thiz,
-                                                                          jobject surface) {
+                                                                              jobject surface) {
+
     pthread_mutex_lock(&mutex);
     if(window){
         // 先释放之前的window

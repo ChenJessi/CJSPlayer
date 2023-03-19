@@ -29,6 +29,7 @@ public:
     ~BaseChannel(){
         packets.clear();
         frames.clear();
+        codecContext = nullptr;
     };
 
 

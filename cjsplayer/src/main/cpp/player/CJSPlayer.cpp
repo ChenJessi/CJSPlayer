@@ -334,8 +334,6 @@ void *task_stop(void *args) {
 void CJSPlayer::stop() {
     LOGD("CJSPlayer stop")
 
-    LOGD("CJSPlayer stop  %d, %d, %d", helper, audio_channel->jniCallbackHelper, video_channel->jniCallbackHelper)
-
     if (helper){
         delete helper;
         helper = nullptr;
