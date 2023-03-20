@@ -201,8 +201,8 @@ struct SwsContext *sws_getContext(int srcW, int srcH, enum AVPixelFormat srcForm
  *                  sws_getContext()
  * @param srcSlice  the array containing the pointers to the planes of
  *                  the source slice
- * @param srcStride THE ARRAY CONTAINING THE STRIDES FOR EACH PLANE OF
- *                  THE SOURCE IMAGE
+ * @param srcStride the array containing the strides for each plane of
+ *                  the source image
  * @param srcSliceY the position in the source image of the slice to
  *                  process, that is the number (counted starting from
  *                  zero) in the image of the first row of the slice

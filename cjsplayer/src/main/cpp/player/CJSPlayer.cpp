@@ -58,7 +58,7 @@ void CJSPlayer::prepare_() {
     av_dict_free(&dictionary);
 
     if(result){
-        LOGE("open url fail : %s", data_source);
+        LOGE("open url fail : %s, %d", data_source, result);
         if(helper){
             helper->onError(THREAD_CHILD, CODE_OPEN_URL_FAIL);
         }
