@@ -83,7 +83,7 @@ void VideoChannel::stop() {
     // 停止队列工作
     packets.setWork(0);
     frames.setWork(0);
-
+    LOGE("停止视频播放 %d %d", packets.size(), frames.size());
     // 清空队列
     packets.clear();
     frames.clear();
@@ -126,9 +126,15 @@ void VideoChannel::video_decode() {
         ret = avcodec_receive_frame(codecContext, frame);
         if (ret == AVERROR(EAGAIN)) {
             // B帧，参考前面的帧成功，参考后面的帧失败，继续读取下一帧
+            releaseAVPacket(&packet);
+            if (frame) {
+                av_frame_free(&frame);
+                releaseAVFrame(&frame);
+            }
             continue;
         } else if (ret != 0) {
             // 出现错误
+            releaseAVPacket(&packet);
             if (frame) {
                 av_frame_free(&frame);
                 releaseAVFrame(&frame);
@@ -209,7 +215,10 @@ void VideoChannel::video_play() {
 
         // 比较视频和音频的时间戳
         double video_time = frame->best_effort_timestamp * av_q2d(time_base);
-        double audio_time = audioChannel->audio_time;
+        double audio_time = 0;
+        if (audioChannel){
+             audio_time = audioChannel->audio_time;
+        }
         double time_diff = video_time - audio_time;
         if(time_diff > 0){
             // 视频时间 > 音频时间，视频需要等待
@@ -226,6 +235,8 @@ void VideoChannel::video_play() {
             // 注意 I 帧不能丢， 需要丢掉 packets 和 frames 的数据包
             // 经验值 0.05 以内不需要丢包
             if(fabs(time_diff) >= 0.05){
+                av_frame_free(&frame);
+                releaseAVFrame(&frame);
                 packets.sync();
                 frames.sync();
                 continue;

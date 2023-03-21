@@ -33,7 +33,7 @@ public:
         pthread_mutex_init(&mutex,0);
     };
     ~SafeQueue(){
-        LOGE("SafeQueue 析构函数");
+        LOGE("SafeQueue 析构函数 %d", queue_data.size());
         pthread_cond_destroy(&cond);
         pthread_mutex_destroy(&mutex);
     };
@@ -42,7 +42,6 @@ public:
      * @param value
      */
     void insertToQueue(T value){
-
         pthread_mutex_lock(&mutex);
         if(isWork){
             queue_data.push(value);
@@ -106,14 +105,11 @@ public:
 
     // 清空队列
     void clear(){
-        LOGE("SafeQueue clear 清空队列");
         pthread_mutex_lock(&mutex);
 
-        unsigned int size = queue_data.size();
-        for (int i = 0; i < size; ++i) {
-            T value = queue_data.front();
+        while (!queue_data.empty()){
             if(releaseCallback){
-                releaseCallback(&value);
+                releaseCallback(&queue_data.front());
             }
             queue_data.pop();
         }

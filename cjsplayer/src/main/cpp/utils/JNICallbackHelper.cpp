@@ -54,6 +54,7 @@ void JNICallbackHelper::onError(int thread_mode, int code) {
 }
 
 void JNICallbackHelper::onProgress(int thread_mode, int time) {
+
     if(thread_mode == THREAD_MAIN){
         env->CallVoidMethod(job, jmd_progress, time);
     }

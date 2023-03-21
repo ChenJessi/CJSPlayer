@@ -218,7 +218,10 @@ void CJSPlayer::start_(){
             }
             else if(audio_channel && audio_channel->stream_index == packet->stream_index){
                 audio_channel->packets.insertToQueue(packet);
+            } else{
+                LOGE("packet stream_index error")
             }
+
         }
         else if(ret == AVERROR_EOF){
             // 数据读取完了
@@ -227,9 +230,11 @@ void CJSPlayer::start_(){
                 // 播放完成之后再退出
                 break;
             }
+            LOGE("packet stream_index error >>>>>>")
         }
         else {
             // av_read_frame 出现错误，结束循环
+            LOGE("packet stream_index error ")
             break;
         }
     }
@@ -241,7 +246,6 @@ void CJSPlayer::start_(){
     if(video_channel){
         video_channel->stop();
     }
-
     pthread_mutex_unlock(&init_mutex);
 }
 
@@ -334,10 +338,6 @@ void *task_stop(void *args) {
 void CJSPlayer::stop() {
     LOGD("CJSPlayer stop")
 
-    if (helper){
-        delete helper;
-        helper = nullptr;
-    }
 
     if(audio_channel && audio_channel->jniCallbackHelper){
         audio_channel->jniCallbackHelper = nullptr;
@@ -345,7 +345,10 @@ void CJSPlayer::stop() {
     if (video_channel && video_channel->jniCallbackHelper){
         video_channel->jniCallbackHelper = nullptr;
     }
-
+    if (helper){
+        delete helper;
+        helper = nullptr;
+    }
     pthread_create(&pid_stop, nullptr, task_stop, this);
 
     pthread_join(pid_stop, nullptr);
