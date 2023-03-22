@@ -26,7 +26,7 @@ ANativeWindow *window = nullptr;
  * 进行渲染工作
  */
 void renderFrame(uint8_t* src_data, int width, int height, int src_lineSize){
-    LOGE("renderFrame")
+
     pthread_mutex_lock(&mutex);
     if (!window){
         pthread_mutex_unlock(&mutex);

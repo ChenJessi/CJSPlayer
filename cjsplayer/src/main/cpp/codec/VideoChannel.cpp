@@ -12,8 +12,8 @@
 void dropAVFrame(queue<AVFrame*>& queue){
     if(!queue.empty()){
         AVFrame *frame = queue.front();
-        BaseChannel::releaseAVFrame(&frame);
         queue.pop();
+        BaseChannel::releaseAVFrame(&frame);
     }
 }
 
@@ -26,8 +26,8 @@ void dropAVPacket(queue<AVPacket*>& queue){
         AVPacket* packet = queue.front();
         if(packet->flags != AV_PKT_FLAG_KEY){
             // 非关键帧
-            BaseChannel::releaseAVPacket(&packet);
             queue.pop();
+            BaseChannel::releaseAVPacket(&packet);
         }
         else {
             break;
@@ -83,7 +83,7 @@ void VideoChannel::stop() {
     // 停止队列工作
     packets.setWork(0);
     frames.setWork(0);
-    LOGE("停止视频播放 %d %d", packets.size(), frames.size());
+
     // 清空队列
     packets.clear();
     frames.clear();
