@@ -28,8 +28,8 @@ class NormalVideoActivity : AppCompatActivity() {
         }
         //binding.videoPlayer.setDataSource("rtmp://mobliestream.c3tv.com:554/live/goodtv.sdp")
         //binding.videoPlayer.setDataSource("http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8")
-        //binding.videoPlayer.setDataSource("https://media.w3.org/2010/05/sintel/trailer.mp4")
-        binding.videoPlayer.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
+        binding.videoPlayer.setDataSource("https://media.w3.org/2010/05/sintel/trailer.mp4")
+        //binding.videoPlayer.setDataSource("http://vfx.mtime.cn/Video/2019/03/18/mp4/190318214226685784.mp4")
         binding.btnPlay.setOnClickListener {
             Log.d("TAG", "OnClick: isPlaying  $isPlaying")
             if (isPlaying) {

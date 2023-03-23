@@ -14,10 +14,10 @@ set(OPENSSL ${CMAKE_SOURCE_DIR}/openssl)
 include_directories(${OPENSSL}/include/openssl)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${OPENSSL}/libs/${CMAKE_ANDROID_ARCH_ABI}")
 
-# 添加 rtmp
-set(RTMP ${CMAKE_SOURCE_DIR}/rtmp)
-include_directories(${RTMP}/include)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${RTMP}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+## 添加 rtmp
+#set(RTMP ${CMAKE_SOURCE_DIR}/rtmp)
+#include_directories(${RTMP}/include)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${RTMP}/libs/${CMAKE_ANDROID_ARCH_ABI}")
 
 file(GLOB resource  *.cpp  */*.cpp )
 
@@ -43,7 +43,6 @@ target_link_libraries(
         ssl
         crypto
 
-        rtmp
 
         OpenSLES
         z
