@@ -9,11 +9,14 @@ import android.view.SurfaceHolder
 import kotlin.math.abs
 
 class CameraHelper(val activity : Activity, var cameraId : Int, var width : Int, var height : Int) :
-    Camera.PreviewCallback {
+    Camera.PreviewCallback, SurfaceHolder.Callback {
 
     private var mCamera : Camera? = null
     private var mOnChangedSizeListener : ((Int,Int)->Unit)? = null
     private var mSurfaceHolder : SurfaceHolder? = null
+    private var mPreviewCallback : (Camera.PreviewCallback)? = null
+    private var buffer : ByteArray? = null
+
     fun startPreview() {
         try {
             mCamera = Camera.open(cameraId) ?: return
@@ -24,7 +27,7 @@ class CameraHelper(val activity : Activity, var cameraId : Int, var width : Int,
             setPreviewOrientation(parameters)
             mCamera?.parameters = parameters
 
-            val buffer = ByteArray(width * height * 3 / 2)
+            buffer = ByteArray(width * height * 3 / 2)
             mCamera?.addCallbackBuffer(buffer)
             mCamera?.setPreviewCallbackWithBuffer(this)
             mCamera?.setPreviewDisplay(mSurfaceHolder)
@@ -75,7 +78,58 @@ class CameraHelper(val activity : Activity, var cameraId : Int, var width : Int,
 
     }
 
-    override fun onPreviewFrame(data: ByteArray?, camera: Camera?) {
-        TODO("Not yet implemented")
+
+
+    fun switchCamera(){
+        if (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK){
+            cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT
+        }else{
+            cameraId = Camera.CameraInfo.CAMERA_FACING_BACK
+        }
+        stopPreview()
+        startPreview()
     }
+
+    fun stopPreview(){
+        mCamera?.stopPreview()
+        mCamera?.setPreviewCallback(null)
+        mCamera?.release()
+        mCamera = null
+    }
+
+    fun setPreviewDisplay(surfaceHolder: SurfaceHolder){
+        mSurfaceHolder = surfaceHolder
+        mSurfaceHolder?.addCallback(this)
+    }
+
+    fun setPreviewCallback(previewCallback: Camera.PreviewCallback){
+        mPreviewCallback = previewCallback
+    }
+
+    fun setOnChangedSizeListener(onChangedSizeListener: (Int, Int) -> Unit){
+        mOnChangedSizeListener = onChangedSizeListener
+    }
+
+
+    override fun onPreviewFrame(data: ByteArray?, camera: Camera?) {
+        mPreviewCallback?.onPreviewFrame(data, camera)
+        buffer?.let { camera?.addCallbackBuffer(it) }
+    }
+
+    override fun surfaceCreated(holder: SurfaceHolder) {
+
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        stopPreview()
+        startPreview()
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        stopPreview()
+    }
+
+
+
+
 }
