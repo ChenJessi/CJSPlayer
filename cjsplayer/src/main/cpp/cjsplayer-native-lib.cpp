@@ -18,6 +18,11 @@ jint JNI_OnLoad(JavaVM * vm, void * args){
     ::vm = vm;
     return JNI_VERSION_1_6;
 }
+
+/******************************* player  start *******************************************************/
+
+//<editor-fold desc="Player ">
+
 CJSPlayer *player = nullptr;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 ANativeWindow *window = nullptr;
@@ -151,3 +156,52 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_seekNative(JNIEnv *env, jobjec
         player->seek(secs);
     }
 }
+//</editor-fold>
+/******************************* player  end *******************************************************/
+
+/******************************* push  start *******************************************************/
+
+//<editor-fold desc=" Push">
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_initNative(JNIEnv *env, jobject thiz) {
+    // TODO: implement initNative()
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_startLiveNative(JNIEnv *env, jobject thiz, jstring url) {
+    // TODO: implement startLiveNative()
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_stopLiveNative(JNIEnv *env, jobject thiz) {
+    // TODO: implement stopLiveNative()
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_releaseNative(JNIEnv *env, jobject thiz) {
+    // TODO: implement releaseNative()
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_initVideoEncoderNative(JNIEnv *env, jobject thiz,
+                                                               jint width, jint height, jint fps,
+                                                               jint bitrate) {
+    // TODO: implement initVideoEncoderNative()
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_pushVideoNative(JNIEnv *env, jobject thiz,
+                                                        jbyteArray data) {
+    // TODO: implement pushVideoNative()
+}
+
+//</editor-fold>
+/******************************* push  end *******************************************************/
+
+

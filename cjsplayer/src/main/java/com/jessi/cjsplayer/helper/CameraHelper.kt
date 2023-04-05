@@ -12,7 +12,7 @@ class CameraHelper(val activity : Activity, var cameraId : Int, var width : Int,
     Camera.PreviewCallback, SurfaceHolder.Callback {
 
     private var mCamera : Camera? = null
-    private var mOnChangedSizeListener : ((Int,Int)->Unit)? = null
+    private var mOnChangedSizeListener : ((width : Int, height : Int)->Unit)? = null
     private var mSurfaceHolder : SurfaceHolder? = null
     private var mPreviewCallback : (Camera.PreviewCallback)? = null
     private var buffer : ByteArray? = null
