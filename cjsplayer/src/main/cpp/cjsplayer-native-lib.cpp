@@ -201,6 +201,28 @@ Java_com_jessi_cjsplayer_push_CJSPusher_pushVideoNative(JNIEnv *env, jobject thi
     // TODO: implement pushVideoNative()
 }
 
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_initAudioEncoderNative(JNIEnv *env, jobject thiz,
+                                                               jint sample_rate_in_hz,
+                                                               jint channel) {
+    // TODO: implement initAudioEncoderNative()
+}
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_getInputSamplesNative(JNIEnv *env, jobject thiz) {
+    // TODO: implement getInputSamplesNative()
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_jessi_cjsplayer_push_CJSPusher_pushAudioNative(JNIEnv *env, jobject thiz,
+                                                        jbyteArray data) {
+    // TODO: implement pushAudioNative()
+}
+
 //</editor-fold>
 /******************************* push  end *******************************************************/
 

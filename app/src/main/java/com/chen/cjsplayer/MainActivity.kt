@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnPlay.setOnClickListener {
             startActivity(Intent(this, NormalVideoActivity::class.java))
         }
+
     }
 
 
