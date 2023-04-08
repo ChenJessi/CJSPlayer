@@ -19,6 +19,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${OPENSSL}/libs/${CMAKE_ANDROID_ARCH_A
 #include_directories(${RTMP}/include)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${RTMP}/libs/${CMAKE_ANDROID_ARCH_ABI}")
 
+
+# 导入头文件的路径 rtmp x264
+include_directories(librtmp libx264/include)
+
+# 设置x264库路径
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/libx264/libs/${CMAKE_ANDROID_ARCH_ABI}")
+
+
 file(GLOB resource  *.cpp  */*.cpp )
 
 add_library(
@@ -43,6 +51,8 @@ target_link_libraries(
         ssl
         crypto
 
+        rtmp
+        x264
 
         OpenSLES
         z

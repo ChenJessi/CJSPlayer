@@ -15,6 +15,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, NormalVideoActivity::class.java))
         }
 
+        binding.btnPushLive.setOnClickListener {
+            startActivity(Intent(this, PushLiveActivity::class.java))
+        }
     }
 
 

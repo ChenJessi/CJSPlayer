@@ -16,5 +16,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPushLive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="推流"
+        app:layout_constraintStart_toEndOf="@id/btnPlay"
+        android:layout_marginStart="10dp"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
