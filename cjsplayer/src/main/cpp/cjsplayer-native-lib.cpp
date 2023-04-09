@@ -162,23 +162,152 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_seekNative(JNIEnv *env, jobjec
 /******************************* push  start *******************************************************/
 
 //<editor-fold desc=" Push">
+
+#include "livepush/VideoPushChannel.h"
+
+VideoPushChannel *videoPushChannel = nullptr;
+SafeQueue<RTMPPacket *> packets;    // 保存打包后的音视频数据
+bool isStartPush = false;
+pthread_t pid_start;
+bool readyPushing = false;
+uint32_t startTime;
+
+/**
+ * 将打包后的视频数据保存到队列
+ * @param packet
+ */
+void videoCallback(RTMPPacket *packet) {
+
+}
+
+void releasePacket(RTMPPacket **packet) {
+    if(packet){
+        RTMPPacket_Free(*packet);
+        delete packet;
+        packet = nullptr;
+    }
+}
+
+void *task_start_push(void *args) {
+    char *url = static_cast<char *>(args);
+
+    int ret = 0;
+    // RTMP 初始化
+    RTMP *rtmp = nullptr;
+    rtmp = RTMP_Alloc();
+    do{
+        if (!rtmp) {
+            LOGE("RTMP_Alloc failed");
+            break;
+        }
+        // 初始化
+        RTMP_Init(rtmp);
+        // 设置超时时间
+        rtmp->Link.timeout = 5;
+        // 设置推流地址
+        ret = RTMP_SetupURL(rtmp, url);
+        if (!ret) {
+            LOGE("RTMP_SetupURL failed");
+            break;
+        }
+        // 设置可写
+        RTMP_EnableWrite(rtmp);
+
+        // 连接服务器
+        ret = RTMP_Connect(rtmp, nullptr);
+        if (!ret) {
+            LOGE("RTMP_Connect failed %d url: %s", ret, url);
+            break;
+        }
+
+        // 连接流
+        ret = RTMP_ConnectStream(rtmp, 0);
+        if (!ret) {
+            LOGE("RTMP_ConnectStream failed");
+            break;
+        }
+
+        startTime = RTMP_GetTime();
+        // 开始推流
+        readyPushing = true;
+        // 从队列里面获取数据包，发送给服务器
+
+        packets.setWork(1);
+        RTMPPacket *packet = nullptr;
+
+        while (readyPushing){
+
+            packets.getQueueAndDel(packet);
+            if(!readyPushing){
+                break;
+            }
+            if(!packet){
+                continue;
+            }
+            // 成功取出队列中的数据，直接发送给服务器
+
+            // 给数据流设置id
+            packet->m_nInfoField2 = rtmp->m_stream_id;
+            // 发送数据包
+            ret = RTMP_SendPacket(rtmp, packet, 1);
+
+            // 释放内存
+            releasePacket(&packet);
+
+            if(!ret){
+                LOGE("RTMP_SendPacket failed");
+                break;
+            }
+        }
+        releasePacket(&packet);
+    }while (false);
+
+    // 释放资源
+    isStartPush = false;
+    readyPushing = false;
+    packets.setWork(0);
+    packets.clear();
+    if (rtmp) {
+        RTMP_Close(rtmp);
+        RTMP_Free(rtmp);
+    }
+
+    delete url;
+    return nullptr;
+}
+
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_initNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement initNative()
+
+    videoPushChannel = new VideoPushChannel();
+    videoPushChannel->setVideoCallback(videoCallback);
+    packets.setReleaseCallback(releasePacket);
+
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_jessi_cjsplayer_push_CJSPusher_startLiveNative(JNIEnv *env, jobject thiz, jstring url) {
-    // TODO: implement startLiveNative()
+Java_com_jessi_cjsplayer_push_CJSPusher_startLiveNative(JNIEnv *env, jobject thiz, jstring path_) {
+    if (isStartPush) {
+        return;
+    }
+    isStartPush = true;
+    const char *data_url = const_cast<char *>(env->GetStringUTFChars(path_, 0));
+    char *url = new char[strlen(data_url) + 1];
+    strcpy(url, data_url);
+
+    pthread_create(&pid_start, nullptr, task_start_push, url);
+
+    env->ReleaseStringUTFChars(path_, data_url);
 }
 
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_stopLiveNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement stopLiveNative()
+
 }
 extern "C"
 JNIEXPORT void JNICALL
@@ -191,14 +320,24 @@ JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_initVideoEncoderNative(JNIEnv *env, jobject thiz,
                                                                jint width, jint height, jint fps,
                                                                jint bitrate) {
-    // TODO: implement initVideoEncoderNative()
+    if (videoPushChannel) {
+        videoPushChannel->initVideoEncoder(width, height, fps, bitrate);
+    }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_pushVideoNative(JNIEnv *env, jobject thiz,
                                                         jbyteArray data) {
-    // TODO: implement pushVideoNative()
+    if (!videoPushChannel || !readyPushing) {
+        return;
+    }
+    // 相机的n21数据
+    jbyte *video_data = env->GetByteArrayElements(data, nullptr);
+    if (videoPushChannel) {
+        videoPushChannel->encodeData(video_data);
+    }
+    env->ReleaseByteArrayElements(data, video_data, 0);
 }
 
 

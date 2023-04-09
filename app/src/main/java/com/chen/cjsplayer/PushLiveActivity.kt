@@ -22,5 +22,17 @@ class PushLiveActivity : AppCompatActivity() {
         binding.btnStart.setOnClickListener {
             livePush.startLive("rtmp://139.224.136.101/myapp")
         }
+        binding.btnStop.setOnClickListener {
+            livePush.stopLive()
+        }
+        binding.btnSwitchCamera.setOnClickListener {
+            livePush.switchCamera()
+        }
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        livePush.release()
     }
 }
