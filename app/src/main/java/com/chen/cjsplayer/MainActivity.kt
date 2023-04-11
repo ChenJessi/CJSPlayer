@@ -18,7 +18,10 @@ class MainActivity : AppCompatActivity() {
         binding.btnPushLive.setOnClickListener {
             startActivity(Intent(this, PushLiveActivity::class.java))
         }
+
+
     }
+
 
 
 }

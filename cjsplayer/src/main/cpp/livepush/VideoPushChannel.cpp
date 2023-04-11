@@ -192,7 +192,60 @@ void VideoPushChannel::encodeData(signed char *data) {
  * @param pps_len
  */
 void VideoPushChannel::sendSpsPps(uint8_t *sps, int sps_len, uint8_t *pps, int pps_len) {
+    // 1.组装 sps pps
+    // sps pps 结构体长度
+    int body_size = 5 + 8 + sps_len + 3 + pps_len;
 
+    // 组装 sps pps
+    RTMPPacket *packet = new RTMPPacket;
+    RTMPPacket_Alloc(packet, body_size);// 分配内存堆区
+
+    int i = 0; // 记录当前组装的位置
+    // 2.组装 flv tag header
+    packet->m_body[i++] = 0x17; // 0x17 代表 sps pps
+
+    packet->m_body[i++] = 0x00; // 0x00 代表 AVC // sps pps
+    packet->m_body[i++] = 0x00; // 0x00 代表 AVC
+    packet->m_body[i++] = 0x00; // 0x00 代表 AVC
+    packet->m_body[i++] = 0x00; // 0x00 代表 AVC
+
+    packet->m_body[i++] = 0x01; // 版本号
+
+    packet->m_body[i++] = sps[1]; // profile
+    packet->m_body[i++] = sps[2]; // 兼容性
+    packet->m_body[i++] = sps[3]; // 级别
+
+    packet->m_body[i++] = 0xff; // sps 字节数
+
+    packet->m_body[i++] = 0xe1; // sps 个数
+
+    // sps 长度 用2个字节表示
+    packet->m_body[i++] = (sps_len >> 8) & 0xff;
+    packet->m_body[i++] = sps_len & 0xff;
+
+    // sps 数据
+    memcpy(&packet->m_body[i], sps, sps_len);
+    i += sps_len;
+    packet->m_body[i++] = 0x01; // pps 个数
+
+    // pps 长度 用2个字节表示
+    packet->m_body[i++] = (pps_len >> 8) & 0xff;
+    packet->m_body[i++] = pps_len & 0xff;
+
+    // pps 数据
+    memcpy(&packet->m_body[i], pps, pps_len);
+    i+= pps_len;
+
+    // 封包处理
+    packet->m_packetType = RTMP_PACKET_TYPE_VIDEO; // 包类型 视频
+    packet->m_nBodySize = body_size; // 包体大小
+    packet->m_nChannel = 0x14; // 通道
+    packet->m_nTimeStamp = 0; // 时间戳  sps pps没有时间戳
+    packet->m_hasAbsTimestamp = 0; // 时间戳绝对值
+    packet->m_headerType = RTMP_PACKET_SIZE_MEDIUM; // 头部类型
+
+    // 3.发送 sps pps
+    videoCallback(packet);
 }
 
 /**
