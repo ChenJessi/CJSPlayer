@@ -250,10 +250,54 @@ void VideoPushChannel::sendSpsPps(uint8_t *sps, int sps_len, uint8_t *pps, int p
 
 /**
  *
- * @param type
- * @param pPayload
- * @param payload
+ * @param type 帧类型
+ * @param pPayload 帧数据
+ * @param payload  帧数据长度
  */
 void VideoPushChannel::sendFrame(int type, uint8_t *pPayload, int payload) {
+    // 去掉起始码 起始码有两种
+    if (pPayload[2] == 0x00){ // 00 00 00 01
+        pPayload += 4;      // 挪动指针 跳过起始码
+        payload -= 4;       // 长度减去起始码长度
+    } else if (pPayload[2] == 0x01){ // 00 00 01
+        pPayload += 3;
+        payload -= 3;
+    }
 
+    int body_size = 5 + 4 + payload; // flv tag header + nalu 数据
+
+    // 组装 flv tag header
+    auto *packet = new RTMPPacket;
+    RTMPPacket_Alloc(packet, body_size); // 分配内存堆区
+
+
+    if (type == NAL_SLICE_IDR){
+        packet->m_body[0] = 0x17; // 0x17 代表关键帧
+    } else{
+        packet->m_body[0] = 0x27; // 0x27 代表非关键帧
+    }
+
+    packet->m_body[1] = 0x01; // 0x01 代表 数据帧  0x02 代表 sps pps
+    packet->m_body[2] = 0x00; // 0x00 代表 AVC
+    packet->m_body[3] = 0x00; // 0x00 代表 AVC
+    packet->m_body[4] = 0x00; // 0x00 代表 AVC
+
+    // 四字节表示数据长度
+    packet->m_body[5] = (payload >> 24) & 0xff;
+    packet->m_body[6] = (payload >> 16) & 0xff;
+    packet->m_body[7] = (payload >> 8) & 0xff;
+    packet->m_body[8] = payload & 0xff;
+
+
+    memcpy(&packet->m_body[9], pPayload, payload); // 拷贝数据
+
+    // 封包处理
+    packet->m_packetType = RTMP_PACKET_TYPE_VIDEO; // 包类型 视频
+    packet->m_nBodySize = body_size; // 包体大小
+    packet->m_nChannel = 0x14; // 通道
+    packet->m_nTimeStamp = -1; // 时间戳
+    packet->m_hasAbsTimestamp = 0; // 时间戳绝对值
+    packet->m_headerType = RTMP_PACKET_SIZE_LARGE; // 头部类型
+
+    videoCallback(packet);
 }
