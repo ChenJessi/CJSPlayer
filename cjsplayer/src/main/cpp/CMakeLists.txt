@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6.0)
 
+# 导入子目录
+add_subdirectory(librtmp)
+
 
 # 声明 ffmpeg 路径
 set(FFMPEG ${CMAKE_SOURCE_DIR}/ffmpeg)

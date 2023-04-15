@@ -54,6 +54,7 @@ class CJSPusher(
             Toast.makeText(activity, "没有录音权限", Toast.LENGTH_SHORT).show()
             return
         }
+
         startLiveNative(url)
         audioChannel.startLive()
         videoChannel.startLive()

@@ -20,7 +20,8 @@ class PushLiveActivity : AppCompatActivity() {
 
         livePush.setPreviewDisplay(binding.surfaceView.holder)
         binding.btnStart.setOnClickListener {
-            livePush.startLive("rtmp://139.224.136.101/myapp")
+
+            livePush.startLive("rtmp://sendtc3.douyu.com/live/6441662rypf6lvhO?wsSecret=316193e17184bb72085df8d7fbc13aa2&wsTime=643aae5d&wsSeek=off&wm=0&tw=0&roirecognition=0&record=flv&origin=tct&txHost=sendtc3a.douyu.com")
         }
         binding.btnStop.setOnClickListener {
             livePush.stopLive()

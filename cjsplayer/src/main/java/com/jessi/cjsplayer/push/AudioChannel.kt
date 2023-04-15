@@ -60,7 +60,7 @@ class AudioChannel(val pusher: CJSPusher): CoroutineScope by MainScope() {
 
             val buffer = ByteArray(inputSamples)// 缓冲大小
             while (isLiving) {
-                val len = audioRecord.read(buffer, 0, inputSamples)
+                val len = audioRecord.read(buffer, 0, buffer.size)
                 if (len > 0) {
                     pusher.pushAudioNative(buffer)
                 }

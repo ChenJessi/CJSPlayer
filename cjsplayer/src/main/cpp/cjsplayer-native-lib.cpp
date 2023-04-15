@@ -9,7 +9,7 @@
 #include "pthread.h"
 #include "android/native_window_jni.h"
 
-
+#include "livepush/VideoPushChannel.h"
 
 
 
@@ -163,7 +163,7 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_seekNative(JNIEnv *env, jobjec
 
 //<editor-fold desc=" Push">
 
-#include "livepush/VideoPushChannel.h"
+
 
 VideoPushChannel *videoPushChannel = nullptr;
 SafeQueue<RTMPPacket *> packets;    // 保存打包后的音视频数据
@@ -177,7 +177,12 @@ uint32_t startTime;
  * @param packet
  */
 void videoCallback(RTMPPacket *packet) {
-
+    if (packet) {
+        if (packet->m_nTimeStamp == -1){ // -1 说明是数据帧
+            packet->m_nTimeStamp = RTMP_GetTime() - startTime;
+        }
+        packets.insertToQueue(packet);
+    }
 }
 
 void releasePacket(RTMPPacket **packet) {
@@ -258,6 +263,7 @@ void *task_start_push(void *args) {
                 LOGE("RTMP_SendPacket failed");
                 break;
             }
+            LOGE("RTMP_SendPacket success")
         }
         releasePacket(&packet);
     }while (false);
@@ -294,7 +300,7 @@ Java_com_jessi_cjsplayer_push_CJSPusher_startLiveNative(JNIEnv *env, jobject thi
         return;
     }
     isStartPush = true;
-    const char *data_url = const_cast<char *>(env->GetStringUTFChars(path_, 0));
+    const char *data_url = const_cast<char *>(env->GetStringUTFChars(path_, nullptr));
     char *url = new char[strlen(data_url) + 1];
     strcpy(url, data_url);
 
@@ -312,7 +318,7 @@ Java_com_jessi_cjsplayer_push_CJSPusher_stopLiveNative(JNIEnv *env, jobject thiz
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_releaseNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement releaseNative()
+
 }
 
 extern "C"
@@ -329,6 +335,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_pushVideoNative(JNIEnv *env, jobject thiz,
                                                         jbyteArray data) {
+    LOGE("pushVideoNative ")
     if (!videoPushChannel || !readyPushing) {
         return;
     }
@@ -346,20 +353,21 @@ JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_initAudioEncoderNative(JNIEnv *env, jobject thiz,
                                                                jint sample_rate_in_hz,
                                                                jint channel) {
-    // TODO: implement initAudioEncoderNative()
+
 }
 
 
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_getInputSamplesNative(JNIEnv *env, jobject thiz) {
-    // TODO: implement getInputSamplesNative()
+
+    return 4096;
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_pushAudioNative(JNIEnv *env, jobject thiz,
                                                         jbyteArray data) {
-    // TODO: implement pushAudioNative()
+
 }
 
 //</editor-fold>

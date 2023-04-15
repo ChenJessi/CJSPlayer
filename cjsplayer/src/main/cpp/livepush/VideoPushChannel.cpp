@@ -128,6 +128,7 @@ void VideoPushChannel::setVideoCallback(VideoPushChannel::VideoCallback callback
  * v1  v2   v3  v4
  */
 void VideoPushChannel::encodeData(signed char *data) {
+    LOGE("encodeData ")
     pthread_mutex_lock(&mutex);
     if (!pic_in){
         pthread_mutex_unlock(&mutex);
@@ -136,7 +137,6 @@ void VideoPushChannel::encodeData(signed char *data) {
 
     // 1.将相机数据 y分量 拷贝到 i420 的 y分量
     memcpy(pic_in->img.plane[0], data, y_len); // Y
-
     // 2.将相机数据 u分量 拷贝到 i420 的 v分量
     for (int i = 0; i < uv_len; ++i) {
         // u分量 拷贝到 i420 的 u分量
@@ -148,16 +148,16 @@ void VideoPushChannel::encodeData(signed char *data) {
     // 3.编码
     x264_nal_t *pp_nal = nullptr; // 编码后的数据 nal 数组
     int pi_nal = 0; // 编码后的数据个数
-    x264_picture_t *pic_out = nullptr; // 编码后的图片
+    x264_picture_t pic_out ; // 编码后的图片
+
     // 编码
-    int ret = x264_encoder_encode(videoCodec, &pp_nal, &pi_nal, pic_in, pic_out);
+    int ret = x264_encoder_encode(videoCodec, &pp_nal, &pi_nal, pic_in, &pic_out);
     // ret x264_encoder_encode 返回 nal 的字节数，如果没有 nal 单元，则返回0或者负数
     if (ret < 0) {
         LOGE("编码失败")
         pthread_mutex_unlock(&mutex);
         return;
     }
-
     // 4.获取 sps pps
     int sps_len , pps_len = 0;  // sps pps 长度
     uint8_t sps[100] = {0}; // 接收 sps 序列参数集
@@ -173,14 +173,12 @@ void VideoPushChannel::encodeData(signed char *data) {
             memcpy(pps, pp_nal[i].p_payload + 4, pps_len); // 拷贝 pps
 
             // 发送 sps pps
-            sendSpsPps(sps, sps_len, pps, pps_len);
+           // sendSpsPps(sps, sps_len, pps, pps_len);
         } else{
             // 发送关键帧或者非关键帧
-            sendFrame(pp_nal[i].i_type, pp_nal[i].p_payload, pp_nal[i].i_payload);
+            //sendFrame(pp_nal[i].i_type, pp_nal[i].p_payload, pp_nal[i].i_payload);
         }
-
     }
-
     pthread_mutex_unlock(&mutex);
 }
 
