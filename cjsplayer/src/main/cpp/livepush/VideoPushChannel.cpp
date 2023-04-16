@@ -128,7 +128,6 @@ void VideoPushChannel::setVideoCallback(VideoPushChannel::VideoCallback callback
  * v1  v2   v3  v4
  */
 void VideoPushChannel::encodeData(signed char *data) {
-    LOGE("encodeData ")
     pthread_mutex_lock(&mutex);
     if (!pic_in){
         pthread_mutex_unlock(&mutex);
@@ -173,10 +172,10 @@ void VideoPushChannel::encodeData(signed char *data) {
             memcpy(pps, pp_nal[i].p_payload + 4, pps_len); // 拷贝 pps
 
             // 发送 sps pps
-           // sendSpsPps(sps, sps_len, pps, pps_len);
+            sendSpsPps(sps, sps_len, pps, pps_len);
         } else{
             // 发送关键帧或者非关键帧
-            //sendFrame(pp_nal[i].i_type, pp_nal[i].p_payload, pp_nal[i].i_payload);
+            sendFrame(pp_nal[i].i_type, pp_nal[i].p_payload, pp_nal[i].i_payload);
         }
     }
     pthread_mutex_unlock(&mutex);

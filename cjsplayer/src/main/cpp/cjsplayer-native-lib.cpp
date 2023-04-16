@@ -6,7 +6,7 @@
 #include <jni.h>
 #include "player/CJSPlayer.h"
 #include "utils/JNICallbackHelper.h"
-#include "pthread.h"
+#include <pthread.h>
 #include "android/native_window_jni.h"
 
 #include "livepush/VideoPushChannel.h"
@@ -185,21 +185,24 @@ void videoCallback(RTMPPacket *packet) {
     }
 }
 
-void releasePacket(RTMPPacket **packet) {
-    if(packet){
+void releasePacket(RTMPPacket ** packet) {
+    if (*packet) {
         RTMPPacket_Free(*packet);
-        delete packet;
-        packet = nullptr;
+        delete *packet;
+        *packet = nullptr;
+
     }
 }
 
+
+
 void *task_start_push(void *args) {
     char *url = static_cast<char *>(args);
-
     int ret = 0;
+
     // RTMP 初始化
-    RTMP *rtmp = nullptr;
-    rtmp = RTMP_Alloc();
+    RTMP *rtmp = RTMP_Alloc();
+
     do{
         if (!rtmp) {
             LOGE("RTMP_Alloc failed");
@@ -241,8 +244,10 @@ void *task_start_push(void *args) {
         RTMPPacket *packet = nullptr;
 
         while (readyPushing){
-
-            packets.getQueueAndDel(packet);
+            ret = packets.getQueueAndDel(packet);
+            if (!ret) {
+                continue;
+            }
             if(!readyPushing){
                 break;
             }
@@ -258,12 +263,10 @@ void *task_start_push(void *args) {
 
             // 释放内存
             releasePacket(&packet);
-
             if(!ret){
                 LOGE("RTMP_SendPacket failed");
                 break;
             }
-            LOGE("RTMP_SendPacket success")
         }
         releasePacket(&packet);
     }while (false);
@@ -303,9 +306,7 @@ Java_com_jessi_cjsplayer_push_CJSPusher_startLiveNative(JNIEnv *env, jobject thi
     const char *data_url = const_cast<char *>(env->GetStringUTFChars(path_, nullptr));
     char *url = new char[strlen(data_url) + 1];
     strcpy(url, data_url);
-
     pthread_create(&pid_start, nullptr, task_start_push, url);
-
     env->ReleaseStringUTFChars(path_, data_url);
 }
 
@@ -335,7 +336,6 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_pushVideoNative(JNIEnv *env, jobject thiz,
                                                         jbyteArray data) {
-    LOGE("pushVideoNative ")
     if (!videoPushChannel || !readyPushing) {
         return;
     }
