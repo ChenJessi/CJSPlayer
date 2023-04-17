@@ -21,7 +21,7 @@ class PushLiveActivity : AppCompatActivity() {
         livePush.setPreviewDisplay(binding.surfaceView.holder)
         binding.btnStart.setOnClickListener {
 
-            livePush.startLive("rtmp://sendtc3.douyu.com/live/6441662rypf6lvhO?wsSecret=316193e17184bb72085df8d7fbc13aa2&wsTime=643aae5d&wsSeek=off&wm=0&tw=0&roirecognition=0&record=flv&origin=tct&txHost=sendtc3a.douyu.com")
+            livePush.startLive("rtmp://sendtc3.douyu.com/live/6441662rThHg5nS0?wsSecret=76a9c2053bc8a0df3d93c74574bf1a7d&wsTime=643d4dbe&wsSeek=off&wm=0&tw=0&roirecognition=0&record=flv&origin=tct&txHost=sendtc3.douyu.com")
         }
         binding.btnStop.setOnClickListener {
             livePush.stopLive()
