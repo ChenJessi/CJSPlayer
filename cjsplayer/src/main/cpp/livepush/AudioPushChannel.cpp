@@ -11,3 +11,11 @@ AudioPushChannel::AudioPushChannel() {
 AudioPushChannel::~AudioPushChannel() {
 
 }
+
+void AudioPushChannel::setAudioCallback(AudioPushChannel::AudioCallback callback) {
+    audioCallback = callback;
+}
+
+void AudioPushChannel::initAudioEncoder(int sample_rate, int num_channel) {
+
+}

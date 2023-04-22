@@ -10,6 +10,7 @@
 #include "android/native_window_jni.h"
 
 #include "livepush/VideoPushChannel.h"
+#include "livepush/AudioPushChannel.h"
 
 
 
@@ -166,6 +167,7 @@ Java_com_jessi_cjsplayer_manager_CJSPlayerManager_seekNative(JNIEnv *env, jobjec
 
 
 VideoPushChannel *videoPushChannel = nullptr;
+AudioPushChannel *audioPushChannel = nullptr;
 SafeQueue<RTMPPacket *> packets;    // 保存打包后的音视频数据
 bool isStartPush = false;
 pthread_t pid_start;
@@ -176,7 +178,7 @@ uint32_t startTime;
  * 将打包后的视频数据保存到队列
  * @param packet
  */
-void videoCallback(RTMPPacket *packet) {
+void rtmpCallback(RTMPPacket *packet) {
     if (packet) {
         if (packet->m_nTimeStamp == -1){ // -1 说明是数据帧
             packet->m_nTimeStamp = RTMP_GetTime() - startTime;
@@ -190,7 +192,6 @@ void releasePacket(RTMPPacket ** packet) {
         RTMPPacket_Free(*packet);
         delete *packet;
         *packet = nullptr;
-
     }
 }
 
@@ -291,9 +292,12 @@ JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_initNative(JNIEnv *env, jobject thiz) {
 
     videoPushChannel = new VideoPushChannel();
-    videoPushChannel->setVideoCallback(videoCallback);
-    packets.setReleaseCallback(releasePacket);
+    videoPushChannel->setVideoCallback(rtmpCallback);
 
+    audioPushChannel = new AudioPushChannel();
+    audioPushChannel->setAudioCallback(rtmpCallback);
+
+    packets.setReleaseCallback(releasePacket);
 }
 
 extern "C"
@@ -353,7 +357,9 @@ JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_initAudioEncoderNative(JNIEnv *env, jobject thiz,
                                                                jint sample_rate_in_hz,
                                                                jint channel) {
-
+    if (audioPushChannel) {
+        audioPushChannel->initAudioEncoder(sample_rate_in_hz, channel);
+    }
 }
 
 

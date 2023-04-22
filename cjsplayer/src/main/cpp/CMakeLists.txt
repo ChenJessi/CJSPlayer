@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.6.0)
 
 # 导入子目录
 add_subdirectory(librtmp)
+add_subdirectory(libfaac)
 
 
 # 声明 ffmpeg 路径
@@ -23,8 +24,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${OPENSSL}/libs/${CMAKE_ANDROID_ARCH_A
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${RTMP}/libs/${CMAKE_ANDROID_ARCH_ABI}")
 
 
-# 导入头文件的路径 rtmp x264
-include_directories(librtmp libx264/include)
+# 导入头文件的路径 rtmp x264 faac
+include_directories(librtmp libx264/include libfaac/include)
+
 
 # 设置x264库路径
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/libx264/libs/${CMAKE_ANDROID_ARCH_ABI}")
@@ -56,7 +58,7 @@ target_link_libraries(
 
         rtmp
         x264
-
+        faac
         OpenSLES
         z
         android

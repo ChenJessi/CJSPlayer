@@ -22,7 +22,7 @@ class AudioChannel(val pusher: CJSPusher): CoroutineScope by MainScope() {
             AudioFormat.CHANNEL_IN_MONO
         }
     }
-    // 单通道样本数1024 * 通道数2 = 2048 * 2(一个样本16bit，2字节) = 4096
+    // 单通道样本数1024 * 通道数2 = 2048 * 2(位深，一个样本16bit，2字节) = 4096
     private val inputSamples by lazy {
         pusher.getInputSamples() * 2
     }
