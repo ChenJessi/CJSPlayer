@@ -366,8 +366,10 @@ Java_com_jessi_cjsplayer_push_CJSPusher_initAudioEncoderNative(JNIEnv *env, jobj
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_getInputSamplesNative(JNIEnv *env, jobject thiz) {
-
-    return 4096;
+    if (audioPushChannel) {
+        return audioPushChannel->getInputSamples();
+    }
+    return 2048;
 }
 extern "C"
 JNIEXPORT void JNICALL
