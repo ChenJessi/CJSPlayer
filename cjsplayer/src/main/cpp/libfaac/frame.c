@@ -32,6 +32,7 @@
 #include "tns.h"
 #include "stereo.h"
 
+#define PACKAGE_VERSION "1.29.9.2"
 static char *libfaacName = PACKAGE_VERSION;
 static char *libCopyright =
   "FAAC - Freeware Advanced Audio Coder (http://faac.sourceforge.net/)\n"

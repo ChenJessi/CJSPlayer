@@ -375,7 +375,14 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_pushAudioNative(JNIEnv *env, jobject thiz,
                                                         jbyteArray data) {
-
+    if (!audioPushChannel || !readyPushing) {
+        return;
+    }
+    jbyte *audio_data = env->GetByteArrayElements(data, nullptr);
+    if (audioPushChannel) {
+        audioPushChannel->encodeData(audio_data);
+    }
+    env->ReleaseByteArrayElements(data, audio_data, 0);
 }
 
 //</editor-fold>

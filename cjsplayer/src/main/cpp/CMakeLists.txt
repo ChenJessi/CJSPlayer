@@ -25,7 +25,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${OPENSSL}/libs/${CMAKE_ANDROID_ARCH_A
 
 
 # 导入头文件的路径 rtmp x264 faac
-include_directories(librtmp libx264/include libfaac/include)
+include_directories(librtmp libx264/include libfaac libfaac/include)
 
 
 # 设置x264库路径
