@@ -18,6 +18,8 @@ public:
 
     void initAudioEncoder(int sample_rate, int num_channel);
 
+    void encodeData(int8_t *data);
+
 public:
     AudioPushChannel();
 
@@ -31,7 +33,7 @@ private:
     int mChannels = 1; // 声道数
     faacEncHandle audioEncoder = 0; // 编码器
     u_long inputSamples = 0; // 编码器每次编码的样本数
-    u_long maxOutputBytes = 0; // 编码器每次编码的最大输出字节数
+    u_long maxOutputBytes = 0; // 编码器每次编码的最大输出字节数 缓冲区大小
     u_char *buffer = 0; // 编码器输出缓冲区
 
 };

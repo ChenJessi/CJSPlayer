@@ -343,7 +343,7 @@ Java_com_jessi_cjsplayer_push_CJSPusher_pushVideoNative(JNIEnv *env, jobject thi
     if (!videoPushChannel || !readyPushing) {
         return;
     }
-    // 相机的n21数据
+    // 相机的nv21数据
     jbyte *video_data = env->GetByteArrayElements(data, nullptr);
     if (videoPushChannel) {
         videoPushChannel->encodeData(video_data);
