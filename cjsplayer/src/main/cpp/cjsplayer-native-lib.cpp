@@ -318,12 +318,24 @@ Java_com_jessi_cjsplayer_push_CJSPusher_startLiveNative(JNIEnv *env, jobject thi
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_stopLiveNative(JNIEnv *env, jobject thiz) {
+    isStartPush = false;
+    readyPushing = false;
+    packets.setWork(0);
+    pthread_join(pid_start, nullptr);
+    packets.clear();
 
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_jessi_cjsplayer_push_CJSPusher_releaseNative(JNIEnv *env, jobject thiz) {
-
+    if (videoPushChannel) {
+        delete videoPushChannel;
+        videoPushChannel = nullptr;
+    }
+    if (audioPushChannel) {
+        delete audioPushChannel;
+        audioPushChannel = nullptr;
+    }
 }
 
 extern "C"

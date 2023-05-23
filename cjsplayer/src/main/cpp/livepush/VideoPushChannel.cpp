@@ -10,6 +10,15 @@ VideoPushChannel::VideoPushChannel() {
 
 VideoPushChannel::~VideoPushChannel() {
     pthread_mutex_destroy(&mutex);
+    if (videoCodec) {
+        x264_encoder_close(videoCodec);
+        videoCodec = nullptr;
+    }
+    if (pic_in) {
+        x264_picture_clean(pic_in);
+        delete pic_in;
+        pic_in = nullptr;
+    }
 }
 
 void VideoPushChannel::initVideoEncoder(int width, int height, int fps, int bitrate) {
